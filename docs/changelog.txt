@@ -1,0 +1,8 @@
+2012/06/30: Version 1.0 RC
+=================================
+Css file updated to 1.0.4 (kris_fr)
+
+2011/04/29: Version 1.0 RC
+=================================
+Initial work based on current css file holmes.css by Luke Williams - http://www.red-root.com/. (kris_fr)
+If you would like to help with documentation (or translation) for this module please contact us.
