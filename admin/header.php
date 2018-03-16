@@ -31,7 +31,7 @@ if ($xoopsUser) {
 require_once XOOPS_ROOT_PATH . '/class/template.php';
 
 if (!isset($xoopsTpl)) {
-    $xoopsTpl = new XoopsTpl();
+    $xoopsTpl = new \XoopsTpl();
 }
 $xoopsTpl->caching=(0);
 
