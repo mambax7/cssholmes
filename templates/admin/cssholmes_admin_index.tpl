@@ -5,7 +5,7 @@
 <table class="width80 floatcenter0">
     <tr>
         <td class="aligntop width60">
-            <{foreachq from=$cssholmes_menu item=menu}>
+            <{foreach from=$cssholmes_menu item=menu}>
             <div class="rmmenuicon">
                 <a class="tooltip" href="<{$menu.link}>" title="<{$menu.name}>">
                     <img src="<{$smarty.const.XOOPS_URL}>/modules/<{$module_dirname}>/images/admin/<{$menu.icon}>"
@@ -14,7 +14,7 @@
                 </a>
             </div>
             <{/foreach}>
-            <{foreachq from=$cssholmes_admin item=admin}>
+            <{foreach from=$cssholmes_admin item=admin}>
             <div class="rmmenuicon">
                 <a class="tooltip" href="<{$admin.link}>" title="<{$admin.name}>">
                     <img src="<{$smarty.const.XOOPS_URL}>/modules/<{$module_dirname}>/images/admin/<{$admin.icon}>"

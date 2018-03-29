@@ -27,8 +27,6 @@ use Xmf\Request;
 use XoopsModules\Cssholmes;
 use XoopsModules\Cssholmes\Common;
 
-
-
 /**
  * Class Utility
  */
@@ -41,5 +39,4 @@ class Utility
     use Common\FilesManagement; // Files Management Trait
 
     //--------------- Custom module methods -----------------------------
-
 }

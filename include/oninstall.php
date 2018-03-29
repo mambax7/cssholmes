@@ -28,7 +28,6 @@
  */
 function xoops_module_pre_install_cssholmes(\XoopsModule $module)
 {
-
     include __DIR__ . '/../preloads/autoloader.php';
     /** @var \Utility $utility */
     $utility = new \XoopsModules\Cssholmes\Utility();

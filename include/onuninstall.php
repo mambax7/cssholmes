@@ -78,6 +78,4 @@ function xoops_module_uninstall_xxxx(\XoopsModule $module)
 
     return $success;
     //------------ END  ----------------
-
 }
-

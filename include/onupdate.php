@@ -156,8 +156,6 @@ function xoops_module_update_cssholmes(\XoopsModule $module, $previousVersion = 
         /** @var XoopsGroupPermHandler $gpermHandler */
         $gpermHandler = xoops_getHandler('groupperm');
         return $gpermHandler->deleteByModule($module->getVar('mid'), 'item_read');
-
     }
     return true;
 }
-
