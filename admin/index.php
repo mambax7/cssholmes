@@ -20,11 +20,11 @@ include __DIR__ . '/header.php';
 
 require_once XOOPS_ROOT_PATH . '/modules/' . $xoopsModule->getVar('dirname') . '/class/menu.php';
 
-$menu = new cssholmesMenu();
+$menu = new Menu();
 $menu->addItem('about', _AM_CSSHOLMES_MANAGER_ABOUT, 'about.php');
 $xoopsTpl->assign('cssholmes_menu', $menu->_items);
 
-$admin = new cssholmesMenu();
+$admin = new Menu();
 $admin->addItem('update', _AM_CSSHOLMES_MANAGER_UPDATE, '../../system/admin.php?fct=modulesadmin&op=update&module=cssholmes');
 $admin->addItem('xoofoo', _AM_CSSHOLMES_MANAGER_PREFERENCES, 'http://www.xoofoo.org');
 $xoopsTpl->assign($xoopsModule->getVar('dirname') . '_admin', $admin->_items);

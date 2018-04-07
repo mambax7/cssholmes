@@ -1,4 +1,4 @@
-<?php
+<?php namespace XoopsModules\Cssholmes;
 
 /**
  * Cssholmes module
@@ -16,7 +16,7 @@
  * @since               2.3.0
  * @author              Dugris <http://www.dugris.info>
  **/
-class cssholmesMenu
+class Menu
 {
     public $_items = [];
 
