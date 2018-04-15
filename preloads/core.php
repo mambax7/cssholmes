@@ -18,7 +18,7 @@
 
 defined('XOOPS_ROOT_PATH') || die('Restricted access');
 
-class CssHolmesCorePreload extends XoopsPreloadItem
+class CssHolmesCorePreload extends \XoopsPreloadItem
 {
     // to add PSR-4 autoloader
     /**

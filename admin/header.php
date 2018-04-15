@@ -16,7 +16,7 @@
  * @author              kris <http://www.xoofoo.org>
  **/
 
-include __DIR__ . '/../../../include/cp_header.php';
+include  dirname(dirname(dirname(__DIR__))) . '/include/cp_header.php';
 $myts = \MyTextSanitizer::getInstance();
 
 if ($xoopsUser) {
