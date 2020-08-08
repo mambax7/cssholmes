@@ -3,7 +3,8 @@
 - update to XOOPS 2.5.10 GUI (mamba)
 - update to PHP 7.2 (mamba)
 - code clean-up and cosmetics (mamba)
-- added testsuite.tpl (mamba)
+- added testsuite.tpl in the front end (mamba)
+- namespaces, autoload (mamba)
 
 2012/08/30: Version 1.2
 =================================
