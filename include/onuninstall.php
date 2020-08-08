@@ -12,11 +12,10 @@ use XoopsModules\Cssholmes;
 
 /**
  * Prepares system prior to attempting to uninstall module
- * @param XoopsModule $module {@link XoopsModule}
+ * @param \XoopsModule $module {@link XoopsModule}
  *
  * @return bool true if ready to uninstall, false if not
  */
-
 function xoops_module_pre_uninstall_cssholmes(\XoopsModule $module)
 {
     // Do some synchronization
@@ -24,9 +23,8 @@ function xoops_module_pre_uninstall_cssholmes(\XoopsModule $module)
 }
 
 /**
- *
  * Performs tasks required during uninstallation of the module
- * @param XoopsModule $module {@link XoopsModule}
+ * @param \XoopsModule $module {@link XoopsModule}
  *
  * @return bool true if uninstallation successful, false if not
  */
@@ -35,8 +33,9 @@ function xoops_module_uninstall_cssholmes(\XoopsModule $module)
     //    return true;
 
     $moduleDirName      = basename(dirname(__DIR__));
-    $moduleDirNameUpper = strtoupper($moduleDirName);
-    $helper             = Cssholmes\Helper::getInstance();
+    $moduleDirNameUpper = mb_strtoupper($moduleDirName);
+    /** @var \XoopsModules\Cssholmes\Helper $helper */
+    $helper = \XoopsModules\Cssholmes\Helper::getInstance();
 
     /** @var Cssholmes\Utility $utility */
     $utility = new Cssholmes\Utility();
@@ -68,7 +67,7 @@ function xoops_module_uninstall_cssholmes(\XoopsModule $module)
     $xmlfile = $GLOBALS['xoops']->path('xsitemap.xml');
     if (is_file($xmlfile)) {
         if (false === ($delOk = unlink($xmlfile))) {
-            $module->setErrors(sprintf(_AM_XXXXX_ERROR_BAD_REMOVE, $xmlfile));
+            $module->setErrors(sprintf(_AM_CSSHOLMES_ERROR_BAD_REMOVE, $xmlfile));
         }
     }
 //    return $success && $delOk; // use this if you're using this routine

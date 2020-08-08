@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Cssholmes module
  *
@@ -15,14 +16,13 @@
  * @since               2.5.x
  * @author              kris <http://www.xoofoo.org>
  **/
-
-include __DIR__ . '/preloads/autoloader.php';
+require_once __DIR__ . '/preloads/autoloader.php';
 
 $moduleDirName = basename(__DIR__);
 
-$modversion['version']             = 1.1;
-$modversion['module_status']       = 'Final';
-$modversion['release_date']        = '2017/01/04';
+$modversion['version']             = 1.3;
+$modversion['module_status']       = 'Beta 1';
+$modversion['release_date']        = '2020/08/08';
 $modversion['name']                = _MI_CSSHOLMES_NAME;
 $modversion['description']         = _MI_CSSHOLMES_DESC;
 $modversion['author']              = 'Kris - http://www.xoofoo.org';
@@ -31,7 +31,7 @@ $modversion['help']                = '';
 $modversion['dirname']             = $moduleDirName;
 $modversion['image']               = 'assets/images/logoModule.png';
 $modversion['license']             = 'GNU General Public License';
-$modversion['license_url']         = 'http://www.gnu.org/licenses/gpl.html';
+$modversion['license_url']         = 'https://www.gnu.org/licenses/gpl.html';
 $modversion['official']            = 0;
 $modversion['author_website_url']  = 'http://labs.xoofoo.org';
 $modversion['author_website_name'] = 'Laboratoire XooFoo';
@@ -53,12 +53,23 @@ $modversion['adminindex']  = 'admin/index.php';
 $modversion['adminmenu']   = 'admin/menu.php';
 
 // Menu
-$modversion['hasMain'] = 0;
+$modversion['hasMain'] = 1;
+
+// ------------------- Help files ------------------- //
+$modversion['help']        = 'page=help';
+$modversion['helpsection'] = [
+    ['name' => _MI_CSSHOLMES_OVERVIEW, 'link' => 'page=help'],
+    ['name' => _MI_CSSHOLMES_DISCLAIMER, 'link' => 'page=disclaimer'],
+    ['name' => _MI_CSSHOLMES_LICENSE, 'link' => 'page=license'],
+    ['name' => _MI_CSSHOLMES_SUPPORT, 'link' => 'page=support'],
+];
 
 // Templates
-$i                                          = 1;
-$modversion['templates'][$i]['file']        = 'admin/' . $moduleDirName . '_admin_index.html';
-$modversion['templates'][$i]['description'] = _MI_CSSHOLMES_MANAGER_INDEX_DESC;
-++$i;
-$modversion['templates'][$i]['file']        = 'admin/' . $moduleDirName . '_admin_about.html';
-$modversion['templates'][$i]['description'] = _MI_CSSHOLMES_MANAGER_ABOUT_DESC;
+$modversion['templates'] = [
+    ['file' => 'admin/' . $moduleDirName . '_admin_index.tpl', 'description' => '_MI_CSSHOLMES_MANAGER_INDEX_DESC'],
+    ['file' => 'admin/' . $moduleDirName . '_admin_about.tpl', 'description' => '_MI_CSSHOLMES_MANAGER_ABOUT_DESC'],
+    ['file' => $moduleDirName . '_index.tpl', 'description' => ''],
+    ['file' => $moduleDirName . '_header.tpl', 'description' => ''],
+    ['file' => $moduleDirName . '_footer.tpl', 'description' => ''],
+    ['file' => $moduleDirName . '_testsuite.tpl', 'description' => ''],
+];

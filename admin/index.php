@@ -16,21 +16,28 @@
  * @author              kris <http://www.xoofoo.org>
  **/
 
-include __DIR__ . '/header.php';
+use XoopsModules\Cssholmes\Common;
 
-require_once XOOPS_ROOT_PATH . '/modules/' . $xoopsModule->getVar('dirname') . '/class/menu.php';
+require_once __DIR__ . '/admin_header.php';
+xoops_cp_header();
 
-$menu = new Menu();
-$menu->addItem('about', _AM_CSSHOLMES_MANAGER_ABOUT, 'about.php');
-$xoopsTpl->assign('cssholmes_menu', $menu->_items);
+$adminObject = \Xmf\Module\Admin::getInstance();
+$adminObject->displayNavigation(basename(__FILE__));
+$adminObject->displayIndex();
 
-$admin = new Menu();
-$admin->addItem('update', _AM_CSSHOLMES_MANAGER_UPDATE, '../../system/admin.php?fct=modulesadmin&op=update&module=cssholmes');
-$admin->addItem('xoofoo', _AM_CSSHOLMES_MANAGER_PREFERENCES, 'http://www.xoofoo.org');
-$xoopsTpl->assign($xoopsModule->getVar('dirname') . '_admin', $admin->_items);
+//require_once XOOPS_ROOT_PATH . '/modules/' . $xoopsModule->getVar('dirname') . '/class/menu.php';
+//
+//$menu = new \XoopsModules\Cssholmes\Menu();
+//$menu->addItem('about', _AM_CSSHOLMES_MANAGER_ABOUT, 'about.php');
+//$xoopsTpl->assign('cssholmes_menu', $menu->_items);
+//
+//$admin = new \XoopsModules\Cssholmes\Menu();
+//$admin->addItem('update', _AM_CSSHOLMES_MANAGER_UPDATE, '../../system/admin.php?fct=modulesadmin&op=update&module=cssholmes');
+//$admin->addItem('xoofoo', _AM_CSSHOLMES_MANAGER_PREFERENCES, 'http://www.xoofoo.org');
+//$xoopsTpl->assign($xoopsModule->getVar('dirname') . '_admin', $admin->_items);
+//
+//$xoopsTpl->assign('module_dirname', $xoopsModule->getVar('dirname'));
+//
+//$xoopsTpl->display('db:admin/' . $xoopsModule->getVar('dirname') . '_admin_index.tpl');
 
-$xoopsTpl->assign('module_dirname', $xoopsModule->getVar('dirname'));
-
-$xoopsTpl->display('db:admin/' . $xoopsModule->getVar('dirname') . '_admin_index.tpl');
-
-include __DIR__ . '/footer.php';
+require_once __DIR__ . '/admin_footer.php';

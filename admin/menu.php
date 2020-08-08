@@ -18,25 +18,36 @@
 
 // admin menu title and link
 
-use XoopsModules\Cssholmes;
+use Xmf\Module\Admin;
+use XoopsModules\Cssholmes\{
+    Helper
+};
 
-// require_once  dirname(__DIR__) . '/class/Helper.php';
-//require_once  dirname(__DIR__) . '/include/common.php';
-$helper = cssholmes\Helper::getInstance();
+require dirname(__DIR__) . '/preloads/autoloader.php';
 
-$pathIcon32 = \Xmf\Module\Admin::menuIconPath('');
-$pathModIcon32 = $helper->getModule()->getInfo('modicons32');
+$moduleDirName      = basename(dirname(__DIR__));
+$moduleDirNameUpper = mb_strtoupper($moduleDirName);
+
+/** @var Helper $helper */
+$helper = Helper::getInstance();
+$helper->loadLanguage('common');
+$helper->loadLanguage('feedback');
+
+$pathIcon32 = Admin::menuIconPath('');
+if (is_object($helper->getModule())) {
+    $pathModIcon32 = $helper->getModule()->getInfo('modicons32');
+}
 
 $adminmenu[] = [
     'title' => _MI_CSSHOLMES_MANAGER_INDEX,
     'link'  => 'admin/index.php',
     'desc'  => _MI_CSSHOLMES_MANAGER_INDEX_DESC,
-    'icon'  => 'images/icons/index.png',
+    'icon' => $pathIcon32 . '/home.png',
 ];
 
 $adminmenu[] = [
     'title' => _MI_CSSHOLMES_MANAGER_ABOUT,
     'link'  => 'admin/about.php',
     'desc'  => _MI_CSSHOLMES_MANAGER_ABOUT_DESC,
-    'icon'  => 'images/icons/about.png',
+    'icon' => $pathIcon32 . '/about.png',
 ];

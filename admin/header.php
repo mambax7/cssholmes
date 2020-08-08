@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Cssholmes module
  *
@@ -15,8 +16,7 @@
  * @since               2.3.0
  * @author              kris <http://www.xoofoo.org>
  **/
-
-include  dirname(dirname(dirname(__DIR__))) . '/include/cp_header.php';
+require_once dirname(dirname(dirname(__DIR__))) . '/include/cp_header.php';
 $myts = \MyTextSanitizer::getInstance();
 
 if ($xoopsUser) {
@@ -33,9 +33,9 @@ require_once XOOPS_ROOT_PATH . '/class/template.php';
 if (!isset($xoopsTpl)) {
     $xoopsTpl = new \XoopsTpl();
 }
-$xoopsTpl->caching=(0);
+$xoopsTpl->caching = 0;
 
 xoops_cp_header();
 
 // Define Stylesheet and JScript
-$xoTheme->addStylesheet(XOOPS_URL . '/modules/' . $xoopsModule->getVar('dirname') . '/css/admin.css');
+$xoTheme->addStylesheet(XOOPS_URL . '/modules/' . $xoopsModule->getVar('dirname') . '/assets/css/admin.css');

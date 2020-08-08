@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Cssholmes module
  *
@@ -15,18 +16,16 @@
  * @since               2.5.x
  * @author              kris <http://www.xoofoo.org>
  **/
-
-defined('XOOPS_ROOT_PATH') || die('Restricted access');
-
 class CssHolmesCorePreload extends \XoopsPreloadItem
 {
     // to add PSR-4 autoloader
+
     /**
      * @param $args
      */
     public static function eventCoreIncludeCommonEnd($args)
     {
-        include __DIR__ . '/autoloader.php';
+        require_once __DIR__ . '/autoloader.php';
     }
 
     public static function eventCoreHeaderAddmeta()
@@ -35,10 +34,10 @@ class CssHolmesCorePreload extends \XoopsPreloadItem
         $xoopsModule = XoopsModule::getByDirname('cssholmes');
         // Add scripts and Css if only User is xoopsAdmin
         if (!is_object($xoopsUser) || !is_object($xoopsModule) || !$xoopsUser->isAdmin($xoopsModule->mid())) {
-            $xoTheme->addStylesheet(XOOPS_URL . '/modules/cssholmes/css/style.css');
+            $xoTheme->addStylesheet(XOOPS_URL . '/modules/cssholmes/assets/css/style.css');
         } else {
-            $xoTheme->addStylesheet(XOOPS_URL . '/modules/cssholmes/css/holmes.css');
-            $xoTheme->addScript(XOOPS_URL . '/modules/cssholmes/js/holmes.js');
+            $xoTheme->addStylesheet(XOOPS_URL . '/modules/cssholmes/assets/css/holmes.css');
+            $xoTheme->addScript(XOOPS_URL . '/modules/cssholmes/assets/js/holmes.js');
         }
     }
 }

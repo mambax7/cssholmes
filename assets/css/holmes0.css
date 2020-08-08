@@ -15,7 +15,7 @@
 *   Copyright (C) 2011 Luke Williams & RedRoot All Rights Reserved.
 *   holmes.css HTML5 CSS Accessibility Validation
 *   Licenced under GPL license
-*   http://www.gnu.org/licenses/gpl.html
+*   https://www.gnu.org/licenses/gpl.html
 *
 *   ------------------------
 *
@@ -72,9 +72,12 @@
     IMAGES
 **************/
 
-.holmes-debug img:not([alt]),
-.holmes-debug img[alt=""] {
+.holmes-debug img:not([alt]){
     outline: 2px solid red;
+}
+
+.holmes-debug img[alt=""] {
+    outline: 2px solid #fd0;
 }
 
 /*************************
