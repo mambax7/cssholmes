@@ -28,7 +28,6 @@ namespace XoopsModules\Cssholmes;
 
 use XoopsModules\Cssholmes;
 use XoopsModules\Cssholmes\Common;
-use XoopsModules\Cssholmes\Constants;
 
 /**
  * Class Utility

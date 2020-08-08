@@ -26,7 +26,7 @@ namespace XoopsModules\Cssholmes\Common;
 use MyTextSanitizer;
 use XoopsFormDhtmlTextArea;
 use XoopsFormTextArea;
-use XoopsModules\Cssholmes;
+use XoopsModules\Cssholmes\Helper;
 
 /**
  * Class SysUtility
