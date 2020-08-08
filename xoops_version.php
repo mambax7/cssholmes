@@ -14,13 +14,13 @@
  * @package	Cssholmes
  * @since		2.5.x
  * @author 		kris <http://www.xoofoo.org>
- * @version		$Id: xoops_version.php 774 2012-06-30 16:29:33Z kris_fr $
+ * @version		$Id: xoops_version.php 794 2012-08-06 21:08:50Z kris_fr $
 **/
 
 $module_dirname = basename( dirname( __FILE__ ) ) ;
 
 $modversion["name"] 	=  _MI_CSSHOLMES_NAME;
-$modversion["version"] 	= 1.1;
+$modversion["version"] 	= 1.2;
 $modversion["description"] 	= _MI_CSSHOLMES_DESC;
 $modversion["author"] 	= "Kris - http://www.xoofoo.org";
 $modversion["credits"]	= "Luke Williams - http://www.red-root.com/";

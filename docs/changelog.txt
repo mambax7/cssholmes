@@ -1,4 +1,8 @@
-2012/06/30: Version 1.0 RC
+2012/06/30: Version 1.2
+=================================
+Css file updated to 1.0.45 (kris_fr)
+
+2012/06/30: Version 1.1
 =================================
 Css file updated to 1.0.4 (kris_fr)
 

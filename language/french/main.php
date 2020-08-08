@@ -14,7 +14,7 @@
  * @package	Cssholmes
  * @since		2.3.0
  * @author 	kris <http://www.xoofoo.org>
- * @version	$Id: main.php 774 2012-06-30 16:29:33Z kris_fr $
+ * @version	$Id: main.php 794 2012-08-06 21:08:50Z kris_fr $
 **/
 
 ?>
