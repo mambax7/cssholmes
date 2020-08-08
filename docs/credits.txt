@@ -1,0 +1,8 @@
+Credits
+===============
+
+Originally developed by Kris from France, and it is using Holmes.css created by Luke Williams (http://www.red-root.com/sandbox/holmes/index.html),
+which was inspired by InuitCss (http://csswizardry.com/inuitcss/), Eric Meyer (http://meyerweb.com/eric/tools/css/diagnostics/), and NealGrossKopf (http://www.nealgrosskopf.com/tech/thread.php?pid=17)!
+
+
+Version 1.3 was updated to XOOPS 2.5.10 Standard GUI and PHP 7 by Michael Beck (Mamba)
