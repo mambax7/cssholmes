@@ -1,20 +1,38 @@
-<h5>1.3 Beta 1   [WORK IN PROGRESS - NOT RELEASED]</h5>  Dev: XOOPS 2.5.11, PHP 7.4.8
+<h5>3.0.0 Alpha 1 [2026-03-26]</h5>
+Dev: XOOPS 2.5.12, PHP 8.4, PHP 8.5.0
 <hr>
-- update to XOOPS 2.5.10 GUI (mamba)
-- update to PHP 7.2 (mamba)
-- code clean-up and cosmetics (mamba)
-- added testsuite.tpl in the front end (mamba)
-- namespaces, autoload (mamba)
+- split the work into a new cssHolmes module identity with its own templates, preload, and admin workbench (mamba)
+- added profile-based overlay modes for html5, xtf-theme, xtf-widget, a11y, and layout diagnostics (mamba)
+- added a modern floating toolbar with inspect, measure, copy text/json, export selected inspection, undo, widget jump, and slot jump (mamba)
+- added token-aware XTF theme inspection and local token preview editing when a theme.json manifest is available (mamba)
+- added typography editing for font size, line height, letter spacing, weight, and alignment preview (mamba)
+- added XTF/XMF-oriented admin workbench flows for theme scan, widget HTML scan, import review, patch drafts, preview/apply, and rollback (mamba)
+- added server-side analyzers for theme manifest, design tokens, templates, accessibility, and widget output (mamba)
+- added a new front-end hub page plus a modern XTF/XMF testsuite alongside the legacy HTML5 testsuite (mamba)
+- added explicit generic XOOPS fallback messaging when no XTF theme.json manifest is available, while keeping generic inspection and diagnostics usable (mamba)
 
-2012/08/30: Version 1.2
-=================================
+
+<h5>2.0.0 Beta 1  [ NOT RELEASED]</h5>
+<hr>
+- cleaned up the module shell, namespaces, and autoloading for current XOOPS development (mamba)
+- updated the admin area and front-end test references for a more usable diagnostic workflow (mamba)
+- replaced the fragile one-class behavior with a safer opt-in overlay runtime for admin users (mamba)
+- added a live toolbar for generic page inspection, measurement, copy, export, and undo without requiring XTF (mamba)
+- added clearer admin usage documentation and a richer local help/tutorial/documentation set (mamba)
+- improved generic HTML5, accessibility, and layout diagnostics so cssHolmes remains useful on plain XOOPS installs (mamba)
+- added generic XOOPS mode support for installations without XTF, XMF 2.0, or widgets (mamba)
+
+<h5>1.2  [2012-08-30]</h5>
+<hr>
 Css file updated to 1.0.45 (kris_fr)
 
-2012/06/30: Version 1.1
-=================================
+
+<h5>1.1 [2012-06-30]</h5>
+<hr>
 Css file updated to 1.0.4 (kris_fr)
 
-2011/04/29: Version 1.0 RC
-=================================
+
+<h5>1.0 RC [2011-04-29]</h5>
+<hr>
 Initial work based on current css file holmes.css by Luke Williams - http://www.red-root.com/. (kris_fr)
 If you would like to help with documentation (or translation) for this module please contact us.

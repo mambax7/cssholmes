@@ -1,0 +1,71 @@
+/**
+ * cssHolmes v2 — Layout Profile
+ *
+ * Detects layout and structure problems:
+ * - Empty block elements
+ * - Excessive DOM nesting depth
+ * - Images without dimensions (layout shift)
+ *
+ * Color legend:
+ *   Orange (#f39c12) = warning
+ *   Yellow (#f1c40f) = info
+ */
+
+/* ========================================= */
+/* = EMPTY BLOCK ELEMENTS (info)           = */
+/* ========================================= */
+
+.holmes-debug div:empty,
+.holmes-debug section:empty,
+.holmes-debug article:empty,
+.holmes-debug aside:empty,
+.holmes-debug nav:empty {
+    outline: 3px dashed #f1c40f !important;
+    min-height: 20px;
+}
+
+/* ========================================= */
+/* = EXCESSIVE DOM NESTING (warning)       = */
+/* ========================================= */
+
+.holmes-debug div div div div div div {
+    outline: 2px dashed #f39c12 !important;
+}
+
+.holmes-debug div div div div div div:hover::after {
+    content: "Holmes: Deep nesting — consider simplifying DOM structure";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #f39c12;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = IMAGES WITHOUT DIMENSIONS (warning)   = */
+/* ========================================= */
+
+.holmes-debug img:not([width]):not([height]):not([style*="width"]) {
+    outline: 3px dashed #f39c12 !important;
+}
+
+.holmes-debug img:not([width]):not([height]):not([style*="width"]):hover::after {
+    content: "Holmes: Image without width/height causes layout shift (CLS)";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #f39c12;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XoopsModules\Cssholmes\Common;
 
@@ -14,11 +14,9 @@ namespace XoopsModules\Cssholmes\Common;
 /**
  * Configurator Class
  *
- * @copyright   XOOPS Project (https://xoops.org)
- * @license     http://www.fsf.org/copyleft/gpl.html GNU public license
- * @author      XOOPS Development Team
- * @package
- * @since       1.05
+ * @copyright   2000-2026 XOOPS Project (https://xoops.org)
+ * @license     GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
+ * @author      XOOPS Development Team, Mamba <mambax7@gmail.com>
  */
 
 /**
@@ -26,29 +24,29 @@ namespace XoopsModules\Cssholmes\Common;
  */
 class Configurator
 {
-    public $name;
-    public $paths           = [];
-    public $uploadFolders   = [];
-    public $copyBlankFiles  = [];
-    public $copyTestFolders = [];
-    public $templateFolders = [];
-    public $oldFiles        = [];
-    public $oldFolders      = [];
-    public $renameTables    = [];
-    public $modCopyright;
+    public string $name;
+    public $paths;
+    public array  $uploadFolders   = [];
+    public array  $copyBlankFiles  = [];
+    public array  $copyTestFolders = [];
+    public array  $templateFolders = [];
+    public array  $oldFiles        = [];
+    public array  $oldFolders      = [];
+    public array  $renameTables    = [];
+    public array  $renameColumns   = [];
+    public array  $moduleStats     = [];
+    public string $modCopyright;
+    public $icons ;
 
     /**
      * Configurator constructor.
      */
     public function __construct()
     {
-        $moduleDirName      = \basename(\dirname(\dirname(__DIR__)));
-        $moduleDirNameUpper = mb_strtoupper($moduleDirName);
-
-        $config = require \dirname(\dirname(__DIR__)) . '/config/config.php';
+        $config = require \dirname(__DIR__, 2) . '/config/config.php';
 
         $this->name            = $config->name;
-        $this->paths           = $config->paths;
+        // $this->paths           = $config->paths;
         $this->uploadFolders   = $config->uploadFolders;
         $this->copyBlankFiles  = $config->copyBlankFiles;
         $this->copyTestFolders = $config->copyTestFolders;
@@ -56,6 +54,11 @@ class Configurator
         $this->oldFiles        = $config->oldFiles;
         $this->oldFolders      = $config->oldFolders;
         $this->renameTables    = $config->renameTables;
+        $this->renameColumns   = $config->renameColumns;
+        $this->moduleStats     = $config->moduleStats;
         $this->modCopyright    = $config->modCopyright;
+
+        $this->icons = require \dirname(__DIR__, 2) . '/config/icons.php';
+        $this->paths = require \dirname(__DIR__, 2) . '/config/paths.php';
     }
 }

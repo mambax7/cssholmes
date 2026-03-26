@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * You may not change or alter any portion of this comment or credits
  * of supporting developers from this source code or any supporting source code
@@ -10,14 +10,14 @@
  */
 
 /**
- * @copyright    XOOPS Project https://xoops.org/
- * @license      GNU GPL 2 or later (https://www.gnu.org/licenses/gpl-2.0.html)
- * @package
- * @since
+ * @copyright    2000-2026 XOOPS Project (https://xoops.org)
+ * @license      GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
  * @author       XOOPS Development Team
  */
 
-use XoopsModules\Cssholmes;
+use XoopsModules\Cssholmes as Module;
+use XoopsModules\Cssholmes\Helper;
+use XoopsModules\Cssholmes\Utility;
 
 //require_once __DIR__ . '/setup.php';
 
@@ -29,9 +29,9 @@ use XoopsModules\Cssholmes;
  */
 function xoops_module_pre_install_cssholmes(\XoopsModule $module)
 {
-    require_once dirname(__DIR__) . '/preloads/autoloader.php';
-    /** @var Cssholmes\Utility $utility */
-    $utility      = new \XoopsModules\Cssholmes\Utility();
+    require_once \dirname(__DIR__) . '/preloads/autoloader.php';
+    /** @var Utility $utility */
+    $utility      = new Utility();
     $xoopsSuccess = $utility::checkVerXoops($module);
     $phpSuccess   = $utility::checkVerPhp($module);
 
@@ -53,14 +53,14 @@ function xoops_module_pre_install_cssholmes(\XoopsModule $module)
  */
 function xoops_module_install_cssholmes(\XoopsModule $module)
 {
-    require_once dirname(dirname(dirname(__DIR__))) . '/mainfile.php';
+    require \dirname(__DIR__, 3) . '/mainfile.php';
 
-    $moduleDirName = basename(dirname(__DIR__));
+    $moduleDirName = \basename(\dirname(__DIR__));
 
     /** @var \XoopsModules\Cssholmes\Helper $helper */
-    $helper       = \XoopsModules\Cssholmes\Helper::getInstance();
-    $utility      = new Cssholmes\Utility();
-    $configurator = new Cssholmes\Common\Configurator();
+    $helper       = Helper::getInstance();
+    $utility      = new Utility();
+    $configurator = new Module\Common\Configurator();
     // Load language files
     $helper->loadLanguage('admin');
     $helper->loadLanguage('modinfo');
@@ -88,7 +88,7 @@ function xoops_module_install_cssholmes(\XoopsModule $module)
 
     //  ---  COPY blank.png FILES ---------------
     if (count($configurator->copyBlankFiles) > 0) {
-        $file = dirname(__DIR__) . '/assets/images/blank.png';
+        $file = \dirname(__DIR__) . '/assets/images/blank.png';
         foreach (array_keys($configurator->copyBlankFiles) as $i) {
             $dest = $configurator->copyBlankFiles[$i] . '/blank.png';
             $utility::copyFile($file, $dest);

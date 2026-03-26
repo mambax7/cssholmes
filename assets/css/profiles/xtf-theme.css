@@ -1,0 +1,127 @@
+/**
+ * cssHolmes v2 — XTF Theme Profile
+ *
+ * Detects common theme authoring problems:
+ * - Hardcoded colors instead of CSS variables
+ * - Empty slot containers
+ * - Dark mode breakage
+ * - Missing slot widget wrappers
+ *
+ * Color legend:
+ *   Red (#e74c3c)    = error
+ *   Orange (#f39c12) = warning
+ *   Yellow (#f1c40f) = info
+ *   Purple (#9b59b6) = accessibility concern
+ */
+
+/* ========================================= */
+/* = HARDCODED INLINE COLORS (warning)     = */
+/* ========================================= */
+
+.holmes-debug [style*="color: #"],
+.holmes-debug [style*="color:#"],
+.holmes-debug [style*="background-color: #"],
+.holmes-debug [style*="background-color:#"],
+.holmes-debug [style*="background: #"],
+.holmes-debug [style*="background:#"],
+.holmes-debug [style*="border-color: #"],
+.holmes-debug [style*="border-color:#"] {
+    outline: 3px solid #f39c12 !important;
+}
+
+.holmes-debug [style*="color: #"]:hover::after,
+.holmes-debug [style*="color:#"]:hover::after,
+.holmes-debug [style*="background-color: #"]:hover::after,
+.holmes-debug [style*="background-color:#"]:hover::after,
+.holmes-debug [style*="background: #"]:hover::after,
+.holmes-debug [style*="background:#"]:hover::after,
+.holmes-debug [style*="border-color: #"]:hover::after,
+.holmes-debug [style*="border-color:#"]:hover::after {
+    content: "Holmes: Use a CSS variable (--xtf-*) instead of hardcoded color";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #f39c12;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = EMPTY SLOT CONTAINERS (info)          = */
+/* ========================================= */
+
+.holmes-debug [class*="xtf-slot-"]:empty {
+    outline: 3px dashed #f1c40f !important;
+    min-height: 40px;
+    position: relative;
+}
+
+.holmes-debug [class*="xtf-slot-"]:empty::after {
+    content: "Holmes: Empty slot container — no widgets placed";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 4px 10px;
+    background: #f1c40f;
+    color: #1e293b;
+    font-size: 12px;
+    font-family: system-ui, -apple-system, sans-serif;
+    border-radius: 4px;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = DARK MODE BREAKAGE (error)            = */
+/* ========================================= */
+
+[data-theme="dark"] .holmes-debug [style*="background: #fff"],
+[data-theme="dark"] .holmes-debug [style*="background:#fff"],
+[data-theme="dark"] .holmes-debug [style*="background: white"],
+[data-theme="dark"] .holmes-debug [style*="background:white"],
+[data-theme="dark"] .holmes-debug [style*="color: #000"],
+[data-theme="dark"] .holmes-debug [style*="color:#000"],
+[data-theme="dark"] .holmes-debug [style*="color: black"],
+[data-theme="dark"] .holmes-debug [style*="color:black"],
+[data-theme="dark"] .holmes-debug [style*="background: #ffffff"],
+[data-theme="dark"] .holmes-debug [style*="background:#ffffff"] {
+    outline: 3px solid #9b59b6 !important;
+}
+
+[data-theme="dark"] .holmes-debug [style*="background: #fff"]:hover::after,
+[data-theme="dark"] .holmes-debug [style*="background:#fff"]:hover::after,
+[data-theme="dark"] .holmes-debug [style*="background: white"]:hover::after,
+[data-theme="dark"] .holmes-debug [style*="color: #000"]:hover::after,
+[data-theme="dark"] .holmes-debug [style*="color:#000"]:hover::after,
+[data-theme="dark"] .holmes-debug [style*="color: black"]:hover::after {
+    content: "Holmes: Hardcoded light color does not adapt to dark mode";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #9b59b6;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = SLOT WIDGET WITHOUT DATA ATTRIBUTES   = */
+/* ========================================= */
+
+.holmes-debug .xtf-slot-widget:not([data-slot]) {
+    outline: 3px dashed #f39c12 !important;
+}
+
+.holmes-debug .xtf-slot-widget:not([data-widget]) {
+    outline: 3px dashed #f39c12 !important;
+}

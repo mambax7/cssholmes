@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 /**
  * Cssholmes module
  *
@@ -9,11 +10,10 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @copyright           XOOPS Project (https://xoops.org)
- * @license             http://www.fsf.org/copyleft/gpl.html GNU public license
- * @package             Cssholmes
+ * @copyright           2000-2026 XOOPS Project (https://xoops.org)
+ * @license             GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
  * @since               2.3.0
- * @author              kris <http://www.xoofoo.org>
+ * @author              kris <https://www.xoofoo.org>
  **/
 
 use Xmf\Module\Admin;
@@ -21,12 +21,12 @@ use XoopsModules\Cssholmes\{
     Helper
 };
 
-require dirname(__DIR__) . '/preloads/autoloader.php';
+require \dirname(__DIR__) . '/preloads/autoloader.php';
 
-require dirname(__DIR__, 3) . '/include/cp_header.php';
-require dirname(__DIR__) . '/include/common.php';
+require \dirname(__DIR__, 3) . '/include/cp_header.php';
+require \dirname(__DIR__) . '/include/common.php';
 
-$moduleDirName = basename(dirname(__DIR__));
+$moduleDirName = \basename(\dirname(__DIR__));
 
 /** @varHelper $helper */
 $helper = Helper::getInstance();
@@ -42,5 +42,3 @@ $myts = \MyTextSanitizer::getInstance();
 $helper->loadLanguage('admin');
 $helper->loadLanguage('modinfo');
 $helper->loadLanguage('common');
-
-

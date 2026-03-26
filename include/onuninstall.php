@@ -1,14 +1,16 @@
-<?php
+<?php declare(strict_types=1);
+
 /**
  * uninstall.php - cleanup on module uninstall
  *
  * @author          XOOPS Module Development Team
  * @copyright       {@link https://xoops.org 2001-2016 XOOPS Project}
- * @license         {@link http://www.fsf.org/copyleft/gpl.html GNU public license}
+ * @license         {@link https://www.gnu.org/licenses/gpl-2.0.html GNU GPL 2.0 or later}
  * @link            https://xoops.org XOOPS
  */
 
-use XoopsModules\Cssholmes;
+use XoopsModules\Cssholmes\Helper;
+use XoopsModules\Cssholmes\Utility;
 
 /**
  * Prepares system prior to attempting to uninstall module
@@ -32,33 +34,28 @@ function xoops_module_uninstall_cssholmes(\XoopsModule $module)
 {
     //    return true;
 
-    $moduleDirName      = basename(dirname(__DIR__));
-    $moduleDirNameUpper = mb_strtoupper($moduleDirName);
+    $moduleDirName      = \basename(\dirname(__DIR__));
+    $moduleDirNameUpper = \mb_strtoupper($moduleDirName);
     /** @var \XoopsModules\Cssholmes\Helper $helper */
-    $helper = \XoopsModules\Cssholmes\Helper::getInstance();
+    $helper = Helper::getInstance();
 
-    /** @var Cssholmes\Utility $utility */
-    $utility = new Cssholmes\Utility();
+    $utility = new Utility();
 
     $success = true;
     $helper->loadLanguage('admin');
 
-    //------------------------------------------------------------------
-    // Remove uploads folder (and all subfolders) if they exist
-    //------------------------------------------------------------------
-
-    $old_directories = [$GLOBALS['xoops']->path("uploads/{$moduleDirName}")];
-    foreach ($old_directories as $old_dir) {
-        $dirInfo = new \SplFileInfo($old_dir);
-        if ($dirInfo->isDir()) {
-            // The directory exists so delete it
-            if (false === $utility::rrmdir($old_dir)) {
-                $module->setErrors(sprintf(constant('CO_' . $moduleDirNameUpper . '_ERROR_BAD_DEL_PATH'), $old_dir));
-                $success = false;
-            }
+    // Rename uploads folder to BAK and add date to name
+    $uploadDirectory = $GLOBALS['xoops']->path("uploads/$moduleDirName");
+    $dirInfo = new \SplFileInfo($uploadDirectory);
+    if ($dirInfo->isDir()) {
+        // The directory exists so rename it
+        $date = date('Y-m-d');
+        if (!rename($uploadDirectory, $uploadDirectory . "_bak_$date")) {
+            $module->setErrors(sprintf(constant('CO_' . $moduleDirNameUpper . '_' . 'ERROR_BAD_DEL_PATH'), $uploadDirectory));
+            $success = false;
         }
-        unset($dirInfo);
     }
+    unset($dirInfo);
     /*
     //------------ START ----------------
     //------------------------------------------------------------------

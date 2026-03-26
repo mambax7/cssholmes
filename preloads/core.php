@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Cssholmes module
@@ -10,34 +10,121 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @copyright           XOOPS Project (https://xoops.org)
- * @license             http://www.fsf.org/copyleft/gpl.html GNU public license
- * @package             Cssholmes
+ * @copyright           2000-2026 XOOPS Project (https://xoops.org)
+ * @license            GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
  * @since               2.5.x
- * @author              kris <http://www.xoofoo.org>
+ * @author              kris <https://www.xoofoo.org>
+ * @author      XOOPS Development Team, Mamba <mambax7@gmail.com>
  **/
-class CssHolmesCorePreload extends \XoopsPreloadItem
+class CssholmesCorePreload extends \XoopsPreloadItem
 {
     // to add PSR-4 autoloader
-
     /**
-     * @param $args
+     * @param array $args
      */
-    public static function eventCoreIncludeCommonEnd($args)
+    public static function eventCoreIncludeCommonEnd(array $args): void
     {
         require_once __DIR__ . '/autoloader.php';
     }
 
-    public static function eventCoreHeaderAddmeta()
+    public static function eventCoreHeaderAddmeta(): void
+    {
+        self::injectAssets('site');
+    }
+
+    public static function eventSystemClassGuiHeader(mixed $args): void
+    {
+        self::injectAssets('admin');
+    }
+
+    private static function injectAssets(string $scope): void
     {
         global $xoTheme, $xoopsUser;
-        $xoopsModule = XoopsModule::getByDirname('cssholmes');
-        // Add scripts and Css if only User is xoopsAdmin
-        if (!is_object($xoopsUser) || !is_object($xoopsModule) || !$xoopsUser->isAdmin($xoopsModule->mid())) {
-            $xoTheme->addStylesheet(XOOPS_URL . '/modules/cssholmes/assets/css/style.css');
-        } else {
-            $xoTheme->addStylesheet(XOOPS_URL . '/modules/cssholmes/assets/css/holmes.css');
-            $xoTheme->addScript(XOOPS_URL . '/modules/cssholmes/assets/js/holmes.js');
+
+        if (!is_object($xoTheme)) {
+            return;
         }
+
+        static $injectedScopes = [];
+        if (isset($injectedScopes[$scope])) {
+            return;
+        }
+
+        $moduleDirName = basename(\dirname(__DIR__));
+        $moduleId = null;
+        if (\function_exists('xoops_getHandler')) {
+            $moduleHandler = xoops_getHandler('module');
+            if (is_object($moduleHandler) && method_exists($moduleHandler, 'getByDirname')) {
+                $xoopsModule = $moduleHandler->getByDirname($moduleDirName);
+                if (is_object($xoopsModule) && method_exists($xoopsModule, 'getVar')) {
+                    $moduleId = (int)$xoopsModule->getVar('mid');
+                }
+            }
+        }
+
+        $isModuleAdmin = is_object($xoopsUser)
+            && (
+                (null !== $moduleId && $xoopsUser->isAdmin($moduleId))
+                || (null === $moduleId && $xoopsUser->isAdmin(-1))
+            );
+        if (!$isModuleAdmin) {
+            return;
+        }
+
+        $helper   = \XoopsModules\Cssholmes\Helper::getInstance();
+        $queryKey = (string)$helper->getConfig('holmes_query_key');
+        if ('' === trim($queryKey)) {
+            $queryKey = 'holmes';
+        }
+
+        $moduleUrl = XOOPS_URL . '/modules/' . $moduleDirName;
+        $themeKey = '';
+        $themeManifestPath = '';
+        $themeManifestUrl = '';
+        if ('admin' === $scope && isset($xoTheme->folderName) && is_string($xoTheme->folderName) && '' !== trim($xoTheme->folderName)) {
+            $themeKey = trim($xoTheme->folderName);
+            $themeManifestPath = XOOPS_ADMINTHEME_PATH . '/' . $themeKey . '/theme.json';
+            $themeManifestUrl = XOOPS_ADMINTHEME_URL . '/' . $themeKey . '/theme.json';
+        } elseif ('site' === $scope) {
+            $themeKey = trim((string)($GLOBALS['xoopsConfig']['theme_set'] ?? ($xoTheme->folderName ?? '')));
+            if ('' !== $themeKey) {
+                $themeManifestPath = XOOPS_THEME_PATH . '/' . $themeKey . '/theme.json';
+                $themeManifestUrl = XOOPS_THEME_URL . '/' . $themeKey . '/theme.json';
+            }
+        }
+        $hasThemeManifest = '' !== $themeManifestPath && is_file($themeManifestPath);
+        if (!$hasThemeManifest) {
+            $themeManifestUrl = '';
+        }
+
+        $overlay   = \XoopsModules\Cssholmes\Diagnostics\OverlayConfig::fromRequest(
+            \Xmf\Request::getString($queryKey, '', 'GET')
+        );
+        $initialProfiles = $overlay->profiles();
+        if (!$hasThemeManifest) {
+            $initialProfiles = array_values(array_filter(
+                $initialProfiles,
+                static fn (string $profile): bool => !in_array($profile, ['xtf-theme', 'xtf-widget'], true)
+            ));
+        }
+
+        if ([] !== $initialProfiles) {
+            foreach ($initialProfiles as $profile) {
+                $stylesheetPath = 'assets/css/profiles/' . $profile . '.css';
+                $xoTheme->addStylesheet($moduleUrl . '/' . $stylesheetPath);
+            }
+        }
+
+        $xoTheme->addScript(
+            $moduleUrl
+            . '/assets/js/holmes.js?queryKey=' . rawurlencode($queryKey)
+            . '&initialProfiles=' . rawurlencode(implode(',', $initialProfiles))
+            . '&moduleUrl=' . rawurlencode($moduleUrl)
+            . '&scope=' . rawurlencode($scope)
+            . '&themeKey=' . rawurlencode($themeKey)
+            . '&themeManifestUrl=' . rawurlencode($themeManifestUrl)
+        );
+
+        $injectedScopes[$scope] = true;
     }
 }

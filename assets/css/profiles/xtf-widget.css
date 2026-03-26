@@ -1,0 +1,399 @@
+/**
+ * cssHolmes v2 — XTF Widget Profile
+ *
+ * Detects widget HTML quality problems:
+ * - Detected widget roots and marketplace cards
+ * - Missing xmf- BEM class prefix on widget root
+ * - SVG without explicit dimensions
+ * - Images without alt or dimensions
+ * - Inline event handlers
+ * - javascript: hrefs
+ * - Empty class/id attributes
+ * - Nested interactive elements
+ *
+ * Color legend:
+ *   Red (#e74c3c)    = error
+ *   Orange (#f39c12) = warning
+ *   Blue (#0ea5e9)   = detected widget root
+ */
+
+/* ========================================= */
+/* = DETECTED WIDGET ROOTS (info)          = */
+/* ========================================= */
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) {
+    outline: 2px dashed #0ea5e9 !important;
+    outline-offset: 2px;
+}
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+):hover::after {
+    content: "Holmes: Detected widget root";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #0ea5e9;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = WIDGET ROOT CLASS (warning)           = */
+/* ========================================= */
+
+.holmes-debug .xtf-slot-widget > *:not([class*="xmf-"]) {
+    outline: 3px solid #f39c12 !important;
+}
+
+.holmes-debug .xtf-slot-widget > *:not([class*="xmf-"]):hover::after {
+    content: "Holmes: Widget root should have an xmf- prefixed class";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #f39c12;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = SVG WITHOUT DIMENSIONS (error)        = */
+/* ========================================= */
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) svg:not([width]):not([style*="width"]) {
+    outline: 3px solid #e74c3c !important;
+}
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) svg:not([width]):not([style*="width"]):hover::after {
+    content: "Holmes: SVG needs explicit width/height for shortcode rendering";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = IMAGES WITHOUT ALT (error)            = */
+/* ========================================= */
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) img:not([alt]) {
+    outline: 3px solid #e74c3c !important;
+}
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) img:not([alt]):hover::after {
+    content: "Holmes: Image missing alt attribute";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = IMAGES WITHOUT DIMENSIONS (warning)   = */
+/* ========================================= */
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) img:not([width]):not([style*="width"]) {
+    outline: 3px dashed #f39c12 !important;
+}
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) img:not([width]):not([style*="width"]):hover::after {
+    content: "Holmes: Image without dimensions causes layout shift";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #f39c12;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = INLINE EVENT HANDLERS (error)         = */
+/* ========================================= */
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) :is(
+    [onclick],
+    [onload],
+    [onerror],
+    [onmouseover],
+    [onmouseout],
+    [onfocus],
+    [onblur],
+    [onsubmit],
+    [onchange],
+    [onkeydown],
+    [onkeyup],
+    [onkeypress]
+) {
+    outline: 3px solid #e74c3c !important;
+}
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) :is([onclick], [onload], [onerror]):hover::after {
+    content: "Holmes: Move inline event handler to JavaScript";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = JAVASCRIPT HREFS (error)              = */
+/* ========================================= */
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) [href^="javascript:"] {
+    outline: 3px solid #e74c3c !important;
+}
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) [href^="javascript:"]:hover::after {
+    content: "Holmes: Do not use javascript: in href";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = EMPTY CLASS / ID (warning)            = */
+/* ========================================= */
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) :is([class=""], [id=""]) {
+    outline: 3px dashed #f39c12 !important;
+}
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) [class=""]:hover::after {
+    content: "Holmes: Empty class attribute";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #f39c12;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = NESTED INTERACTIVE ELEMENTS (warning) = */
+/* ========================================= */
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) :is(a a, a button, button a) {
+    outline: 3px solid #f39c12 !important;
+}
+
+.holmes-debug :is(
+    .xtf-slot-widget,
+    [data-widget],
+    [data-widget-name],
+    .xtf-mkt-card,
+    .xmf-widget-lazy,
+    .xmf-widget-loaded,
+    .xmf-widget-loading,
+    [class^="xmf-"]:not([class*="__"]),
+    [class*=" xmf-"]:not([class*="__"])
+) :is(a a, a button, button a):hover::after {
+    content: "Holmes: Nested interactive elements — restructure HTML";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #f39c12;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}

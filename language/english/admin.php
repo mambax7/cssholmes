@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Cssholmes module
@@ -10,23 +10,21 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @copyright           XOOPS Project (https://xoops.org)
- * @license             http://www.fsf.org/copyleft/gpl.html GNU public license
- * @package             Cssholmes
+ * @copyright           2000-2026 XOOPS Project (https://xoops.org)
+ * @license             GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
  * @since               2.3.0
- * @author              kris <http://www.xoofoo.org>
+ * @author              kris <https://www.xoofoo.org>
+ * @author              XOOPS Development Team, Mamba <mambax7@gmail.com> 
  **/
 define('_AM_CSSHOLMES_MANAGER_INDEX', 'Index');
 define('_AM_CSSHOLMES_MANAGER_ABOUT', 'About');
 define('_AM_CSSHOLMES_MANAGER_PREFERENCES', 'Settings');
 define('_AM_CSSHOLMES_MANAGER_UPDATE', 'Update');
 
-define('_AM_CSSHOLMES_MANAGER_FOOTER', "<div class='right smallsmall italic pad10'>Cssholmes is maintened by <a class='tooltip' rel='external' href='http://labs.XooFoo.org' title='VisitXooFoo Laboratory'>Labs.XooFoo.org</a></div>");
-
 // Index.php
 define(
     '_AM_CSSHOLMES_MANAGER_INDEX_TXT1',
-    "<p>Holmes is stand-alone diagnostic CSS stylesheet that can highlight potentially invalid, inaccessible or erroneous HTML(5) markup by adding one class.</p><p>holmes.css is useful for checking the quality of your code (up to W3C HTML5 standards), nitpicking over ensuring markup is valid and semantic and accessility guidelines are met, and when you are tasked to fix up and debug an old, OLD website. It has a simple implementation and a mostly unobtrusive effect on your page. Not recommended for live enviroments.</p><p>Remember too that these are just guidelines: if something is flagged but you can't change it for a good reason, don't worry about it :) Also use a validator if you want to be 100% sure.</p><p>Inspired by <a class='tooltip' href='http://csswizardry.com/inuitcss/' title='Inuit Css' rel='external'>InuitCss</a>, <a class='tooltip' href='http://meyerweb.com/eric/tools/css/diagnostics/' title='Css diagnostics by Eric Meyer' rel='external'>Eric Meyer</a>, <a class='tooltip' href='http://www.nealgrosskopf.com/tech/thread.php?pid=17' title='NealGrossKopf thread' rel='external'>NealGrossKopf</a> and procrastination from coursework!</p>"
+    "<p>Holmes is stand-alone diagnostic CSS stylesheet that can highlight potentially invalid, inaccessible or erroneous HTML(5) markup by adding one class.</p><p>holmes.css is useful for checking the quality of your code (up to W3C HTML5 standards), nitpicking over ensuring markup is valid and semantic and accessility guidelines are met, and when you are tasked to fix up and debug an old, OLD website. It has a simple implementation and a mostly unobtrusive effect on your page. Not recommended for live enviroments.</p><p>Remember too that these are just guidelines: if something is flagged but you can't change it for a good reason, don't worry about it :) Also use a validator if you want to be 100% sure.</p><p>Inspired by <a class='tooltip' href='https://csswizardry.com/inuitcss/' title='Inuit Css' rel='external'>InuitCss</a>, <a class='tooltip' href='https://meyerweb.com/eric/tools/css/diagnostics/' title='Css diagnostics by Eric Meyer' rel='external'>Eric Meyer</a>, <a class='tooltip' href='https://www.nealgrosskopf.com/tech/thread.php?pid=17' title='NealGrossKopf thread' rel='external'>NealGrossKopf</a> and procrastination from coursework!</p>"
 );
 
 // About.php
@@ -55,4 +53,3 @@ define('_AM_CSSHOLMES_FOLDERS_DELETED_OK', 'Upload Folders have been deleted');
 define('_AM_CSSHOLMES_ERROR_BAD_DEL_PATH', 'Could not delete %s directory');
 define('_AM_CSSHOLMES_ERROR_BAD_REMOVE', 'Could not delete %s');
 define('_AM_CSSHOLMES_ERROR_NO_PLUGIN', 'Could not load plugin');
-

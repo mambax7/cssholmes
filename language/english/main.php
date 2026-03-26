@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * Cssholmes module
  *
@@ -9,9 +9,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @copyright           XOOPS Project (https://xoops.org)
- * @license             http://www.fsf.org/copyleft/gpl.html GNU public license
- * @package             Cssholmes
+ * @copyright           2000-2026 XOOPS Project (https://xoops.org)
+ * @license             GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
  * @since               2.3.0
- * @author              kris <http://www.xoofoo.org>
+ * @author              kris <https://www.xoofoo.org>
+ * @author              XOOPS Development Team, Mamba <mambax7@gmail.com> 
  **/

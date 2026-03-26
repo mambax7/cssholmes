@@ -1,14 +1,14 @@
 	<head>
 
-		<title>holmes.css - Test Suite (v 1.0)</title>
-		<link rel="stylesheet" href="<{$mod_url}>/assets/css/holmes.css" media="screen,projection,print,handheld" type="text/css" />
-		<link rel="stylesheet" href="<{$mod_url}>/assets/css/testsuite.css" media="screen,projection,print,handheld" type="text/css" />
+		<title>cssHolmes - HTML5 Profile Test Suite</title>
+		<link rel="stylesheet" href="<{$mod_url}>/assets/css/profiles/html5.css" media="screen,projection,print,handheld" type="text/css">
+		<link rel="stylesheet" href="<{$mod_url}>/assets/css/testsuite.css" media="screen,projection,print,handheld" type="text/css">
 
 	</head>
-	<body class="holmes-debug" rightmargin="0" leftmargin="0" topmargin="0" bottommargin="0" bgproperties="">
+	<body class="holmes-debug" data-cssholmes-profiles="html5" rightmargin="0" leftmargin="0" topmargin="0" bottommargin="0" bgproperties="">
 		<div id="content">
 			<div id="header">
-				<h1>holmes.css - Test Suite (v 1.0)</h1>
+				<h1>cssHolmes - HTML5 Profile Test Suite</h1>
 			</div>
 			<div id="tests">
 				<div class="test">
@@ -16,15 +16,15 @@
 					<ul>
 						<li>
 							<p>Normal Link</p>
-							<a href="http://www.red-root.com" title="A link to red-root.com">red<strong>root</strong></a>
+							<a href="https://www.red-root.com" title="A link to red-root.com">red<strong>root</strong></a>
 						</li>
 						<li>
 							<p>Link with no title</p>
-							<a href="http://www.red-root.com" >red<strong>root</strong></a>
+							<a href="https://www.red-root.com" >red<strong>root</strong></a>
 						</li>
 						<li>
 							<p>Link with an empty title</p>
-							<a href="http://www.red-root.com" title="">red<strong>root</strong></a>
+							<a href="https://www.red-root.com" title="">red<strong>root</strong></a>
 						</li>
 						<li>
 							<p>Link with no href</p>
@@ -49,15 +49,15 @@
 					<ul>
 						<li>
 							<p>Normal Image</p>
-							<img src="http://dummyimage.com/200x100/000/fff.jpg" alt="Alternative Text" />
+							<img src="https://dummyimage.com/200x100/000/fff.jpg" alt="Alternative Text">
 						</li>
 						<li>
 							<p>Image with no alt</p>
-							<img src="http://dummyimage.com/200x100/000/fff.jpg" />
+							<img src="https://dummyimage.com/200x100/000/fff.jpg">
 						</li>
 						<li>
 							<p>Image with an empty alt</p>
-							<img src="http://dummyimage.com/200x100/000/fff.jpg" alt="" />
+							<img src="https://dummyimage.com/200x100/000/fff.jpg" alt="">
 						</li>
 					</ul>
 				</div>
@@ -123,15 +123,15 @@
 						</li>
 						<li>
 							<p>Normal Input</p>
-							<input type="text" name="anInput" />
+							<input type="text" name="anInput">
 						</li>
 						<li>
 							<p>Input with no name</p>
-							<input type="text" />
+							<input type="text">
 						</li>
 						<li>
 							<p>Input with empty name</p>
-							<input type="text" name="" />
+							<input type="text" name="">
 						</li>
 						<li>
 							<p>Normal Select</p>

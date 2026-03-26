@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * You may not change or alter any portion of this comment or credits
  * of supporting developers from this source code or any supporting source code
@@ -10,30 +10,16 @@
  */
 
 /**
- * @copyright    XOOPS Project https://xoops.org/
- * @license      GNU GPL 2 or later (https://www.gnu.org/licenses/gpl-2.0.html)
- * @package
- * @since
+ * @copyright    2000-2026 XOOPS Project (https://xoops.org)
+ * @license      GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
  * @author       XOOPS Development Team
  */
 
-use XoopsModules\Cssholmes;
+use XoopsModules\Cssholmes as Module;
 
 if ((!defined('XOOPS_ROOT_PATH')) || !($GLOBALS['xoopsUser'] instanceof \XoopsUser)
     || !$GLOBALS['xoopsUser']->isAdmin()) {
     exit('Restricted access' . PHP_EOL);
-}
-
-/**
- * @param string $tablename
- *
- * @return bool
- */
-function tableExists($tablename)
-{
-    $result = $GLOBALS['xoopsDB']->queryF("SHOW TABLES LIKE '$tablename'");
-
-    return ($GLOBALS['xoopsDB']->getRowsNum($result) > 0) ? true : false;
 }
 
 /**
@@ -44,11 +30,11 @@ function tableExists($tablename)
  */
 function xoops_module_pre_update_cssholmes(\XoopsModule $module)
 {
-    $moduleDirName = basename(dirname(__DIR__));
-    /** @var Cssholmes\Helper $helper */
-    /** @var Cssholmes\Utility $utility */
-    $helper  = Cssholmes\Helper::getInstance();
-    $utility = new Cssholmes\Utility();
+    $moduleDirName = \basename(\dirname(__DIR__));
+    /** @var Module\Helper $helper */
+    /** @var Module\Utility $utility */
+    $helper  = Module\Helper::getInstance();
+    $utility = new Module\Utility();
 
     $xoopsSuccess = $utility::checkVerXoops($module);
     $phpSuccess   = $utility::checkVerPhp($module);
@@ -65,14 +51,14 @@ function xoops_module_pre_update_cssholmes(\XoopsModule $module)
  */
 function xoops_module_update_cssholmes(\XoopsModule $module, $previousVersion = null)
 {
-    $moduleDirName      = basename(dirname(__DIR__));
-    $moduleDirNameUpper = mb_strtoupper($moduleDirName);
+    $moduleDirName      = \basename(\dirname(__DIR__));
+    $moduleDirNameUpper = \mb_strtoupper($moduleDirName);
 
-    /** @var Cssholmes\Helper $helper */ /** @var Cssholmes\Utility $utility */
-    /** @var Cssholmes\Common\Configurator $configurator */
-    $helper       = Cssholmes\Helper::getInstance();
-    $utility      = new Cssholmes\Utility();
-    $configurator = new Cssholmes\Common\Configurator();
+    /** @var Module\Helper $helper */ /** @var Module\Utility $utility */
+    /** @var Module\Common\Configurator $configurator */
+    $helper       = Module\Helper::getInstance();
+    $utility      = new Module\Utility();
+    $configurator = new Module\Common\Configurator();
 
     if ($previousVersion < 240) {
         //delete old HTML templates
@@ -110,7 +96,7 @@ function xoops_module_update_cssholmes(\XoopsModule $module, $previousVersion = 
             //    foreach (array_keys($GLOBALS['uploadFolders']) as $i) {
             foreach (array_keys($configurator->oldFolders) as $i) {
                 $tempFolder = $GLOBALS['xoops']->path('modules/' . $moduleDirName . $configurator->oldFolders[$i]);
-                /* @var XoopsObjectHandler $folderHandler */
+                /** @var XoopsObjectHandler $folderHandler */
                 $folderHandler = XoopsFile::getHandler('folder', $tempFolder);
                 $folderHandler->delete($tempFolder);
             }
@@ -126,7 +112,7 @@ function xoops_module_update_cssholmes(\XoopsModule $module, $previousVersion = 
 
         //  ---  COPY blank.png FILES ---------------
         if (count($configurator->copyBlankFiles) > 0) {
-            $file = dirname(__DIR__) . '/assets/images/blank.png';
+            $file = \dirname(__DIR__) . '/assets/images/blank.png';
             foreach (array_keys($configurator->copyBlankFiles) as $i) {
                 $dest = $configurator->copyBlankFiles[$i] . '/blank.png';
                 $utility::copyFile($file, $dest);
