@@ -60,6 +60,9 @@ function xoops_module_update_cssholmes(\XoopsModule $module, $previousVersion = 
     $utility      = new Module\Utility();
     $configurator = new Module\Common\Configurator();
 
+    // Ensure admin group always has all permissions (runs on every update)
+    ensureAdminPermissions($moduleDirName, (int) $module->getVar('mid'));
+
     if ($previousVersion < 240) {
         //delete old HTML templates
         if (count($configurator->templateFolders) > 0) {
@@ -130,4 +133,31 @@ function xoops_module_update_cssholmes(\XoopsModule $module, $previousVersion = 
     }
 
     return true;
+}
+
+/**
+ * Ensure the admin group has all cssHolmes permissions.
+ *
+ * Runs on every update so admin permissions are never accidentally lost,
+ * even if the permissions table was cleared or a new permission was added.
+ */
+function ensureAdminPermissions(string $moduleDirName, int $moduleId): void
+{
+    /** @var \XoopsGroupPermHandler $grouppermHandler */
+    $grouppermHandler = xoops_getHandler('groupperm');
+
+    $permissionNames = [
+        $moduleDirName . '_overlay',
+        $moduleDirName . '_diagnose',
+        $moduleDirName . '_edit',
+        $moduleDirName . '_export',
+        $moduleDirName . '_workbench',
+        $moduleDirName . '_view',
+    ];
+
+    foreach ($permissionNames as $permName) {
+        if (!$grouppermHandler->checkRight($permName, 1, [XOOPS_GROUP_ADMIN], $moduleId)) {
+            $grouppermHandler->addRight($permName, 1, XOOPS_GROUP_ADMIN, $moduleId);
+        }
+    }
 }

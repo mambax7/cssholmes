@@ -37,11 +37,34 @@ class CssholmesCorePreload extends \XoopsPreloadItem
         self::injectAssets('admin');
     }
 
+    /**
+     * Check if the current user has a specific cssHolmes permission.
+     */
+    private static function hasPermission(string $permName, int $moduleId): bool
+    {
+        global $xoopsUser;
+
+        if (!is_object($xoopsUser)) {
+            return false;
+        }
+
+        // Module admins always have all permissions
+        if ($xoopsUser->isAdmin($moduleId)) {
+            return true;
+        }
+
+        /** @var \XoopsGroupPermHandler $grouppermHandler */
+        $grouppermHandler = xoops_getHandler('groupperm');
+        $userGroups = $xoopsUser->getGroups();
+
+        return $grouppermHandler->checkRight($permName, 1, $userGroups, $moduleId);
+    }
+
     private static function injectAssets(string $scope): void
     {
         global $xoTheme, $xoopsUser;
 
-        if (!is_object($xoTheme)) {
+        if (!is_object($xoTheme) || !is_object($xoopsUser)) {
             return;
         }
 
@@ -62,14 +85,23 @@ class CssholmesCorePreload extends \XoopsPreloadItem
             }
         }
 
-        $isModuleAdmin = is_object($xoopsUser)
-            && (
-                (null !== $moduleId && $xoopsUser->isAdmin($moduleId))
-                || (null === $moduleId && $xoopsUser->isAdmin(-1))
-            );
-        if (!$isModuleAdmin) {
+        if ($moduleId === null) {
             return;
         }
+
+        // Must have at least overlay permission to see anything
+        if (!self::hasPermission($moduleDirName . '_overlay', $moduleId)) {
+            return;
+        }
+
+        // Build permission flags to pass to JS
+        $perms = [
+            'overlay'   => true,
+            'edit'      => self::hasPermission($moduleDirName . '_edit', $moduleId),
+            'diagnose'  => self::hasPermission($moduleDirName . '_diagnose', $moduleId),
+            'export'    => self::hasPermission($moduleDirName . '_export', $moduleId),
+            'workbench' => self::hasPermission($moduleDirName . '_workbench', $moduleId),
+        ];
 
         $helper   = \XoopsModules\Cssholmes\Helper::getInstance();
         $queryKey = (string)$helper->getConfig('holmes_query_key');
@@ -115,6 +147,8 @@ class CssholmesCorePreload extends \XoopsPreloadItem
             }
         }
 
+        $permString = implode(',', array_keys(array_filter($perms)));
+
         $xoTheme->addScript(
             $moduleUrl
             . '/assets/js/holmes.js?queryKey=' . rawurlencode($queryKey)
@@ -123,6 +157,7 @@ class CssholmesCorePreload extends \XoopsPreloadItem
             . '&scope=' . rawurlencode($scope)
             . '&themeKey=' . rawurlencode($themeKey)
             . '&themeManifestUrl=' . rawurlencode($themeManifestUrl)
+            . '&perms=' . rawurlencode($permString)
         );
 
         $injectedScopes[$scope] = true;

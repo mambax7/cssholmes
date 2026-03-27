@@ -167,6 +167,12 @@ The toolbar is your working surface. It groups into three tiers:
 - `export sel` — export the full inspection with context
 - `undo` — revert the last local edit
 
+**Diagnose (third row):**
+- `overflow` — highlight every element with overflowing content
+- `z-index` — show z-index values as colored labels on all positioned elements
+- `grid` — show CSS Grid and Flexbox containers with column/row lines
+- `proto` / `deuter` / `trita` / `achro` — simulate color blindness types
+
 Keyboard shortcuts: `I` inspect, `M` measure, `T` token, `P` typography,
 `U` undo, `Esc` clear selection.
 
@@ -464,6 +470,155 @@ generates patch suggestions. No more screenshots with arrows and vague comments.
 | Final QA pass | `xtf-theme,xtf-widget,a11y,layout` |
 | Admin theme refinement | `xtf-theme,a11y,layout` |
 | Generic markup check | `html5` |
+
+---
+
+## Diagnostic Tools
+
+The third toolbar row contains tools that go beyond element inspection.
+These help with layout debugging, stacking conflicts, and accessibility
+validation across the entire page.
+
+### Overflow Detection
+
+Click `overflow` to scan every element on the page for content that
+overflows its container. Elements where `scrollWidth > clientWidth` or
+`scrollHeight > clientHeight` get a red outline and a label showing the
+overflow direction.
+
+The button shows the count: `overflow (3)` means three elements have
+overflow problems on this page.
+
+**When to use it:**
+
+- After placing a widget in a narrow slot (sidebar, footer) to check
+  whether its content fits.
+- On admin pages with dense tables that may exceed their container.
+- After changing a theme's `layout.sidebar-width` token to verify nothing
+  broke.
+
+**Example — pricing widget in a sidebar:**
+
+You placed `xmf:pricing` in the sidebar slot. The content area looks fine,
+but did the sidebar version overflow? Click `overflow`. If the pricing card
+container is wider than 280px, it gets a red `overflow x` label instantly.
+
+This is the automated version of the manual "scroll right and squint" test.
+
+### Z-Index Overlay
+
+Click `z-index` to show colored labels on every element that has an
+explicit `z-index` value (not `auto`). Each value gets a unique color so
+you can see the stacking hierarchy at a glance.
+
+The button shows the count: `z-index (12)` means twelve elements compete
+for stacking position on this page.
+
+**When to use it:**
+
+- When a dropdown menu disappears behind a widget or slot container.
+- When the admin sidebar overlaps modal content.
+- When a sticky header covers a fixed toolbar.
+- Before shipping a theme to verify that z-index values are intentional
+  and not escalating (100 → 999 → 9999 → 99999).
+
+**Example — admin dashboard:**
+
+Open the admin dashboard with `?holmes=all` and click `z-index`. You will
+see labels like `z:10` on the sidebar, `z:100` on the header, `z:1000` on
+dropdown menus. If a widget badge shows `z:99999`, that is a red flag — it
+will fight with modals and overlays.
+
+### CSS Grid and Flexbox Overlay
+
+Click `grid` to find every CSS Grid and Flexbox container on the page. Each
+one gets a dashed outline and a label showing its type:
+
+- **Grid containers** show as purple outlines with labels like `grid 3-col`
+  (showing the column count). Vertical and horizontal grid lines are drawn
+  inside the container to visualize the track layout.
+- **Flex containers** show as teal outlines with labels like `flex row` or
+  `flex column` showing the flex direction.
+
+The button shows the count: `grid (8)` means eight Grid or Flex containers
+were found on the page.
+
+**When to use it:**
+
+- To see the layout structure of a theme at a glance — which parts use Grid,
+  which use Flexbox, and how many columns each Grid has.
+- When debugging why a widget renders differently in two slots — the parent
+  slot may use Grid in one place and Flexbox in another.
+- To verify that admin dashboard layouts use consistent column patterns.
+- When a theme switches from a 3-column content grid to a 2-column sidebar
+  layout, the overlay shows exactly where the change happens.
+
+**Example — front1 theme layout:**
+
+Open the front1 showcase page and click `grid`. You will see the main
+content area as a Grid container (perhaps `grid 2-col` for sidebar + content),
+the widget card section as a Flex container (`flex row wrap`), and the footer
+links as another Flex row. This immediately shows the layout architecture
+without reading any CSS.
+
+**Example — widget marketplace catalog:**
+
+The widget card grid in the marketplace uses CSS Grid. Click `grid` and you
+see the exact column tracks — if the cards are in a `grid 3-col` layout, the
+purple lines show the column boundaries. If a card spans two columns
+unexpectedly, the mismatch between the grid lines and the card borders makes
+it obvious.
+
+### Color Blindness Simulation
+
+The four simulation buttons apply SVG color matrix filters to the entire
+page:
+
+| Button | Simulates | What it affects |
+|--------|-----------|-----------------|
+| `proto` | Protanopia | Red-blind — reds appear dark/brownish |
+| `deuter` | Deuteranopia | Green-blind — greens shift toward brown/yellow |
+| `trita` | Tritanopia | Blue-blind — blues shift toward cyan/green |
+| `achro` | Achromatopsia | Total color blindness — everything is grayscale |
+
+Click one to activate, click again to deactivate. Only one simulation can
+be active at a time.
+
+**When to use it:**
+
+- To verify that color-coded status indicators (draft/published/archived,
+  success/warning/error badges) are distinguishable without relying on
+  color alone.
+- To check that links are recognizable without depending only on their
+  blue color.
+- To validate that charts, graphs, or colored category badges in widgets
+  use patterns or labels in addition to color.
+
+**Example — status badges in a module list:**
+
+An admin page shows module status as colored dots: green for active, red
+for disabled, yellow for needs update. Click `proto` (protanopia). If the
+red and green dots now look nearly identical, the design fails for
+red-blind users — about 8% of males. The fix: add a checkmark icon to
+active and an X icon to disabled, not just color.
+
+**Example — theme color palette:**
+
+Open the front1 theme page and click `achro` (achromatopsia). The entire
+page renders in grayscale. If two adjacent sections — say the hero and the
+content area — become indistinguishable, the theme needs better contrast
+or structural borders between regions.
+
+### Combining diagnostic tools with profiles
+
+These tools work alongside overlay profiles. A typical QA pass:
+
+1. Activate `?holmes=xtf-theme,xtf-widget,layout`
+2. Click `overflow` to find layout problems
+3. Click `z-index` to check stacking
+4. Click `proto` and `deuter` to test color accessibility
+5. Use `inspect` and `measure` on any flagged elements to get details
+6. Export findings to the admin workbench
 
 ---
 

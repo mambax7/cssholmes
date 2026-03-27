@@ -36,10 +36,12 @@ function xoops_module_pre_install_cssholmes(\XoopsModule $module)
     $phpSuccess   = $utility::checkVerPhp($module);
 
     if (false !== $xoopsSuccess && false !== $phpSuccess) {
-        $moduleTables = &$module->getInfo('tables');
+        $moduleTables = $module->getInfo('tables');
+        if (\is_array($moduleTables)) {
         foreach ($moduleTables as $table) {
             $GLOBALS['xoopsDB']->queryF('DROP TABLE IF EXISTS ' . $GLOBALS['xoopsDB']->prefix($table) . ';');
         }
+    }
     }
 
     return $xoopsSuccess && $phpSuccess;
@@ -66,14 +68,29 @@ function xoops_module_install_cssholmes(\XoopsModule $module)
     $helper->loadLanguage('modinfo');
 
     // default Permission Settings ----------------------
-    global $xoopsModule;
-    $moduleId = $xoopsModule->getVar('mid');
+    $moduleId = (int) $module->getVar('mid');
     // $moduleId2        = $helper->getModule()->mid();
     /** @var \XoopsGroupPermHandler $grouppermHandler */
     $grouppermHandler = xoops_getHandler('groupperm');
-    // access rights ------------------------------------------
-    $grouppermHandler->addRight($moduleDirName . '_approve', 1, XOOPS_GROUP_ADMIN, $moduleId);
-    $grouppermHandler->addRight($moduleDirName . '_submit', 1, XOOPS_GROUP_ADMIN, $moduleId);
+    // Access rights
+    // overlay — see toolbar, toggle profiles, inspect, measure
+    $grouppermHandler->addRight($moduleDirName . '_overlay', 1, XOOPS_GROUP_ADMIN, $moduleId);
+    $grouppermHandler->addRight($moduleDirName . '_overlay', 1, XOOPS_GROUP_USERS, $moduleId);
+
+    // diagnose — overflow, z-index, grid, color blindness
+    $grouppermHandler->addRight($moduleDirName . '_diagnose', 1, XOOPS_GROUP_ADMIN, $moduleId);
+    $grouppermHandler->addRight($moduleDirName . '_diagnose', 1, XOOPS_GROUP_USERS, $moduleId);
+
+    // edit — token editor, typo editor, text editor, undo
+    $grouppermHandler->addRight($moduleDirName . '_edit', 1, XOOPS_GROUP_ADMIN, $moduleId);
+
+    // export — copy JSON, export sel, workbench import
+    $grouppermHandler->addRight($moduleDirName . '_export', 1, XOOPS_GROUP_ADMIN, $moduleId);
+
+    // workbench — admin scanner, theme/widget scan, patch drafts
+    $grouppermHandler->addRight($moduleDirName . '_workbench', 1, XOOPS_GROUP_ADMIN, $moduleId);
+
+    // Legacy view permission (for module visibility in menus)
     $grouppermHandler->addRight($moduleDirName . '_view', 1, XOOPS_GROUP_ADMIN, $moduleId);
     $grouppermHandler->addRight($moduleDirName . '_view', 1, XOOPS_GROUP_USERS, $moduleId);
     $grouppermHandler->addRight($moduleDirName . '_view', 1, XOOPS_GROUP_ANONYMOUS, $moduleId);
@@ -95,7 +112,7 @@ function xoops_module_install_cssholmes(\XoopsModule $module)
         }
     }
     //delete .html entries from the tpl table
-    $sql = 'DELETE FROM ' . $GLOBALS['xoopsDB']->prefix('tplfile') . " WHERE `tpl_module` = '" . $xoopsModule->getVar('dirname', 'n') . "' AND `tpl_file` LIKE '%.html%'";
+    $sql = 'DELETE FROM ' . $GLOBALS['xoopsDB']->prefix('tplfile') . " WHERE `tpl_module` = '" . $module->getVar('dirname', 'n') . "' AND `tpl_file` LIKE '%.html%'";
     $GLOBALS['xoopsDB']->queryF($sql);
 
     return true;

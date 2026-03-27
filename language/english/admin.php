@@ -11,8 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
  * @copyright           2000-2026 XOOPS Project (https://xoops.org)
- * @license             GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
- * @since               2.3.0
+ * @license            GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
  * @author              kris <https://www.xoofoo.org>
  * @author              XOOPS Development Team, Mamba <mambax7@gmail.com> 
  **/
@@ -20,6 +19,31 @@ define('_AM_CSSHOLMES_MANAGER_INDEX', 'Index');
 define('_AM_CSSHOLMES_MANAGER_ABOUT', 'About');
 define('_AM_CSSHOLMES_MANAGER_PREFERENCES', 'Settings');
 define('_AM_CSSHOLMES_MANAGER_UPDATE', 'Update');
+
+// Permissions
+define('_AM_CSSHOLMES_PERMISSIONS', 'Permissions');
+
+define('_AM_CSSHOLMES_TAB_OVERLAY', 'Overlay');
+define('_AM_CSSHOLMES_PERM_OVERLAY', 'Use Overlay');
+define('_AM_CSSHOLMES_PERM_OVERLAY_DESC', 'Permission to see the toolbar, toggle profiles, and use inspect/measure/widget/slot tools.');
+
+define('_AM_CSSHOLMES_TAB_DIAGNOSE', 'Diagnostics');
+define('_AM_CSSHOLMES_PERM_DIAGNOSE', 'Use Diagnostics');
+define('_AM_CSSHOLMES_PERM_DIAGNOSE_DESC', 'Permission to use overflow detection, z-index overlay, grid overlay, and color blindness simulation.');
+
+define('_AM_CSSHOLMES_TAB_EDIT', 'Editing');
+define('_AM_CSSHOLMES_PERM_EDIT', 'Use Editors');
+define('_AM_CSSHOLMES_PERM_EDIT_DESC', 'Permission to use the token editor, typography editor, text editor, and undo. Edits are local previews only.');
+
+define('_AM_CSSHOLMES_TAB_EXPORT', 'Export');
+define('_AM_CSSHOLMES_PERM_EXPORT', 'Export Data');
+define('_AM_CSSHOLMES_PERM_EXPORT_DESC', 'Permission to copy inspection JSON and export structured payloads for the admin workbench.');
+
+define('_AM_CSSHOLMES_TAB_WORKBENCH', 'Workbench');
+define('_AM_CSSHOLMES_PERM_WORKBENCH', 'Admin Workbench');
+define('_AM_CSSHOLMES_PERM_WORKBENCH_DESC', 'Permission to use the admin scanner, theme/widget scans, import review, and patch drafts. Admin-only by default.');
+
+//define('_AM_CSSHOLMES_MANAGER_FOOTER', "<div class='right smallsmall italic pad10'>Cssholmes is maintened by <a class='tooltip' rel='external' href='https://labs.XooFoo.org' title='VisitXooFoo Laboratory'>Labs.XooFoo.org</a></div>");
 
 // Index.php
 define(

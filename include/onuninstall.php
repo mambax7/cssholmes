@@ -50,7 +50,13 @@ function xoops_module_uninstall_cssholmes(\XoopsModule $module)
     if ($dirInfo->isDir()) {
         // The directory exists so rename it
         $date = date('Y-m-d');
-        if (!rename($uploadDirectory, $uploadDirectory . "_bak_$date")) {
+        $renamed = false;
+        try {
+            $renamed = rename($uploadDirectory, $uploadDirectory . "_bak_$date");
+        } catch (\Throwable) {
+            // Windows may lock the folder via Apache
+        }
+        if (!$renamed) {
             $module->setErrors(sprintf(constant('CO_' . $moduleDirNameUpper . '_' . 'ERROR_BAD_DEL_PATH'), $uploadDirectory));
             $success = false;
         }

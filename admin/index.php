@@ -12,8 +12,7 @@
  *
  * @copyright           2000-2026 XOOPS Project (https://xoops.org)
  * @license            GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
- * @since               2.3.0
- * @author              kris <https://www.xoofoo.org>
+ * @author              kris <https://www.xoofoo.org>, XOOPS Development Team
  **/
 
 use Xmf\Module\Admin;

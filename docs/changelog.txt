@@ -1,3 +1,16 @@
+<h5>3.0.0 Alpha 2 [NOT RELEASED]</h5>
+Dev: XOOPS 2.5.12, PHP 8.4, PHP 8.5.0
+<hr>
+- added permission checks to all admin workbench pages and actions (mamba)
+- added a new "cssHolmes Admin" permission for granular control over who can access the admin workbench (mamba)
+- added **Diagnose (third row):**
+        - `overflow` — highlight every element with overflowing content
+        - `z-index` — show z-index values as colored labels on all positioned elements
+        - `grid` — show CSS Grid and Flexbox containers with column/row lines
+        - `proto` / `deuter` / `trita` / `achro` — simulate color blindness types
+- added CSS Grid and Flexbox diagnostics to the front-end inspection overlay (mamba)
+
+
 <h5>3.0.0 Alpha 1 [2026-03-26]</h5>
 Dev: XOOPS 2.5.12, PHP 8.4, PHP 8.5.0
 <hr>

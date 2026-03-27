@@ -18,6 +18,10 @@
     const themeManifestUrl = scriptUrl.searchParams.get('themeManifestUrl') || '';
     const genericMode = themeManifestUrl === '';
     const storageKey = `cssholmes.activeProfiles.${pageScope}`;
+    const permsList = (scriptUrl.searchParams.get('perms') || 'overlay').split(',');
+    const canEdit = permsList.includes('edit');
+    const canDiagnose = permsList.includes('diagnose');
+    const canExport = permsList.includes('export');
     const root = document.documentElement;
 
     let activeProfiles = [];
@@ -35,6 +39,10 @@
     let changeLog = [];
     let tokenEditorOpen = false;
     let typographyEditorOpen = false;
+    let colorBlindMode = '';
+    let overflowOverlays = [];
+    let zIndexOverlays = [];
+    let gridOverlays = [];
 
     function normalizeProfiles(value) {
         const raw = String(value || '').trim();
@@ -758,6 +766,27 @@
         selected = null;
         tokenEditorOpen = false;
         typographyEditorOpen = false;
+        // Clear diagnostic overlays
+        if (overflowOverlays.length > 0) {
+            overflowOverlays.forEach((el) => el.remove());
+            overflowOverlays = [];
+            document.querySelectorAll('[data-holmes-overflow]').forEach((el) => {
+                el.style.removeProperty('outline');
+                delete el.dataset.holmesOverflow;
+            });
+        }
+        if (zIndexOverlays.length > 0) {
+            zIndexOverlays.forEach((el) => el.remove());
+            zIndexOverlays = [];
+        }
+        if (gridOverlays.length > 0) {
+            gridOverlays.forEach((el) => el.remove());
+            gridOverlays = [];
+        }
+        if (colorBlindMode !== '') {
+            colorBlindMode = '';
+            root.style.removeProperty('filter');
+        }
         syncRootState();
         draw();
     }
@@ -1130,6 +1159,191 @@
             .catch(() => {});
     }
 
+    // --- Color Blindness Simulation ---
+
+    const COLOR_BLIND_FILTERS = {
+        protanopia:     '0.567,0.433,0,0,0, 0.558,0.442,0,0,0, 0,0.242,0.758,0,0, 0,0,0,1,0',
+        deuteranopia:   '0.625,0.375,0,0,0, 0.7,0.3,0,0,0, 0,0.3,0.7,0,0, 0,0,0,1,0',
+        tritanopia:     '0.95,0.05,0,0,0, 0,0.433,0.567,0,0, 0,0.475,0.525,0,0, 0,0,0,1,0',
+        achromatopsia:  '0.299,0.587,0.114,0,0, 0.299,0.587,0.114,0,0, 0.299,0.587,0.114,0,0, 0,0,0,1,0',
+    };
+
+    function toggleColorBlind(mode) {
+        const svgId = 'cssholmes-cvd-filters';
+        if (colorBlindMode === mode) {
+            colorBlindMode = '';
+            root.style.removeProperty('filter');
+            const existing = document.getElementById(svgId);
+            if (existing) existing.remove();
+            return;
+        }
+        colorBlindMode = mode;
+        let svg = document.getElementById(svgId);
+        if (!svg) {
+            svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.id = svgId;
+            svg.setAttribute('style', 'position:absolute;width:0;height:0;pointer-events:none');
+            svg.innerHTML = Object.entries(COLOR_BLIND_FILTERS).map(([name, matrix]) =>
+                `<filter id="cvd-${name}"><feColorMatrix type="matrix" values="${matrix}"/></filter>`
+            ).join('');
+            document.body.appendChild(svg);
+        }
+        root.style.setProperty('filter', `url(#cvd-${mode})`, 'important');
+    }
+
+    // --- Overflow Detection ---
+
+    function toggleOverflowDetection() {
+        if (overflowOverlays.length > 0) {
+            overflowOverlays.forEach((el) => el.remove());
+            overflowOverlays = [];
+            return 0;
+        }
+        let count = 0;
+        const all = document.querySelectorAll('*');
+        for (const el of all) {
+            if (el.closest(`#${TOOLBAR_ID},#${INSPECTOR_ID}`)) continue;
+            const overX = el.scrollWidth > el.clientWidth + 1;
+            const overY = el.scrollHeight > el.clientHeight + 1;
+            if (!overX && !overY) continue;
+            const rect = el.getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) continue;
+            const label = document.createElement('div');
+            label.className = 'cssholmes-overflow-label';
+            label.setAttribute('data-holmes-ui', 'overflow');
+            const dirs = [overX ? 'x' : '', overY ? 'y' : ''].filter(Boolean).join('+');
+            label.textContent = `overflow ${dirs}`;
+            label.style.cssText = `position:absolute;left:${rect.left + window.scrollX}px;top:${rect.top + window.scrollY - 18}px;` +
+                `padding:2px 6px;background:#dc2626;color:#fff;font:600 11px/1.2 system-ui,sans-serif;border-radius:3px;` +
+                `z-index:2147483645;pointer-events:none;white-space:nowrap`;
+            el.style.outline = '2px solid #dc2626';
+            el.dataset.holmesOverflow = 'true';
+            document.body.appendChild(label);
+            overflowOverlays.push(label);
+            count++;
+        }
+        return count;
+    }
+
+    // --- Z-Index Overlay ---
+
+    function toggleZIndexOverlay() {
+        if (zIndexOverlays.length > 0) {
+            zIndexOverlays.forEach((el) => el.remove());
+            zIndexOverlays = [];
+            return 0;
+        }
+        let count = 0;
+        const all = document.querySelectorAll('*');
+        for (const el of all) {
+            if (el.closest(`#${TOOLBAR_ID},#${INSPECTOR_ID}`)) continue;
+            const z = getComputedStyle(el).zIndex;
+            if (z === 'auto' || z === '0') continue;
+            const rect = el.getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) continue;
+            const label = document.createElement('div');
+            label.className = 'cssholmes-zindex-label';
+            label.setAttribute('data-holmes-ui', 'zindex');
+            label.textContent = `z:${z}`;
+            const hue = (Math.abs(parseInt(z, 10)) * 37) % 360;
+            label.style.cssText = `position:absolute;left:${rect.left + window.scrollX}px;top:${rect.top + window.scrollY}px;` +
+                `padding:2px 6px;background:hsl(${hue},70%,35%);color:#fff;font:700 11px/1.2 system-ui,sans-serif;` +
+                `border-radius:3px;z-index:2147483645;pointer-events:none;white-space:nowrap;opacity:.9`;
+            document.body.appendChild(label);
+            zIndexOverlays.push(label);
+            count++;
+        }
+        return count;
+    }
+
+    // --- CSS Grid / Flex Overlay ---
+
+    function toggleGridOverlay() {
+        if (gridOverlays.length > 0) {
+            gridOverlays.forEach((el) => el.remove());
+            gridOverlays = [];
+            return 0;
+        }
+        let count = 0;
+        const all = document.querySelectorAll('*');
+        for (const el of all) {
+            if (el.closest(`#${TOOLBAR_ID},#${INSPECTOR_ID}`)) continue;
+            const cs = getComputedStyle(el);
+            const isGrid = cs.display === 'grid' || cs.display === 'inline-grid';
+            const isFlex = cs.display === 'flex' || cs.display === 'inline-flex';
+            if (!isGrid && !isFlex) continue;
+            const rect = el.getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) continue;
+
+            // Label
+            const label = document.createElement('div');
+            label.setAttribute('data-holmes-ui', 'grid');
+            const kind = isGrid ? 'grid' : 'flex';
+            const dir = isFlex ? ` ${cs.flexDirection}` : '';
+            const cols = isGrid ? cs.gridTemplateColumns : '';
+            const colCount = isGrid && cols !== 'none' ? cols.split(/\s+/).length : 0;
+            const labelText = colCount > 0 ? `${kind} ${colCount}-col` : `${kind}${dir}`;
+            label.textContent = labelText;
+            const hue = isGrid ? 280 : 170;
+            label.style.cssText = `position:absolute;left:${rect.left + window.scrollX}px;top:${rect.top + window.scrollY - 18}px;` +
+                `padding:2px 6px;background:hsl(${hue},60%,40%);color:#fff;font:600 11px/1.2 system-ui,sans-serif;` +
+                `border-radius:3px;z-index:2147483645;pointer-events:none;white-space:nowrap`;
+            document.body.appendChild(label);
+            gridOverlays.push(label);
+
+            // Outline
+            const outline = document.createElement('div');
+            outline.setAttribute('data-holmes-ui', 'grid');
+            outline.style.cssText = `position:absolute;left:${rect.left + window.scrollX}px;top:${rect.top + window.scrollY}px;` +
+                `width:${rect.width}px;height:${rect.height}px;` +
+                `border:1px dashed hsl(${hue},60%,50%);pointer-events:none;z-index:2147483644;` +
+                `box-sizing:border-box;border-radius:2px`;
+            document.body.appendChild(outline);
+            gridOverlays.push(outline);
+
+            // Grid lines for actual CSS Grid containers
+            if (isGrid && cols !== 'none') {
+                const colWidths = cols.split(/\s+/);
+                let xOffset = rect.left + window.scrollX;
+                for (let i = 0; i < colWidths.length - 1; i++) {
+                    const colPx = parseFloat(colWidths[i]);
+                    if (isNaN(colPx) || colPx <= 0) continue;
+                    xOffset += colPx;
+                    const gap = parseFloat(cs.columnGap) || 0;
+                    const line = document.createElement('div');
+                    line.setAttribute('data-holmes-ui', 'grid');
+                    line.style.cssText = `position:absolute;left:${xOffset + gap * i}px;top:${rect.top + window.scrollY}px;` +
+                        `width:1px;height:${rect.height}px;background:hsl(${hue},60%,50%,0.4);` +
+                        `pointer-events:none;z-index:2147483644`;
+                    document.body.appendChild(line);
+                    gridOverlays.push(line);
+                }
+
+                const rows = cs.gridTemplateRows;
+                if (rows !== 'none') {
+                    const rowHeights = rows.split(/\s+/);
+                    let yOffset = rect.top + window.scrollY;
+                    const rowGap = parseFloat(cs.rowGap) || 0;
+                    for (let i = 0; i < rowHeights.length - 1; i++) {
+                        const rowPx = parseFloat(rowHeights[i]);
+                        if (isNaN(rowPx) || rowPx <= 0) continue;
+                        yOffset += rowPx;
+                        const line = document.createElement('div');
+                        line.setAttribute('data-holmes-ui', 'grid');
+                        line.style.cssText = `position:absolute;left:${rect.left + window.scrollX}px;top:${yOffset + rowGap * i}px;` +
+                            `width:${rect.width}px;height:1px;background:hsl(${hue},60%,50%,0.4);` +
+                            `pointer-events:none;z-index:2147483644`;
+                        document.body.appendChild(line);
+                        gridOverlays.push(line);
+                    }
+                }
+            }
+
+            count++;
+        }
+        return count;
+    }
+
     function renderToolbar() {
         if (!document.body || document.getElementById(TOOLBAR_ID)) {
             return;
@@ -1155,7 +1369,11 @@
         style.textContent = `
             #${TOOLBAR_ID}, #${INSPECTOR_ID} { font-family:system-ui,-apple-system,sans-serif; }
             #${TOOLBAR_ID} * , #${INSPECTOR_ID} * { box-sizing:border-box; }
-            #${TOOLBAR_ID}{position:fixed;right:1rem;bottom:1rem;z-index:2147483647;max-width:min(34rem,calc(100vw - 2rem));padding:.55rem .7rem;border-radius:10px;background:#111827;color:#f9fafb;box-shadow:0 10px 30px rgba(0,0,0,.3);font-size:13px;text-align:left}
+            #${TOOLBAR_ID}{position:fixed;right:1rem;bottom:1rem;z-index:2147483647;max-width:min(34rem,calc(100vw - 2rem));padding:.55rem .7rem;border-radius:10px;background:#111827;color:#f9fafb;box-shadow:0 10px 30px rgba(0,0,0,.3);font-size:13px;text-align:left;transition:all .2s ease}
+            #${TOOLBAR_ID}.cssholmes--minimized{padding:0;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;max-width:36px;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+            #${TOOLBAR_ID}.cssholmes--minimized .cssholmes-shell{display:none}
+            #${TOOLBAR_ID}.cssholmes--minimized .cssholmes-mini-icon{display:flex}
+            #${TOOLBAR_ID} .cssholmes-mini-icon{display:none;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#60a5fa;line-height:1}
             #${TOOLBAR_ID} .cssholmes-shell{display:flex;flex-direction:column;gap:.45rem}
             #${TOOLBAR_ID} .cssholmes-row,#${TOOLBAR_ID} .cssholmes-profiles,#${TOOLBAR_ID} .cssholmes-tools,#${TOOLBAR_ID} .cssholmes-counts{display:flex;gap:.35rem;align-items:center;flex-wrap:wrap}
             #${TOOLBAR_ID} .cssholmes-logo{font-weight:700;color:#60a5fa}
@@ -1220,26 +1438,28 @@
         const element = document.createElement('div');
         element.id = TOOLBAR_ID;
         element.innerHTML = `
+            <div class="cssholmes-mini-icon" title="Expand cssHolmes toolbar">H</div>
             <div class="cssholmes-shell">
                 <div class="cssholmes-row">
                     <span class="cssholmes-logo">cssHolmes</span>
                     <span class="cssholmes-scope">${pageScope}</span>
                     <span class="cssholmes-mode">${genericMode ? 'generic' : 'xtf'}</span>
                     <span class="cssholmes-profiles">${PROFILE_ORDER.map((profile) => `<button type="button" class="cssholmes-btn${activeProfiles.includes(profile) ? ' cssholmes-btn--active' : ''}" data-profile="${profile}">${profile.replace('xtf-', '')}</button>`).join('')}</span>
+                    <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="minimize" title="Minimize toolbar" style="margin-left:auto;font-size:15px;padding:0 .4rem;">&#x2015;</button>
                 </div>
                 <div class="cssholmes-row">
                     <span class="cssholmes-tools">
                         <button type="button" class="cssholmes-btn" data-action="inspect">inspect</button>
                         <button type="button" class="cssholmes-btn" data-action="measure">measure</button>
-                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="edit-token">token</button>
+                        ${canEdit ? `<button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="edit-token">token</button>
                         <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="edit-typography">typo</button>
                         <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="edit-text">text</button>
-                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="undo">undo</button>
+                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="undo">undo</button>` : ''}
                         <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="select-widget">widget</button>
                         <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="select-slot">slot</button>
                         <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="copy-selector">copy text</button>
-                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="copy-json">copy json</button>
-                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="export-selected">export sel</button>
+                        ${canExport ? `<button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="copy-json">copy json</button>
+                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="export-selected">export sel</button>` : ''}
                         <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="reset-inspector">reset</button>
                     </span>
                     <span class="cssholmes-counts">
@@ -1248,6 +1468,17 @@
                     </span>
                     <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="clear">clear</button>
                 </div>
+                ${canDiagnose ? `<div class="cssholmes-row">
+                    <span class="cssholmes-tools">
+                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="detect-overflow" title="Highlight overflowing elements">overflow</button>
+                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="show-zindex" title="Show z-index values">z-index</button>
+                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="show-grid" title="Show CSS Grid and Flexbox containers">grid</button>
+                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="cvd-protanopia" title="Simulate protanopia (red-blind)">proto</button>
+                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="cvd-deuteranopia" title="Simulate deuteranopia (green-blind)">deuter</button>
+                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="cvd-tritanopia" title="Simulate tritanopia (blue-blind)">trita</button>
+                        <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="cvd-achromatopsia" title="Simulate achromatopsia (no color)">achro</button>
+                    </span>
+                </div>` : ''}
                 <div class="cssholmes-detail" data-role="details"></div>
                 <div class="cssholmes-editor" data-role="editor" style="display:none;"></div>
                 <div class="cssholmes-changes" data-role="changes"></div>
@@ -1258,12 +1489,22 @@
             if (!(target instanceof HTMLElement)) {
                 return;
             }
+
+            // Expand from minimized state — click anywhere on the mini icon
+            if (element.classList.contains('cssholmes--minimized')) {
+                element.classList.remove('cssholmes--minimized');
+                return;
+            }
+
             const profile = target.getAttribute('data-profile');
             if (profile) {
                 toggleProfile(profile);
                 return;
             }
             switch (target.getAttribute('data-action')) {
+                case 'minimize':
+                    element.classList.add('cssholmes--minimized');
+                    break;
                 case 'clear':
                     activeProfiles = [];
                     persistProfiles(activeProfiles);
@@ -1346,10 +1587,51 @@
                 case 'reset-inspector':
                     clearInspector();
                     break;
+                case 'detect-overflow': {
+                    const count = toggleOverflowDetection();
+                    target.className = overflowOverlays.length > 0
+                        ? 'cssholmes-btn cssholmes-btn--active' : 'cssholmes-btn cssholmes-btn--ghost';
+                    if (count > 0) target.textContent = `overflow (${count})`;
+                    else target.textContent = 'overflow';
+                    break;
+                }
+                case 'show-zindex': {
+                    const zCount = toggleZIndexOverlay();
+                    target.className = zIndexOverlays.length > 0
+                        ? 'cssholmes-btn cssholmes-btn--active' : 'cssholmes-btn cssholmes-btn--ghost';
+                    if (zCount > 0) target.textContent = `z-index (${zCount})`;
+                    else target.textContent = 'z-index';
+                    break;
+                }
+                case 'show-grid': {
+                    const gCount = toggleGridOverlay();
+                    target.className = gridOverlays.length > 0
+                        ? 'cssholmes-btn cssholmes-btn--active' : 'cssholmes-btn cssholmes-btn--ghost';
+                    if (gCount > 0) target.textContent = `grid (${gCount})`;
+                    else target.textContent = 'grid';
+                    break;
+                }
+                case 'cvd-protanopia':
+                case 'cvd-deuteranopia':
+                case 'cvd-tritanopia':
+                case 'cvd-achromatopsia': {
+                    const mode = target.getAttribute('data-action').replace('cvd-', '');
+                    toggleColorBlind(mode);
+                    // Update all CVD button states
+                    element.querySelectorAll('[data-action^="cvd-"]').forEach((btn) => {
+                        const btnMode = btn.getAttribute('data-action').replace('cvd-', '');
+                        btn.className = (colorBlindMode === btnMode)
+                            ? 'cssholmes-btn cssholmes-btn--active' : 'cssholmes-btn cssholmes-btn--ghost';
+                    });
+                    break;
+                }
                 default:
                     break;
             }
         });
+
+        // Start minimized — toolbar opens only when user clicks the icon
+        element.classList.add('cssholmes--minimized');
 
         document.body.appendChild(element);
         toolbar = element;
