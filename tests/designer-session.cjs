@@ -30,6 +30,7 @@ const root = path.resolve(__dirname, '..');
                         if (body.revision !== state.revision) return route.fulfill({ status: 409, json: { ok: false, error: 'This theme changed elsewhere.' } });
                         state = { ...state, revision: `saved-${posts.length}`, rules: body.rules };
                     }
+                    if (body.op === 'saveSet') return route.fulfill({ json: { ...response(), set: { id: 'new', revision: 'created' } } });
                 }
                 return route.fulfill({ json: response() });
             }

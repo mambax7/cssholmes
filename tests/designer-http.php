@@ -32,7 +32,7 @@ foreach (glob($module . '/class/Designer/*.php') as $file) {
 foreach (['assets/js/theme-sets-admin.js', 'assets/css/theme-sets-admin.css', 'language/english/admin.php'] as $file) {
     $copy($file);
 }
-foreach (['assets/js/designer-diagnostics.js', 'language/english/diagnostics.php'] as $file) {
+foreach (['assets/js/designer-diagnostics.js', 'assets/js/gallery-designer.js', 'assets/css/gallery-designer.css', 'language/english/diagnostics.php'] as $file) {
     $copy($file);
 }
 $bootstrap = <<<'PHP'
@@ -140,8 +140,9 @@ $request = static function (string $path, ?array $body = null, string $role = ''
     ]]);
     $text = file_get_contents('http://' . $address . '/modules/cssholmes/' . $path, false, $context);
     if ($text === false) { throw new RuntimeException('Endpoint request failed.'); }
-    preg_match('/\s(\d{3})\s/', $http_response_header[0], $match);
-    return [(int) $match[1], $text, $http_response_header];
+    $responseHeaders = http_get_last_response_headers();
+    preg_match('/\s(\d{3})\s/', $responseHeaders[0], $match);
+    return [(int) $match[1], $text, $responseHeaders];
 };
 try {
     $ready = false;
@@ -224,6 +225,7 @@ try {
     $adapted = json_decode($text, true, 32, JSON_THROW_ON_ERROR);
     $check($status === 200 && $adapted['preview']['warnings'] !== [] && !str_contains(json_encode($adapted['preview']['rules']), 'brand-widget'), 'Cross-theme preview must report skipped source-only selectors');
     $check(str_contains(json_encode($adapted['preview']['rules']), 'comTitle'), 'Semantic component styling must survive adaptation');
+    $check(($adapted['preview']['set'] ?? null) === ['id' => $set['id'], 'revision' => $set['revision']], 'Preview must identify the exact set revision that supplied its rules');
     [$status, $text] = $request('sets.php?theme=demo&action=export&id=' . $set['id'], null, 'writer');
     $exported = json_decode($text, true, 32, JSON_THROW_ON_ERROR)['exported'];
     $check($status === 200 && $exported['defaults'] === 'inherit-target-theme' && $exported['version'] === 1 && !isset($exported['author']), 'Portable exports must specify defaults and omit local identities');

@@ -47,6 +47,8 @@ final class CssholmesDesignerPreload extends \XoopsPreloadItem
                 . '</script>';
             $theme->addScript($moduleUrl . '/assets/js/designer-diagnostics.js', ['defer' => 'defer']);
             $theme->addScript($moduleUrl . '/assets/js/designer.js', ['defer' => 'defer']);
+            $theme->addScript($moduleUrl . '/assets/js/gallery-designer.js', ['defer' => 'defer']);
+            $theme->addStylesheet($moduleUrl . '/assets/css/gallery-designer.css', ['id' => 'cssholmes-gallery-style']);
         } catch (\Throwable $error) {
             // A bad configuration must not take the public site offline.
             $GLOBALS['xoopsLogger']->addExtra('Theme Designer', 'Saved theme configuration could not be loaded.');

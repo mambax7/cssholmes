@@ -68,7 +68,8 @@
         diagnostics_text: 'select a plain text element; nested text and native controls need manual review',
         diagnostics_color: 'unsupported color space', diagnostics_effects: 'opacity, filters, blending or text effects',
         diagnostics_layers: 'generated or overlapping layers', diagnostics_background: 'image, gradient or complex background',
-        diagnostics_surface: 'no known opaque background'
+        diagnostics_surface: 'no known opaque background',
+        diagnostics_repair_color: 'Adjust text color', diagnostics_repair_background: 'Adjust background color'
     };
     const labels = { ...english, ...(config.labels || {}) };
     const t = (key, replacements = {}) => Object.entries(replacements).reduce((value, [name, item]) => value.replaceAll(`{${name}}`, String(item)), labels[key] || key);
@@ -217,6 +218,9 @@
     const diagnosticsSample = node('p', { class: 'help', 'data-diagnostics-sample': '' }, '', diagnostics);
     const contrastStatus = node('p', { 'data-contrast': '', role: 'status', 'aria-live': 'polite' }, '', diagnostics);
     const contrastPair = node('p', { class: 'help' }, '', diagnostics);
+    const contrastActions = node('div', { class: 'library-actions', 'data-contrast-actions': '', hidden: '' }, null, diagnostics);
+    button('diagnostics_repair_color', contrastActions, () => focusProperty('color'));
+    button('diagnostics_repair_background', contrastActions, () => focusProperty('background-color'));
     node('p', { class: 'help' }, t('diagnostics_note'), diagnostics);
     button('diagnostics_refresh', diagnostics, () => { window.CssHolmesDiagnostics?.refresh(); refreshDiagnostics(); });
     const tokenLabel = node('label', { class: 'field' }, t('diagnostics_search'), diagnostics);
@@ -327,6 +331,7 @@
     let previousFocus = null;
     let persistedDisabled = false;
     let library = { sets: [], palettes: [] }, libraryLoaded = false, importDocument = null;
+    const setRevisions = new Map();
     let diagnosticTokens = [], diagnosticsTimer = null;
     const colorPreference = window.matchMedia('(prefers-color-scheme: dark)');
     const diagnosticsObserver = new MutationObserver(records => {
@@ -376,6 +381,7 @@
             ? t('diagnostics_ratio', { ratio: contrast.ratio.toFixed(2), normal: t(contrast.ratio >= 4.5 ? 'contrast_pass' : 'contrast_fail'), large: t(contrast.ratio >= 3 ? 'contrast_pass' : 'contrast_fail') })
             : t('diagnostics_unknown', { reason: t(`diagnostics_${contrast.reason}`) });
         contrastPair.textContent = contrast.status === 'measured' ? t('diagnostics_pair', contrast) : '';
+        contrastActions.hidden = contrast.status !== 'measured' || contrast.ratio >= 4.5;
         renderTokens();
     }
     function renderTokens() {
@@ -505,6 +511,7 @@
         preview.textContent = libraryControls?.compare.checked ? '' : compile(rules);
         document.head.append(preview);
         scheduleDiagnostics();
+        window.dispatchEvent(new Event('cssholmes:draft-changed'));
     }
     function syncRuleList() {
         const chosen = currentIndex();
@@ -610,6 +617,7 @@
         try {
             accept(await request()); status.textContent = t('ready');
             if (libraryControls) {
+                setRevisions.clear();
                 await libraryRequest();
                 if (!libraryLoaded && config.initialSetId) {
                     if (config.initialSetId === 'original') {
@@ -621,7 +629,7 @@
                         showSelectedSet(true);
                         if (libraryControls.select.value) {
                             const data = await libraryRequest(null, { action: 'preview', id: libraryControls.select.value });
-                            replaceDraft(data.preview.rules, data.preview.warnings);
+                            replaceDraft(data.preview.rules, data.preview.warnings, data.preview.set);
                             status.textContent = t('set_previewed');
                         }
                     }
@@ -670,6 +678,7 @@
             url.searchParams.set('revision', String(revision));
             link.href = url.href;
         }
+        window.dispatchEvent(new Event('cssholmes:published'));
     }
     function selectedSet() { return library.sets.find(item => item.id === libraryControls?.select.value); }
     function showSelectedSet(rename = false) {
@@ -704,6 +713,8 @@
         if (typeof data.canSave === 'boolean') canSave = data.canSave;
         if (data.library) {
             library = data.library;
+            // Likes and other metadata refreshes must not renew an older draft's revision.
+            library.sets.forEach(set => { if (!setRevisions.has(set.id)) setRevisions.set(set.id, set.revision); });
             const selected = libraryControls.select.value;
             libraryControls.select.replaceChildren();
             const richOptions = CSS.supports('appearance', 'base-select');
@@ -743,10 +754,11 @@
         const invalid = !selectorInput.checkValidity() || [...propertyFields.values()].some(({ input }) => !input.checkValidity());
         return (!dirty() && !invalid) || window.confirm(t('replace_draft_confirm'));
     }
-    function replaceDraft(next, warnings = []) {
+    function replaceDraft(next, warnings = [], sourceSet = null) {
         libraryControls.compare.checked = false;
         importDocument = null;
         commit(clone(next));
+        if (sourceSet) setRevisions.set(sourceSet.id, sourceSet.revision);
         syncFields();
         libraryControls.warnings.textContent = warnings.join('\n');
         libraryControls.warnings.hidden = !warnings.length;
@@ -755,7 +767,7 @@
         if (!canReplaceDraft()) return;
         libraryTask(async () => {
             const data = await libraryRequest(null, { action: 'preview', id: libraryControls.select.value });
-            replaceDraft(data.preview.rules, data.preview.warnings);
+            replaceDraft(data.preview.rules, data.preview.warnings, data.preview.set);
             status.textContent = t('set_previewed');
         });
     }
@@ -764,7 +776,8 @@
         const name = libraryControls.name.value.trim(), selected = selectedSet();
         if (!name) { setError(t('set_name_required')); return; }
         libraryTask(async () => {
-            await libraryRequest(update ? 'updateSet' : 'saveSet', { name, rules, ...(update ? { id: selected.id, setRevision: selected.revision } : {}) });
+            const data = await libraryRequest(update ? 'updateSet' : 'saveSet', { name, rules, ...(update ? { id: selected.id, setRevision: setRevisions.get(selected.id) } : {}) });
+            setRevisions.set(data.set.id, data.set.revision);
             status.textContent = t('set_saved');
         });
     }
@@ -805,9 +818,10 @@
         launcher.setAttribute('aria-expanded', 'false');
         preview.remove();
         if (persisted()) persisted().disabled = persistedDisabled;
+        window.dispatchEvent(new Event('cssholmes:designer-closed'));
         if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
     }
-    async function select(element) {
+    async function select(element, options = {}) {
         if (!isEditable(element) || !canLeaveControls()) return;
         await open();
         if (!loaded) return;
@@ -835,7 +849,33 @@
         stopPicking(false);
         setError();
         syncFields();
-        selectorInput.focus({ preventScroll: true });
+        if (options.diagnostics) { diagnostics.open = true; refreshDiagnostics(); }
+        if (options.property && propertyFields.has(options.property)) focusProperty(options.property);
+        else selectorInput.focus({ preventScroll: true });
+        if (options.highlight) flashSelection(element);
+        return true;
+    }
+    let selectionTimer;
+    function flashSelection(element) {
+        cancelAnimationFrame(selectionTimer);
+        const until = performance.now() + 1800;
+        const draw = () => {
+            if (!visible || !element.isConnected || picking || performance.now() >= until) {
+                if (!picking) outline.hidden = true;
+                return;
+            }
+            highlight(element);
+            selectionTimer = requestAnimationFrame(draw);
+        };
+        draw();
+    }
+    function focusProperty(property) {
+        const input = propertyFields.get(property)?.input;
+        if (!input || input.disabled) return;
+        input.closest('details').open = true;
+        input.focus();
+        const element = selection && validateSelector(selection.selector).elements[0];
+        if (element) flashSelection(element);
     }
     function startPicking() {
         if (!canLeaveControls()) return;
@@ -893,7 +933,7 @@
     });
     const designEvent = event => {
         if (event.currentTarget === window && event.target !== window) return;
-        event.detail?.target ? select(event.detail.target) : open();
+        event.detail?.target ? select(event.detail.target, { property: event.detail.property, diagnostics: event.detail.diagnostics, highlight: true }) : open();
     };
     window.addEventListener('cssholmes:design', designEvent);
     document.addEventListener('cssholmes:design', designEvent);
@@ -905,7 +945,10 @@
         anchor.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
-    window.CssHolmesDesigner = { open, close, select };
+    window.CssHolmesDesigner = {
+        open, close, select,
+        draft: () => ({ theme: config.theme, loaded, visible, css: loaded ? compile(rules) : '', revision, dirty: dirty() })
+    };
     updateActions();
     if (config.autoOpen) open();
 })();

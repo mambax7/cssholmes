@@ -1,4 +1,8 @@
 <h5>3.3.0 Alpha 1 [2026-10-25]</h5>
+- Added xStyles example inspection/editing, private published-versus-draft comparison and three-width draft previews.
+- Added contrast-to-color controls and temporary selected-element highlighting.
+- Preserve the editing revision across library refreshes so concurrent set updates are rejected safely.
+- Added shared QA runner, PHP 8.4/8.5 CI, optional Qodana and release packaging without module-local development dependencies.
 - Read-only resolved token inspection and conservative rendered text contrast estimates.
 - XTF data-theme mode support in draft and public CSS; content-based stylesheet ETags.
 - Published-only xStyles frame context with editor assets suppressed.

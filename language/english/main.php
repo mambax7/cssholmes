@@ -167,3 +167,21 @@ define('_MD_CSSHOLMES_DESIGNER_ORIGINAL_RESET', 'Theme reset to original. Librar
 define('_MD_CSSHOLMES_DESIGNER_PALETTE_CONTRAST', '{name}: {ratio}:1 · {result}');
 define('_MD_CSSHOLMES_DESIGNER_CONTRAST_PASS', 'Pass');
 define('_MD_CSSHOLMES_DESIGNER_CONTRAST_FAIL', 'Fail');
+
+// xStyles draft previews.
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_TITLE', 'Preview your changes');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_NOTE', 'Draft previews stay in this tab. Only Save to theme publishes changes for visitors.');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_VIEW', 'Preview');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_COMPARE', 'Published vs draft');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_RESPONSIVE', 'Draft at three screen sizes');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_WIDTH', 'Viewport width');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_REFRESH', 'Refresh previews');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_PUBLISHED', 'Published');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_DRAFT', 'Unsaved draft');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_READY', 'Preview ready');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_LOADING', 'Loading preview...');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_FAILED', 'Preview unavailable. Refresh to try again.');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_NO_TARGET', 'Choose an element with Pick element in the designer.');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_OPEN', 'Open theme designer');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_CURRENT', 'Current draft');
+define('_MD_CSSHOLMES_DESIGNER_GALLERY_WAIT', 'Open the designer to load your draft.');

@@ -88,7 +88,8 @@ try {
             }
         }
         $record = $library->get($id);
-        return $format->resolve($record['payload'], $theme) + ['document' => $record['payload']];
+        return $format->resolve($record['payload'], $theme) + ['document' => $record['payload'],
+            'set' => ['id' => $record['id'], 'revision' => $record['revision']]];
     };
     if ($method === 'GET') {
         $action = \Xmf\Request::getString('action', 'list', 'GET');

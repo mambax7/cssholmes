@@ -20,3 +20,5 @@ define('_MD_CSSHOLMES_DESIGNER_DIAGNOSTICS_EFFECTS', 'opacity, filters, blending
 define('_MD_CSSHOLMES_DESIGNER_DIAGNOSTICS_LAYERS', 'generated or overlapping layers');
 define('_MD_CSSHOLMES_DESIGNER_DIAGNOSTICS_BACKGROUND', 'image, gradient or complex background');
 define('_MD_CSSHOLMES_DESIGNER_DIAGNOSTICS_SURFACE', 'no known opaque background');
+define('_MD_CSSHOLMES_DESIGNER_DIAGNOSTICS_REPAIR_COLOR', 'Adjust text color');
+define('_MD_CSSHOLMES_DESIGNER_DIAGNOSTICS_REPAIR_BACKGROUND', 'Adjust background color');

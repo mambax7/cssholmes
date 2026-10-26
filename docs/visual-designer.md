@@ -90,8 +90,30 @@ The panel refreshes after previews, undo/redo and mode changes. Refresh diagnost
 after stylesheet changes not observed by the browser. Inspection never publishes
 or adds history entries. Observers stop when the designer closes.
 
-xStyles responsive frames show published CSS and suppress editing/overlay assets;
-unsaved drafts remain in their original tab. See [XOOPS 4 migration notes](xoops4-migration.md).
+When a measured ratio is below 4.5:1, **Adjust text color** and **Adjust background
+color** focus the corresponding control and highlight the selected element.
+Markup problems, such as a missing label or alternative text, still require a
+template change; changing CSS cannot repair them.
+
+## Inspect, edit and compare in xStyles
+
+1. Open the frontend gallery with Overlay and Edit permissions. Each example
+   offers **Inspect example** and **Edit styles**. These select its first relevant
+   element; use **Pick element** for another target and check the selector before editing.
+2. Expand **Preview your changes** and choose **Published vs draft**. Both panes
+   use the same theme, example and viewport width.
+3. Choose **Draft at three screen sizes** to check 360, 768 and 1280 CSS pixels.
+   Wider panes scroll horizontally. Changes, undo, redo and discard update the
+   draft panes without saving.
+4. Use **Save to theme** only when ready to publish. Publishing refreshes the
+   panes. Closing the preview panel removes its frames; closing the designer
+   retains the draft in the current page. Navigating away loses unsaved changes.
+
+Draft CSS stays in memory in this tab and its owned, matching-theme frames. It
+is not included in URLs or sent to a public endpoint. The ordinary xStyles
+theme comparison and responsive panels continue to show published CSS only.
+Embedded previews suppress editing/overlay assets. Admin-theme editing is not
+supported. See [XOOPS 4 migration notes](xoops4-migration.md).
 
 ## Storage and upgrades
 

@@ -15,7 +15,8 @@ const root = path.resolve(__dirname, '..');
         const sets = [{ id: 'one', theme: 'test', name: 'First', author: { id: 1, name: 'Owner' }, likes: 0, liked: false, revision: 1, editable: true }, { id: 'other', theme: 'other', name: 'Elsewhere', author: { id: 2, name: 'Other' }, likes: 3, liked: false, revision: 1, editable: false }];
         const portable = { format: 'cssholmes-theme-set', version: 1, name: 'Portable', sourceTheme: 'test', rules: [rule('30px')] };
         const posts = [], publications = [];
-        let rejectUpdate = false, initialSetId = '', canSave = true;
+        let initialSetId = '', canSave = true;
+        const setRules = new Map(sets.map(set => [set.id, [rule('26px')]]));
         const base = () => ({ ok: true, token: 'shared-token', canSave, state, library: { themes: ['test', 'other'], sets, palettes: [{ id: 'palette-calm', name: 'Calm', colors: ['#ffffff', '#111111'], contrast: [{ name: 'Text', ratio: 18.8, pass: true }] }] } });
         const handleRoute = async route => {
             const request = route.request(), url = new URL(request.url());
@@ -29,14 +30,26 @@ const root = path.resolve(__dirname, '..');
                     const body = request.postDataJSON();
                     posts.push(body);
                     assert.equal(body.token, 'shared-token');
-                    if (body.op === 'saveSet') sets.push({ ...sets[0], id: 'new', name: body.name });
-                    if (body.op === 'updateSet' && rejectUpdate) return route.fulfill({ status: 409, json: { ok: false, token: 'shared-token', error: 'Set changed elsewhere.' } });
+                    if (body.op === 'saveSet') {
+                        result.set = { ...sets[0], id: 'new', name: body.name };
+                        sets.push(result.set);
+                        setRules.set(result.set.id, body.rules);
+                    }
+                    if (body.op === 'updateSet') {
+                        const selected = sets.find(set => set.id === body.id);
+                        if (body.setRevision !== selected.revision) return route.fulfill({ status: 409, json: { ok: false, token: 'shared-token', error: 'Set changed elsewhere.' } });
+                        selected.revision += 1;
+                        selected.name = body.name;
+                        setRules.set(selected.id, body.rules);
+                        result.set = selected;
+                    }
                     if (body.op === 'like') { sets[0].liked = body.liked; sets[0].likes = body.liked ? 1 : 0; }
                     if (body.op === 'exportCurrent') result.document = { ...portable, rules: body.rules };
                     if (body.op === 'previewImport') result.preview = { rules: portable.rules, warnings: [], document: portable };
                     if (body.op === 'reset') { assert.equal(body.revision, state.revision); state = { ...state, revision: state.revision + 1, rules: [] }; result.state = state; }
                 } else if (url.searchParams.get('action') === 'preview') {
-                    result.preview = { rules: [rule('26px')], warnings: url.searchParams.get('id') === 'other' ? ['Skipped custom selector from another theme.'] : [], document: portable };
+                    const selected = sets.find(set => set.id === url.searchParams.get('id'));
+                    result.preview = { rules: setRules.get(selected.id), warnings: selected.id === 'other' ? ['Skipped custom selector from another theme.'] : [], document: portable, set: { id: selected.id, revision: selected.revision } };
                 }
                 return route.fulfill({ json: result });
             }
@@ -78,16 +91,37 @@ const root = path.resolve(__dirname, '..');
         assert.equal(await size(), '18px', 'Compare disables persisted overrides too');
         await panel.getByLabel('Compare original', { exact: true }).uncheck();
         assert.equal(await size(), '26px');
-        rejectUpdate = true;
-        await panel.getByRole('button', { name: 'Update selected set', exact: true }).click();
-        await panel.getByRole('alert').filter({ hasText: 'Set changed elsewhere' }).waitFor();
-        assert.equal(await field.inputValue(), '26px');
+        // Another editor saves while this tab retains its original preview and draft.
+        sets[0].revision = 2;
+        setRules.set('one', [rule('34px')]);
         await panel.getByRole('button', { name: 'Like', exact: true }).click();
         await panel.getByRole('button', { name: 'Unlike', exact: true }).waitFor();
         assert.equal(sets[0].likes, 1);
+        await select.selectOption('new');
+        await select.selectOption('one');
+        await panel.getByRole('button', { name: 'Update selected set', exact: true }).click();
+        await panel.getByRole('alert').filter({ hasText: 'Set changed elsewhere' }).waitFor();
+        assert.equal(posts.filter(post => post.op === 'updateSet').at(-1).setRevision, 1, 'Metadata refresh and switching selections retain the original editing revision');
+        assert.equal(await field.inputValue(), '26px', 'Conflicts preserve the local draft');
+        assert.equal(setRules.get('one')[0].declarations['font-size'], '34px', 'The other editor\'s saved rules survive');
         await panel.getByRole('button', { name: 'Unlike', exact: true }).click();
         await panel.getByRole('button', { name: 'Like', exact: true }).waitFor();
         assert.equal(sets[0].likes, 0);
+        page.once('dialog', dialog => dialog.accept());
+        await panel.getByRole('button', { name: 'Preview selected', exact: true }).click();
+        await page.waitForFunction(() => getComputedStyle(document.querySelector('.sample')).fontSize === '34px');
+        for (const size of ['35px', '36px']) {
+            await field.fill(size);
+            await panel.getByRole('button', { name: 'Update selected set', exact: true }).click();
+            await panel.locator('[data-status]').filter({ hasText: 'Set saved in library. Theme unchanged.' }).waitFor();
+            assert.equal(setRules.get('one')[0].declarations['font-size'], size, 'Preview and successful update advance the editing revision');
+        }
+        await select.selectOption('new');
+        await field.fill('29px');
+        await panel.getByRole('button', { name: 'Update selected set', exact: true }).click();
+        await panel.locator('[data-status]').filter({ hasText: 'Set saved in library. Theme unchanged.' }).waitFor();
+        assert.equal(setRules.get('new')[0].declarations['font-size'], '29px', 'An explicitly selected set can still be replaced without previewing it');
+        await select.selectOption('one');
         const transfer = panel.locator('[data-library-transfer]');
         await transfer.locator('summary').click();
         const downloadPromise = page.waitForEvent('download');
