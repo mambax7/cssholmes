@@ -23,11 +23,25 @@ final readonly class AnalysisContext
     public string $themePath;
     public ?string $themeId;
     public ?string $widgetName;
+    /** Custom-property prefix of a generic theme (for example "mt"); learnt from its CSS when null. */
+    public ?string $tokenPrefix;
 
-    public function __construct(string $themePath, ?string $themeId = null, ?string $widgetName = null)
-    {
+    public function __construct(
+        string $themePath,
+        ?string $themeId = null,
+        ?string $widgetName = null,
+        ?string $tokenPrefix = null
+    ) {
         $this->themePath = rtrim($themePath, '/\\');
         $this->themeId = $themeId;
         $this->widgetName = $widgetName;
+        $prefix = null === $tokenPrefix ? '' : trim(strtolower($tokenPrefix), " -\t");
+        $this->tokenPrefix = '' === $prefix ? null : $prefix;
+    }
+
+    /** True when the context points at a theme folder rather than an HTML fragment. */
+    public function isThemeFolder(): bool
+    {
+        return !str_starts_with(ltrim($this->themePath), '<') && is_dir($this->themePath);
     }
 }

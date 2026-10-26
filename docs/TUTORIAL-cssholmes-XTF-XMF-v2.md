@@ -174,7 +174,10 @@ The toolbar is your working surface. It groups into three tiers:
 - `proto` / `deuter` / `trita` / `achro` — simulate color blindness types
 
 Keyboard shortcuts: `I` inspect, `M` measure, `T` token, `P` typography,
-`U` undo, `Esc` clear selection.
+`U` undo. They only work while the toolbar is open (not minimised), never
+together with Ctrl, Cmd or Alt (so Ctrl+P and Ctrl+U keep working), and
+never while you type in a form field. `Esc` leaves inspect and measure mode
+and clears the selection; minimising the toolbar does the same.
 
 ### 4. The Admin Workbench
 

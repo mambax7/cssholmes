@@ -14,6 +14,13 @@
  *   Purple (#9b59b6) = accessibility concern
  */
 
+/* Severity marker read by the toolbar counters (E/W): every rule that flags
+   an element also sets --holmes-xtf-theme to error, warning or info. The reset
+   below has zero specificity, so the marker never inherits to children. */
+:where(.holmes-debug *) {
+    --holmes-xtf-theme: none;
+}
+
 /* ========================================= */
 /* = HARDCODED INLINE COLORS (warning)     = */
 /* ========================================= */
@@ -27,6 +34,7 @@
 .holmes-debug [style*="border-color: #"],
 .holmes-debug [style*="border-color:#"] {
     outline: 3px solid #f39c12 !important;
+    --holmes-xtf-theme: warning;
 }
 
 .holmes-debug [style*="color: #"]:hover::after,
@@ -59,6 +67,7 @@
     outline: 3px dashed #f1c40f !important;
     min-height: 40px;
     position: relative;
+    --holmes-xtf-theme: info;
 }
 
 .holmes-debug [class*="xtf-slot-"]:empty::after {
@@ -92,6 +101,7 @@
 [data-theme="dark"] .holmes-debug [style*="background: #ffffff"],
 [data-theme="dark"] .holmes-debug [style*="background:#ffffff"] {
     outline: 3px solid #9b59b6 !important;
+    --holmes-xtf-theme: warning;
 }
 
 [data-theme="dark"] .holmes-debug [style*="background: #fff"]:hover::after,
@@ -120,8 +130,10 @@
 
 .holmes-debug .xtf-slot-widget:not([data-slot]) {
     outline: 3px dashed #f39c12 !important;
+    --holmes-xtf-theme: warning;
 }
 
 .holmes-debug .xtf-slot-widget:not([data-widget]) {
     outline: 3px dashed #f39c12 !important;
+    --holmes-xtf-theme: warning;
 }

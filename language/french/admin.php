@@ -53,3 +53,6 @@ define('_AM_CSSHOLMES_FOLDERS_DELETED_OK', 'Upload Folders have been deleted');
 define('_AM_CSSHOLMES_ERROR_BAD_DEL_PATH', 'Could not delete %s directory');
 define('_AM_CSSHOLMES_ERROR_BAD_REMOVE', 'Could not delete %s');
 define('_AM_CSSHOLMES_ERROR_NO_PLUGIN', 'Could not load plugin');
+
+// Permissions
+define('_AM_CSSHOLMES_PERM_USERS_NOTICE', "Les utilisateurs enregistrés peuvent encore utiliser l'overlay ou les diagnostics de cssHolmes. Les versions précédentes accordaient ce droit à l'installation ; depuis la 3.0.0 Alpha 2, une nouvelle installation réserve tous les outils aux webmestres et une mise à jour ne modifie pas les permissions existantes. Retirez les coches des utilisateurs enregistrés dans Permissions, sauf si vous voulez que les membres voient la barre d'outils.");

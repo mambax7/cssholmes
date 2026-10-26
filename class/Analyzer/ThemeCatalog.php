@@ -12,16 +12,26 @@ namespace XoopsModules\Cssholmes\Analyzer;
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 /**
+ * Lists the site and admin themes the workbench can scan.
+ *
+ * XTF themes are found by their theme.json manifest (at any depth). Every other
+ * folder directly under the themes root that has a theme.tpl or theme.html is
+ * listed as a generic XOOPS theme, so normal themes can be scanned too.
  *
  * @copyright   2000-2026 XOOPS Project (https://xoops.org)
  * @license     GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
  * @author      XOOPS Development Team, Mamba <mambax7@gmail.com>
  */
-
 final class ThemeCatalog
 {
     /** @var ThemeTarget[]|null */
     private ?array $themes = null;
+
+    public function __construct(
+        private readonly ?string $siteRoot = null,
+        private readonly ?string $adminRoot = null,
+    ) {
+    }
 
     /** @return ThemeTarget[] */
     public function all(): array
@@ -76,6 +86,10 @@ final class ThemeCatalog
 
     private function siteThemesRoot(): string
     {
+        if (null !== $this->siteRoot) {
+            return rtrim($this->siteRoot, '/\\');
+        }
+
         if (defined('XOOPS_THEME_PATH')) {
             return rtrim(XOOPS_THEME_PATH, '/\\');
         }
@@ -85,6 +99,10 @@ final class ThemeCatalog
 
     private function adminThemesRoot(): string
     {
+        if (null !== $this->adminRoot) {
+            return rtrim($this->adminRoot, '/\\');
+        }
+
         if (defined('XOOPS_ROOT_PATH')) {
             return rtrim(XOOPS_ROOT_PATH, '/\\') . '/modules/system/themes';
         }
@@ -104,7 +122,11 @@ final class ThemeCatalog
         $themes = [];
         $normalizedRoot = str_replace('\\', '/', rtrim($rootPath, '/\\'));
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($rootPath, \FilesystemIterator::SKIP_DOTS),
+            new \RecursiveCallbackFilterIterator(
+                new \RecursiveDirectoryIterator($rootPath, \FilesystemIterator::SKIP_DOTS),
+                static fn (\SplFileInfo $current): bool => !$current->isDir()
+                    || !in_array($current->getFilename(), ['node_modules', 'vendor', '.git'], true)
+            ),
             \RecursiveIteratorIterator::SELF_FIRST
         );
 
@@ -126,7 +148,7 @@ final class ThemeCatalog
                 $label = $metadata['name'] . ' [' . $relativePath . ']';
             }
 
-            $themes[] = new ThemeTarget(
+            $themes[$relativePath] = new ThemeTarget(
                 scope: $scope,
                 key: $relativePath,
                 path: rtrim($fileInfo->getPath(), '/\\'),
@@ -135,7 +157,50 @@ final class ThemeCatalog
             );
         }
 
-        return $themes;
+        foreach ($this->genericThemeFolders($rootPath) as $folderName => $folderPath) {
+            if (isset($themes[$folderName])) {
+                continue;
+            }
+
+            $name = ThemeFiles::displayName($folderPath);
+            $themes[$folderName] = new ThemeTarget(
+                scope: $scope,
+                key: $folderName,
+                path: $folderPath,
+                label: ('' !== $name ? $name . ' [' . $folderName . ']' : $folderName) . ' (generic)',
+                type: 'generic',
+                generic: true
+            );
+        }
+
+        return array_values($themes);
+    }
+
+    /**
+     * Folders directly under the root that hold a theme.tpl or theme.html.
+     *
+     * @return array<string, string> folder name => full path
+     */
+    private function genericThemeFolders(string $rootPath): array
+    {
+        $folders = [];
+        $entries = scandir($rootPath);
+        if (false === $entries) {
+            return [];
+        }
+
+        foreach ($entries as $entry) {
+            if ('.' === $entry[0]) {
+                continue;
+            }
+
+            $folderPath = rtrim($rootPath, '/\\') . '/' . $entry;
+            if (is_dir($folderPath) && (is_file($folderPath . '/theme.tpl') || is_file($folderPath . '/theme.html'))) {
+                $folders[$entry] = $folderPath;
+            }
+        }
+
+        return $folders;
     }
 
     /**

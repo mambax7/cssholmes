@@ -34,7 +34,7 @@ define('MI_CSSHOLMES_EDITOR_ADMIN_DESC', 'Select the Editor to use by the Admin'
 define('MI_CSSHOLMES_EDITOR_USER', 'Editor: User');
 define('MI_CSSHOLMES_EDITOR_USER_DESC', 'Select the Editor to use by the User');
 define('_MI_CSSHOLMES_QUERY_KEY', "Cle de requete d'overlay");
-define('_MI_CSSHOLMES_QUERY_KEY_DESC', "Cle d'URL utilisee pour activer les overlays cssHolmes pour les administrateurs, par exemple ?holmes=html5");
+define('_MI_CSSHOLMES_QUERY_KEY_DESC', "Cle d'URL qui active l'overlay cssHolmes, par exemple ?holmes=html5. Elle ne fonctionne que pour les groupes ayant la permission Utiliser l'overlay (les webmestres par defaut).");
 
 //Help
 define('_MI_CSSHOLMES_DIRNAME', basename(dirname(__DIR__, 2)));

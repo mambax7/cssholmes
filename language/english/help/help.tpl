@@ -33,7 +33,7 @@
     <h4 class="odd">OPERATING INSTRUCTIONS</h4><br>
     <div class="even">
         <p><strong>1. Enable the overlay</strong></p>
-        <p>The overlay is opt-in and is activated by query string for admin users. Typical examples:</p>
+        <p>The overlay is opt-in and is activated by query string for groups with the Use Overlay permission (Webmasters by default). Typical examples:</p>
         <ul>
             <li><code>?holmes=html5</code></li>
             <li><code>?holmes=xtf-theme,a11y,layout</code></li>
@@ -60,12 +60,12 @@
             <li><code>copy text</code>, <code>copy json</code>, and <code>export sel</code></li>
             <li><code>undo</code> for local changes</li>
         </ul>
-        <p>Keyboard shortcuts include <code>I</code>, <code>M</code>, <code>T</code>, <code>P</code>, <code>U</code>, and <code>Esc</code>.</p>
+        <p>Keyboard shortcuts <code>I</code>, <code>M</code>, <code>T</code>, <code>P</code> and <code>U</code> work while the toolbar is open, never together with Ctrl, Cmd or Alt, and never while you type in a form field. <code>Esc</code> leaves inspect and measure mode; minimising the toolbar does the same.</p>
 
         <p><strong>3. Review results in the admin workbench</strong></p>
         <p>The admin side supports:</p>
         <ul>
-            <li>Phase 2 theme scans for XTF themes with <code>theme.json</code></li>
+            <li>theme scans for XTF themes with <code>theme.json</code> and for normal (generic) XOOPS themes; the same scan runs on the command line with <code>bin/holmes-scan.php</code></li>
             <li>widget HTML scans</li>
             <li>importing toolbar JSON exports</li>
             <li>reviewing imported changes and marking them accepted or rejected</li>

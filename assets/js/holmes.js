@@ -4,10 +4,13 @@
     const PROFILE_ALIASES = { theme: 'xtf-theme', widget: 'xtf-widget', accessibility: 'a11y', html: 'html5' };
     const TOOLBAR_ID = 'cssholmes-toolbar';
     const INSPECTOR_ID = 'cssholmes-inspector';
-    const COUNTER_COLORS = {
-        error: ['rgb(239, 68, 68)', 'rgb(220, 38, 38)', 'rgb(231, 76, 60)'],
-        warning: ['rgb(245, 158, 11)', 'rgb(217, 70, 239)', 'rgb(243, 156, 18)', 'rgb(241, 196, 15)', 'rgb(155, 89, 182)'],
-    };
+    // Each profile stylesheet marks the elements it flags with a custom
+    // property named after the profile, for example
+    // `--holmes-html5: error` or `--holmes-a11y: warning`. The counters read
+    // these markers instead of guessing severity from outline colours.
+    const SEVERITY_PROPERTY_PREFIX = '--holmes-';
+    // Keys handled by the keyboard shortcuts (I, M, T, P, U).
+    const SHORTCUT_KEYS = ['i', 'm', 't', 'p', 'u'];
 
     const script = document.currentScript || Array.from(document.scripts).find((item) => (item.src || '').includes('/assets/js/holmes.js')) || null;
     const scriptUrl = script ? new URL(script.src, window.location.href) : new URL(window.location.href);
@@ -43,6 +46,7 @@
     let overflowOverlays = [];
     let zIndexOverlays = [];
     let gridOverlays = [];
+    let cachedCounts = null;
 
     function normalizeProfiles(value) {
         const raw = String(value || '').trim();
@@ -124,6 +128,10 @@
                 link.id = id;
                 link.rel = 'stylesheet';
                 link.href = `${moduleUrl}/assets/css/profiles/${profile}.css`;
+                link.addEventListener('load', () => {
+                    markCountsDirty();
+                    refreshToolbar();
+                });
                 document.head.appendChild(link);
             }
             if (!enabled && existing) {
@@ -142,21 +150,46 @@
         window.history.replaceState({}, document.title, pageUrl.toString());
     }
 
+    function markCountsDirty() {
+        cachedCounts = null;
+    }
+
+    function severityOf(style) {
+        let severity = '';
+        for (const profile of activeProfiles) {
+            const value = style.getPropertyValue(`${SEVERITY_PROPERTY_PREFIX}${profile}`).trim();
+            if (value === 'error') {
+                return 'error';
+            }
+            if (value === 'warning') {
+                severity = 'warning';
+            }
+        }
+        return severity;
+    }
+
     function countFindings() {
+        if (cachedCounts !== null) {
+            return cachedCounts;
+        }
         let errors = 0;
         let warnings = 0;
-        document.querySelectorAll('body *').forEach((element) => {
-            const style = window.getComputedStyle(element);
-            if ((style.outlineStyle || 'none') === 'none') {
-                return;
-            }
-            if (COUNTER_COLORS.error.includes(style.outlineColor || '')) {
-                errors++;
-            } else if (COUNTER_COLORS.warning.includes(style.outlineColor || '')) {
-                warnings++;
-            }
-        });
-        return { errors, warnings };
+        if (activeProfiles.length > 0 && document.body) {
+            const elements = [document.documentElement, document.body, ...document.body.querySelectorAll('*')];
+            elements.forEach((element) => {
+                if (isInternal(element) || element.closest('[data-holmes-ui]')) {
+                    return;
+                }
+                const severity = severityOf(window.getComputedStyle(element));
+                if (severity === 'error') {
+                    errors++;
+                } else if (severity === 'warning') {
+                    warnings++;
+                }
+            });
+        }
+        cachedCounts = { errors, warnings };
+        return cachedCounts;
     }
 
     function currentTarget() {
@@ -752,6 +785,7 @@
         activeProfiles = activeProfiles.includes(profile)
             ? activeProfiles.filter((candidate) => candidate !== profile)
             : [...activeProfiles, profile];
+        markCountsDirty();
         persistProfiles(activeProfiles);
         syncRootState();
         ensureStylesheets();
@@ -946,6 +980,7 @@
     }
 
     function recordChange(change) {
+        markCountsDirty();
         changeLog.unshift(change);
         if (changeLog.length > 20) {
             changeLog = changeLog.slice(0, 20);
@@ -954,6 +989,7 @@
     }
 
     function undoLastChange() {
+        markCountsDirty();
         const change = changeLog.shift();
         if (!change || !(change.element instanceof HTMLElement) || !document.contains(change.element)) {
             refreshToolbar();
@@ -1062,6 +1098,44 @@
         draw();
     }
 
+    /**
+     * Shortcuts only work while the toolbar is open. When it is minimised,
+     * cssHolmes stays out of the way and every key reaches the page.
+     */
+    function shortcutsActive() {
+        return toolbar instanceof HTMLElement && !toolbar.classList.contains('cssholmes--minimized');
+    }
+
+    function isTypingTarget(event) {
+        const candidates = [event.target, document.activeElement];
+        if (typeof event.composedPath === 'function') {
+            candidates.unshift(event.composedPath()[0]);
+        }
+        return candidates.some((node) => node instanceof HTMLElement
+            && (['INPUT', 'TEXTAREA', 'SELECT'].includes(node.tagName) || node.isContentEditable));
+    }
+
+    /**
+     * Turn off inspect and measure, drop the selection and close the editors.
+     * Diagnostic overlays (overflow, z-index, grid, colour simulation) stay;
+     * the reset button clears those. Returns true when anything changed.
+     */
+    function leaveInspectionModes() {
+        const active = inspectEnabled || measureEnabled || selected !== null || tokenEditorOpen || typographyEditorOpen;
+        if (!active) {
+            return false;
+        }
+        inspectEnabled = false;
+        measureEnabled = false;
+        hovered = null;
+        selected = null;
+        tokenEditorOpen = false;
+        typographyEditorOpen = false;
+        syncRootState();
+        draw();
+        return true;
+    }
+
     function attachListeners() {
         document.addEventListener('mousemove', (event) => {
             pointerX = event.clientX;
@@ -1096,36 +1170,40 @@
         }, true);
 
         document.addEventListener('keydown', (event) => {
-            const activeTag = document.activeElement ? document.activeElement.tagName : '';
-            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(activeTag) || document.activeElement?.isContentEditable) {
+            // Escape leaves inspect/measure mode and closes the editors. It is
+            // only consumed when one of them is active, so page dialogs keep
+            // their own Escape handling otherwise.
+            if (event.key === 'Escape') {
+                if (leaveInspectionModes()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
                 return;
             }
-            if (event.key === 'i' || event.key === 'I') {
-                event.preventDefault();
+            if (!shortcutsActive() || event.ctrlKey || event.metaKey || event.altKey || event.isComposing
+                || isTypingTarget(event)) {
+                return;
+            }
+            const key = String(event.key || '').toLowerCase();
+            if (!SHORTCUT_KEYS.includes(key)) {
+                return;
+            }
+            event.preventDefault();
+            if (key === 'i') {
                 inspectEnabled = !inspectEnabled;
-                if (inspectEnabled) {
-                    hovered = inspectableAt(pointerX, pointerY);
-                } else {
-                    hovered = null;
-                }
+                hovered = inspectEnabled ? inspectableAt(pointerX, pointerY) : null;
                 syncRootState();
                 draw();
-            } else if (event.key === 'm' || event.key === 'M') {
-                event.preventDefault();
+            } else if (key === 'm') {
                 measureEnabled = !measureEnabled;
                 syncRootState();
                 draw();
-            } else if (event.key === 'u' || event.key === 'U') {
-                event.preventDefault();
+            } else if (key === 'u') {
                 undoLastChange();
-            } else if (event.key === 't' || event.key === 'T') {
-                event.preventDefault();
+            } else if (key === 't') {
                 editToken();
-            } else if (event.key === 'p' || event.key === 'P') {
-                event.preventDefault();
+            } else if (key === 'p') {
                 editTypography();
-            } else if (event.key === 'Escape') {
-                clearInspector();
             }
         }, true);
 
@@ -1453,6 +1531,7 @@
                         <button type="button" class="cssholmes-btn" data-action="measure">measure</button>
                         ${canEdit ? `<button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="edit-token">token</button>
                         <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="edit-typography">typo</button>
+                        ${pageScope === 'site' && document.getElementById('cssholmes-designer-config') ? '<button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="theme-designer">theme designer</button>' : ''}
                         <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="edit-text">text</button>
                         <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="undo">undo</button>` : ''}
                         <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="select-widget">widget</button>
@@ -1503,10 +1582,13 @@
             }
             switch (target.getAttribute('data-action')) {
                 case 'minimize':
+                    // A minimised toolbar must not keep capturing clicks.
+                    leaveInspectionModes();
                     element.classList.add('cssholmes--minimized');
                     break;
                 case 'clear':
                     activeProfiles = [];
+                    markCountsDirty();
                     persistProfiles(activeProfiles);
                     syncRootState();
                     ensureStylesheets();
@@ -1539,6 +1621,14 @@
                 case 'edit-typography':
                     editTypography();
                     break;
+                case 'theme-designer': {
+                    const selected = currentTarget();
+                    leaveInspectionModes();
+                    syncRootState();
+                    draw();
+                    window.dispatchEvent(new CustomEvent('cssholmes:design', { detail: { target: selected } }));
+                    break;
+                }
                 case 'close-token-editor':
                     tokenEditorOpen = false;
                     refreshToolbar();
@@ -1652,10 +1742,20 @@
             }
         });
         attachListeners();
+        window.addEventListener('load', () => {
+            markCountsDirty();
+            refreshToolbar();
+        }, { once: true });
         loadThemeTokens();
         draw();
         window.setTimeout(refreshToolbar, 120);
     }
+
+    window.addEventListener('cssholmes:designer-opened', () => {
+        leaveInspectionModes();
+        syncRootState();
+        draw();
+    });
 
     activeProfiles = supportedProfiles(resolveProfiles());
     syncRootState();

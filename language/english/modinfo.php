@@ -35,7 +35,7 @@ define('MI_CSSHOLMES_EDITOR_ADMIN_DESC', 'Select the Editor to use by the Admin'
 define('MI_CSSHOLMES_EDITOR_USER', 'Editor: User');
 define('MI_CSSHOLMES_EDITOR_USER_DESC', 'Select the Editor to use by the User');
 define('_MI_CSSHOLMES_QUERY_KEY', 'Overlay query key');
-define('_MI_CSSHOLMES_QUERY_KEY_DESC', 'Query-string key used to activate cssHolmes overlays for administrators, for example ?holmes=html5');
+define('_MI_CSSHOLMES_QUERY_KEY_DESC', 'Query-string key that activates the cssHolmes overlay, for example ?holmes=html5. It only works for groups with the Use Overlay permission (Webmasters by default).');
 
 //Help
 define('_MI_CSSHOLMES_DIRNAME', basename(dirname(__DIR__, 2)));
@@ -49,3 +49,6 @@ define('_MI_CSSHOLMES_OVERVIEW', 'Overview');
 define('_MI_CSSHOLMES_DISCLAIMER', 'Disclaimer');
 define('_MI_CSSHOLMES_LICENSE', 'License');
 define('_MI_CSSHOLMES_SUPPORT', 'Support');
+
+define('_MI_CSSHOLMES_MANAGER_THEME_SETS', 'Theme sets');
+define('_MI_CSSHOLMES_MANAGER_THEME_SETS_DESC', 'Browse, preview, share and activate named theme sets');

@@ -101,6 +101,8 @@ foreach ($tabs as $key => $tab) {
 }
 echo '</div>';
 
+echo \XoopsModules\Cssholmes\Utility::registeredUserToolNotice($moduleDirName, (int)$moduleId);
+
 // Description
 echo '<p style="margin-bottom:1rem;color:#475569;">' . htmlspecialchars($currentTab['desc'], ENT_QUOTES) . '</p>';
 

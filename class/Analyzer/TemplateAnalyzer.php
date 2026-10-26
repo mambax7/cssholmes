@@ -20,11 +20,21 @@ namespace XoopsModules\Cssholmes\Analyzer;
 
 final class TemplateAnalyzer implements AnalyzerInterface
 {
+    /**
+     * Variables a theme prints that core does not escape.
+     *
+     * Core already escapes $xoops_sitename, $xoops_slogan, $xoops_requesturi
+     * and the $xoops_meta_* values in class/theme.php (XOOPS 2.7.x and 2.8.x),
+     * so they are deliberately not listed. $xoops_pagetitle defaults to the
+     * (escaped) module name, but a title a module assigns is passed through
+     * unchanged.
+     */
     private const USER_DATA_VARS = [
         'xoops_pagetitle',
-        'xoops_sitename',
-        'xoops_slogan',
     ];
+
+    /** Modifiers that make the output safe for HTML. */
+    private const ESCAPING_MODIFIERS = ['escape', 'htmlspecialchars', 'htmlentities', 'strip_tags'];
 
     private const WRONG_DELIMITER_PATTERN = '/(?<![<])\{(if |foreach |include |assign |\$[a-z])/';
 
@@ -42,14 +52,19 @@ final class TemplateAnalyzer implements AnalyzerInterface
     public function analyze(AnalysisContext $context): array
     {
         $themePath = $context->themePath;
-        $manifestPath = $themePath . '/theme.json';
-        $data = $this->loadManifest($manifestPath);
+        if (!$context->isThemeFolder()) {
+            return [];
+        }
+
+        $data = $this->loadManifest($themePath . '/theme.json');
+        $generic = !ThemeFiles::hasManifest($themePath);
         $templateFiles = $this->discoverTemplates($themePath, $data);
 
         if ([] === $templateFiles) {
             return [];
         }
 
+        $resolver = new TemplateIncludeResolver($themePath);
         $findings = [];
         foreach ($templateFiles as $relativePath => $fullPath) {
             $content = file_get_contents($fullPath);
@@ -58,11 +73,11 @@ final class TemplateAnalyzer implements AnalyzerInterface
             }
 
             $this->checkWrongDelimiters($content, $relativePath, $findings);
-            $this->checkIncludes($content, $themePath, $relativePath, $findings);
+            $this->checkIncludes($content, $resolver, $relativePath, $findings);
             $this->checkUnescapedUserVars($content, $relativePath, $findings);
         }
 
-        $this->checkRootTemplate($themePath, $findings);
+        $this->checkRootTemplate($resolver, $generic, $findings);
         $this->checkSlotVarRefs($data, $templateFiles, $findings);
 
         return $findings;
@@ -113,27 +128,7 @@ final class TemplateAnalyzer implements AnalyzerInterface
             }
         }
 
-        foreach (['tpl', 'xotpl', 'templates'] as $directory) {
-            $directoryPath = $themePath . '/' . $directory;
-            if (!is_dir($directoryPath)) {
-                continue;
-            }
-
-            $matches = glob($directoryPath . '/*.tpl');
-            if (false === $matches) {
-                continue;
-            }
-
-            foreach ($matches as $filePath) {
-                $templates[$directory . '/' . basename($filePath)] = $filePath;
-            }
-        }
-
-        if (is_file($themePath . '/theme.tpl')) {
-            $templates['theme.tpl'] = $themePath . '/theme.tpl';
-        }
-
-        return $templates;
+        return array_merge($templates, ThemeFiles::templates($themePath));
     }
 
     /**
@@ -141,8 +136,11 @@ final class TemplateAnalyzer implements AnalyzerInterface
      */
     private function checkWrongDelimiters(string $content, string $file, array &$findings): void
     {
-        $cleaned = preg_replace('/<script\b[^>]*>.*?<\/script>/si', '', $content) ?? $content;
-        $cleaned = preg_replace('/<\{literal\}>.*?<\{\/literal\}>/si', '', $cleaned) ?? $cleaned;
+        $cleaned = SmartySource::stripComments($content);
+        $keepLines = static fn (array $match): string => str_repeat("\n", substr_count($match[0], "\n"));
+        $cleaned = preg_replace_callback('/<script\b[^>]*>.*?<\/script>/si', $keepLines, $cleaned) ?? $cleaned;
+        $cleaned = preg_replace_callback('/<style\b[^>]*>.*?<\/style>/si', $keepLines, $cleaned) ?? $cleaned;
+        $cleaned = preg_replace_callback('/<\{literal\}>.*?<\{\/literal\}>/si', $keepLines, $cleaned) ?? $cleaned;
         $lines = preg_split('/\R/', $cleaned) ?: [];
 
         foreach ($lines as $lineNumber => $line) {
@@ -164,30 +162,28 @@ final class TemplateAnalyzer implements AnalyzerInterface
     /**
      * @param Finding[] $findings
      */
-    private function checkIncludes(string $content, string $themePath, string $file, array &$findings): void
-    {
-        if (!preg_match_all('/<\{include\s+file=["\']([^"\'$]+)["\']\s*\}>/', $content, $matches, PREG_OFFSET_CAPTURE)) {
-            return;
-        }
-
-        foreach ($matches[1] as $match) {
-            $includePath = (string)$match[0];
-            if (str_starts_with($includePath, 'db:') || str_contains($includePath, '$')) {
-                continue;
-            }
-
-            $lineNumber = substr_count(substr($content, 0, (int)$match[1]), "\n") + 1;
-            $fullPath = $themePath . '/' . ltrim(str_replace('\\', '/', $includePath), '/');
-            if (is_file($fullPath)) {
+    private function checkIncludes(
+        string $content,
+        TemplateIncludeResolver $resolver,
+        string $file,
+        array &$findings
+    ): void {
+        foreach ($resolver->includesIn($content, $file) as $include) {
+            if (TemplateIncludeResolver::STATUS_THEME !== $include['status'] || $include['exists']) {
                 continue;
             }
 
             $findings[] = new Finding(
                 Severity::Error,
                 'tpl/include-missing',
-                "Template include target '{$includePath}' not found",
+                sprintf(
+                    'Included template file=%s not found (looked for %s/%s)',
+                    $include['argument'],
+                    $resolver->themeName(),
+                    $include['path']
+                ),
                 $file,
-                $lineNumber,
+                $include['line'],
                 'Create the target template or fix the path.'
             );
         }
@@ -198,44 +194,54 @@ final class TemplateAnalyzer implements AnalyzerInterface
      */
     private function checkUnescapedUserVars(string $content, string $file, array &$findings): void
     {
+        $content = SmartySource::stripComments($content);
         foreach (self::USER_DATA_VARS as $variable) {
-            $pattern = '/<\{\$' . preg_quote($variable, '/') . '\s*\}>/';
-            if (!preg_match($pattern, $content, $match, PREG_OFFSET_CAPTURE)) {
+            $pattern = '/<\{\$' . preg_quote($variable, '/') . '((?:\|[^}]*)?)\s*\}>/';
+            if (!preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER)) {
                 continue;
             }
 
-            if (preg_match('/<\{\$' . preg_quote($variable, '/') . '\|escape/', $content)) {
-                continue;
-            }
+            foreach ($matches as $match) {
+                if ($this->hasEscapingModifier((string)$match[1][0])) {
+                    continue;
+                }
 
-            $lineNumber = substr_count(substr($content, 0, (int)$match[0][1]), "\n") + 1;
-            $findings[] = new Finding(
-                Severity::Warning,
-                'tpl/unescaped-user-var',
-                "User data variable '\${$variable}' output without |escape",
-                $file,
-                $lineNumber,
-                "Add |escape:'html' filter."
-            );
+                $findings[] = new Finding(
+                    Severity::Warning,
+                    'tpl/unescaped-user-var',
+                    "Variable '\${$variable}' is printed without |escape; "
+                    . 'core passes titles set by modules through unchanged',
+                    $file,
+                    SmartySource::lineAt($content, (int)$match[0][1]),
+                    "Use <{\${$variable}|escape:'html':'UTF-8':false}> so raw text is escaped "
+                    . 'and text a module already escaped is not encoded twice.'
+                );
+            }
         }
+    }
+
+    private function hasEscapingModifier(string $modifiers): bool
+    {
+        foreach (self::ESCAPING_MODIFIERS as $modifier) {
+            if (preg_match('/\|\s*' . $modifier . '\b/', $modifiers)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
      * @param Finding[] $findings
      */
-    private function checkRootTemplate(string $themePath, array &$findings): void
+    private function checkRootTemplate(TemplateIncludeResolver $resolver, bool $generic, array &$findings): void
     {
-        $rootTemplate = $themePath . '/theme.tpl';
-        if (!is_file($rootTemplate)) {
+        $content = $resolver->expandedPage();
+        if ('' === $content) {
             return;
         }
 
-        $content = file_get_contents($rootTemplate);
-        if (false === $content) {
-            return;
-        }
-
-        if (!str_contains($content, 'xtf_design_tokens')) {
+        if (!$generic && !str_contains($content, 'xtf_design_tokens')) {
             $findings[] = new Finding(
                 Severity::Info,
                 'tpl/design-token-style-tag',
@@ -247,11 +253,11 @@ final class TemplateAnalyzer implements AnalyzerInterface
 
         if (!str_contains($content, 'xoops_module_header')) {
             $findings[] = new Finding(
-                Severity::Info,
+                Severity::Warning,
                 'tpl/module-header',
-                'theme.tpl does not inject module header',
+                'theme.tpl (with its includes) never prints $xoops_module_header',
                 'theme.tpl',
-                suggestion: 'Add <{if isset($xoops_module_header)}><{$xoops_module_header}><{/if}> to <head>.'
+                suggestion: 'Add <{$xoops_module_header}> to <head>; modules add their CSS, JS and meta tags there.'
             );
         }
     }
@@ -263,7 +269,9 @@ final class TemplateAnalyzer implements AnalyzerInterface
      */
     private function checkSlotVarRefs(array $data, array $templateFiles, array &$findings): void
     {
-        $declaredSlots = is_array($data['slots'] ?? null) ? array_values(array_filter($data['slots'], 'is_string')) : [];
+        $declaredSlots = is_array($data['slots'] ?? null)
+            ? array_values(array_filter($data['slots'], 'is_string'))
+            : [];
         if ([] === $declaredSlots) {
             return;
         }
@@ -272,7 +280,7 @@ final class TemplateAnalyzer implements AnalyzerInterface
         foreach ($templateFiles as $fullPath) {
             $content = file_get_contents($fullPath);
             if (false !== $content) {
-                $allContent .= $content . "\n";
+                $allContent .= SmartySource::stripComments($content) . "\n";
             }
         }
 

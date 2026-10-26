@@ -47,6 +47,14 @@
 *		the style, then the content
 *
 */
+
+/* Severity marker read by the toolbar counters (E/W): every rule that flags
+   an element also sets --holmes-html5 to error, warning or info. The reset
+   below has zero specificity, so the marker never inherits to children. */
+:where(.holmes-debug *) {
+    --holmes-html5: none;
+}
+
 /* ====================================================== */
 /* = OUTLINES / BORDERS ================================= */
 /* ====================================================== */
@@ -61,12 +69,14 @@
 .holmes-debug a:not([href]),
 .holmes-debug a[href=""] {
 	outline: 2px solid red;
+	--holmes-html5: error;
 }
 
 .holmes-debug a[href="#"],
 .holmes-debug a[href^="javascript"],
 .holmes-debug a[title=""]{
 	outline: 2px solid #fd0;
+	--holmes-html5: warning;
 }
 
 
@@ -77,10 +87,12 @@
 
 .holmes-debug img:not([alt]){
   outline: 2px solid red;
+  --holmes-html5: error;
 }
 
 .holmes-debug img[alt=""] {
   outline: 2px solid #fd0;
+  --holmes-html5: warning;
 }
 /*************************
 	MISC ATTRIBUTES
@@ -102,11 +114,9 @@
 .holmes-debug abbr[title=""],
 
 .holmes-debug [class=""],
-.holmes-debug [id=""],
-
-.holmes-debug table:not([summary]),
-.holmes-debug table[summary=""]{
+.holmes-debug [id=""] {
 	outline: 2px solid red;
+	--holmes-html5: error;
 }
 /* 
 	Warnings here, for inline styles and event calls, 
@@ -123,7 +133,8 @@
 .holmes-debug [onunload]
  */{ 
 	outline: 2px solid #fd0;
- }
+	--holmes-html5: warning;
+}
 
 /*************************************************************************
 	DEPRECATED & NON-W3C CONTENT ELEMENTS (#a9a9a9)
@@ -142,23 +153,27 @@
 .holmes-debug plaintext,  
 .holmes-debug xmp {
 	border: 2px solid #a9a9a9;
+	--holmes-html5: warning;
 }
 
-body.holmes-debug[background], 
-body.holmes-debug[bgproperties], 
-body.holmes-debug[topmargin], 
-body.holmes-debug[rightmargin], 
-body.holmes-debug[bottommargin], 
-body.holmes-debug[leftmargin] {
+body.holmes-debug[background], .holmes-debug body[background], 
+body.holmes-debug[bgproperties], .holmes-debug body[bgproperties], 
+body.holmes-debug[topmargin], .holmes-debug body[topmargin], 
+body.holmes-debug[rightmargin], .holmes-debug body[rightmargin], 
+body.holmes-debug[bottommargin], .holmes-debug body[bottommargin], 
+body.holmes-debug[leftmargin], .holmes-debug body[leftmargin] {
 	outline: 2px solid #a9a9a9;
+	--holmes-html5: warning;
 }
 
 
 .holmes-debug *[bordercolor], 
 .holmes-debug *[bordercolordark], 
 .holmes-debug *[bordercolorlight],
-.holmes-debug table[frame] {
+.holmes-debug table[frame],
+.holmes-debug table[summary] {
 	border: 2px solid #a9a9a9;
+	--holmes-html5: warning;
 }
 
 .holmes-debug *[align], 
@@ -167,6 +182,7 @@ body.holmes-debug[leftmargin] {
 .holmes-debug *[clear], 
 .holmes-debug ul[type], .holmes-debug li[type] {
 	border: 2px solid #a9a9a9;
+	--holmes-html5: warning;
 }
 
 /*********************
@@ -180,6 +196,7 @@ body.holmes-debug[leftmargin] {
 .holmes-debug td:empty, 
 .holmes-debug th:empty {
 	border: 2px solid #fd0;
+	--holmes-html5: warning;
 }
 
 	
@@ -248,10 +265,7 @@ body.holmes-debug[leftmargin] {
 .holmes-debug abbr[title=""]:hover::after,
 
 .holmes-debug [class=""]:hover::after,
-.holmes-debug [id=""]:hover::after,
-
-.holmes-debug table:not([summary]):hover::after,
-.holmes-debug table[summary=""]:hover::after {
+.holmes-debug [id=""]:hover::after {
 	border-radius: 0.5em;
 	display:block;
 	padding: 1em;
@@ -286,6 +300,7 @@ body.holmes-debug[leftmargin] {
 .holmes-debug *[bordercolorlight]:hover::after,
 
 .holmes-debug table[frame]:hover::after,
+.holmes-debug table[summary]:hover::after,
 .holmes-debug *[align]:hover::after, 
 .holmes-debug *[valign]:hover::after, 
 .holmes-debug *[bgcolor]:hover::after, 
@@ -309,12 +324,12 @@ body.holmes-debug[leftmargin] {
 /* = Deprecated body style Styles = */
 /* ================================ */
 
-body.holmes-debug[background]:hover::after, 
-body.holmes-debug[bgproperties]:hover::after, 
-body.holmes-debug[topmargin]:hover::after, 
-body.holmes-debug[rightmargin]:hover::after, 
-body.holmes-debug[bottommargin]:hover::after, 
-body.holmes-debug[leftmargin]:hover::after { 
+body.holmes-debug[background]:hover::after, .holmes-debug body[background]:hover::after, 
+body.holmes-debug[bgproperties]:hover::after, .holmes-debug body[bgproperties]:hover::after, 
+body.holmes-debug[topmargin]:hover::after, .holmes-debug body[topmargin]:hover::after, 
+body.holmes-debug[rightmargin]:hover::after, .holmes-debug body[rightmargin]:hover::after, 
+body.holmes-debug[bottommargin]:hover::after, .holmes-debug body[bottommargin]:hover::after, 
+body.holmes-debug[leftmargin]:hover::after, .holmes-debug body[leftmargin]:hover::after { 
 	border-radius: 0.5em;
 	display:block;
 	padding: 1em;
@@ -406,10 +421,7 @@ body.holmes-debug[leftmargin]:hover::after {
 	content:'Blank id attribute';
 }
 
-.holmes-debug table:not([summary]):hover::after,
-.holmes-debug table[summary=""]:hover::after {
-	content:'Missing summary attribute';
-}
+/* summary is obsolete in HTML5: flagged with the deprecated attributes below */
 
 .holmes-debug [style]:hover::after {
 	content: 'Element has inline styles';
@@ -439,18 +451,18 @@ body.holmes-debug[leftmargin]:hover::after {
 	Based largely on http://www.w3.org/TR/html5/obsolete.html#obsolete
 ************************************************************************/
 
-body.holmes-debug[background]:hover::after {
+body.holmes-debug[background]:hover::after, .holmes-debug body[background]:hover::after {
 	content:'Deprecated or Non-W3C body attribute background';
 }
 
-body.holmes-debug[bgproperties]:hover::after {
+body.holmes-debug[bgproperties]:hover::after, .holmes-debug body[bgproperties]:hover::after {
 	content:'Deprecated or Non-W3C body attribute bgproperties';
 }
  
-body.holmes-debug[topmargin]:hover::after,
-body.holmes-debug[rightmargin]:hover::after, 
-body.holmes-debug[bottommargin]:hover::after, 
-body.holmes-debug[leftmargin]:hover::after {
+body.holmes-debug[topmargin]:hover::after, .holmes-debug body[topmargin]:hover::after,
+body.holmes-debug[rightmargin]:hover::after, .holmes-debug body[rightmargin]:hover::after, 
+body.holmes-debug[bottommargin]:hover::after, .holmes-debug body[bottommargin]:hover::after, 
+body.holmes-debug[leftmargin]:hover::after, .holmes-debug body[leftmargin]:hover::after {
 	content:'Deprecated or Non-W3C body attribute *margin';
 }	
 
@@ -458,6 +470,10 @@ body.holmes-debug[leftmargin]:hover::after {
 .holmes-debug *[bordercolordark]:hover::after, 
 .holmes-debug *[bordercolorlight]:hover::after {
 	content:'Deprecated or Non-W3C attribute bordercolor';
+}
+
+.holmes-debug table[summary]:hover::after {
+	content:'Obsolete table attribute summary: use a caption or aria-describedby';
 }
 
 .holmes-debug table[frame]:hover::after {

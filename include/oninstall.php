@@ -72,14 +72,13 @@ function xoops_module_install_cssholmes(\XoopsModule $module)
     // $moduleId2        = $helper->getModule()->mid();
     /** @var \XoopsGroupPermHandler $grouppermHandler */
     $grouppermHandler = xoops_getHandler('groupperm');
-    // Access rights
+    // Access rights. Every cssHolmes tool goes to the Webmasters group only;
+    // grant other groups access in Admin > cssHolmes > Permissions if needed.
     // overlay — see toolbar, toggle profiles, inspect, measure
     $grouppermHandler->addRight($moduleDirName . '_overlay', 1, XOOPS_GROUP_ADMIN, $moduleId);
-    $grouppermHandler->addRight($moduleDirName . '_overlay', 1, XOOPS_GROUP_USERS, $moduleId);
 
     // diagnose — overflow, z-index, grid, color blindness
     $grouppermHandler->addRight($moduleDirName . '_diagnose', 1, XOOPS_GROUP_ADMIN, $moduleId);
-    $grouppermHandler->addRight($moduleDirName . '_diagnose', 1, XOOPS_GROUP_USERS, $moduleId);
 
     // edit — token editor, typo editor, text editor, undo
     $grouppermHandler->addRight($moduleDirName . '_edit', 1, XOOPS_GROUP_ADMIN, $moduleId);

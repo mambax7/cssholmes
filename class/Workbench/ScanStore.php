@@ -24,6 +24,7 @@ use XoopsModules\Cssholmes\Analyzer\ThemeTarget;
 final class ScanStore
 {
     private const STORE_FILE = 'scans.json';
+    private const MAX_PER_THEME = 20;
 
     public function __construct(private readonly string $modulePath)
     {
@@ -94,9 +95,37 @@ final class ScanStore
         ];
 
         $records[] = $record;
-        $this->writeStore($records);
+        $this->writeStore($this->prune($records, $theme->scope, $theme->key));
 
         return $record;
+    }
+
+    /**
+     * Keep only the newest MAX_PER_THEME scans of the given theme.
+     *
+     * @param array<int, array<string, mixed>> $records
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function prune(array $records, string $scope, string $themeKey): array
+    {
+        $ofTheme = [];
+        foreach ($records as $index => $record) {
+            if ((string)($record['scope'] ?? '') === $scope && (string)($record['theme_key'] ?? '') === $themeKey) {
+                $ofTheme[$index] = (string)($record['id'] ?? '');
+            }
+        }
+
+        if (count($ofTheme) <= self::MAX_PER_THEME) {
+            return $records;
+        }
+
+        arsort($ofTheme);
+        foreach (array_slice(array_keys($ofTheme), self::MAX_PER_THEME) as $index) {
+            unset($records[$index]);
+        }
+
+        return array_values($records);
     }
 
     /**

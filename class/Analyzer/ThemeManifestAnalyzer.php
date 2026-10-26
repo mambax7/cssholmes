@@ -37,6 +37,19 @@ final class ThemeManifestAnalyzer implements AnalyzerInterface
         $manifestPath = $themePath . '/theme.json';
 
         if (!is_file($manifestPath)) {
+            if (ThemeFiles::isTheme($themePath)) {
+                // A normal XOOPS theme: theme.json is optional, so nothing to validate.
+                return [
+                    new Finding(
+                        Severity::Info,
+                        'manifest/generic-theme',
+                        'Generic XOOPS theme (no theme.json): XTF manifest checks skipped',
+                        'theme.json',
+                        suggestion: 'Nothing to do unless the theme should become an XTF theme.'
+                    ),
+                ];
+            }
+
             return [
                 new Finding(
                     Severity::Error,

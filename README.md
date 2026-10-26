@@ -21,4 +21,10 @@ Current and upcoming "next generation" versions of XOOPS CMS are crafted on GitH
 
 Local module documentation:
 
+- Visual theme designer: [select, preview and save theme styles](docs/visual-designer.md).
+- Theme configuration sets: [library, palettes, import/export and original reset](docs/theme-sets.md).
+- Version 3.3 adds live token/contrast inspection, XTF color-mode support, and read-only xStyles viewport integration.
+- `php tests/designer-http.php --browser --specimens` verifies the existing designer roundtrip and the installed xbootstrap5/mytheme6 specimens in temporary storage. See [xStyles release verification](../xstyles/docs/release-verification.md) for Firefox and screenshot commands.
+- [XOOPS 4 / XMF 2 / XTF migration boundaries](docs/xoops4-migration.md) and `tests/xtf-contract.php` document verified package contracts; a native installed port is still a separate step.
+
 - Tutorial: [docs/TUTORIAL-cssholmes-XTF-XMF.md](docs/TUTORIAL-cssholmes-XTF-XMF-v2.md)

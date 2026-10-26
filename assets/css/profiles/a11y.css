@@ -14,12 +14,20 @@
  *   Purple (#9b59b6) = accessibility concern
  */
 
+/* Severity marker read by the toolbar counters (E/W): every rule that flags
+   an element also sets --holmes-a11y to error, warning or info. The reset
+   below has zero specificity, so the marker never inherits to children. */
+:where(.holmes-debug *) {
+    --holmes-a11y: none;
+}
+
 /* ========================================= */
 /* = MISSING LANG (error)                  = */
 /* ========================================= */
 
 .holmes-debug:not([lang]) {
     border: 5px solid #9b59b6 !important;
+    --holmes-a11y: warning;
 }
 
 .holmes-debug:not([lang])::before {
@@ -50,6 +58,7 @@
 
 .holmes-debug a:empty:not([aria-label]):not([aria-labelledby]):not(:has(img[alt])) {
     outline: 3px solid #e74c3c !important;
+    --holmes-a11y: error;
 }
 
 .holmes-debug a:empty:not([aria-label]):not([aria-labelledby]):hover::after {
@@ -73,6 +82,7 @@
 
 .holmes-debug button:empty:not([aria-label]):not([aria-labelledby]) {
     outline: 3px solid #e74c3c !important;
+    --holmes-a11y: error;
 }
 
 .holmes-debug button:empty:not([aria-label]):not([aria-labelledby]):hover::after {
@@ -96,6 +106,7 @@
 
 .holmes-debug img:not([alt]) {
     outline: 3px solid #e74c3c !important;
+    --holmes-a11y: error;
 }
 
 /* ========================================= */
@@ -106,6 +117,7 @@
 .holmes-debug select:not([aria-label]):not([aria-labelledby]):not([id]),
 .holmes-debug textarea:not([aria-label]):not([aria-labelledby]):not([id]) {
     outline: 3px solid #9b59b6 !important;
+    --holmes-a11y: warning;
 }
 
 .holmes-debug input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([aria-label]):not([id]):hover::after,
@@ -131,6 +143,7 @@
 
 .holmes-debug [tabindex]:not([tabindex="0"]):not([tabindex="-1"]):not([tabindex=""]) {
     outline: 3px solid #9b59b6 !important;
+    --holmes-a11y: warning;
 }
 
 .holmes-debug [tabindex]:not([tabindex="0"]):not([tabindex="-1"]):not([tabindex=""]):hover::after {

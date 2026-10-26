@@ -11,6 +11,13 @@
  *   Yellow (#f1c40f) = info
  */
 
+/* Severity marker read by the toolbar counters (E/W): every rule that flags
+   an element also sets --holmes-layout to error, warning or info. The reset
+   below has zero specificity, so the marker never inherits to children. */
+:where(.holmes-debug *) {
+    --holmes-layout: none;
+}
+
 /* ========================================= */
 /* = EMPTY BLOCK ELEMENTS (info)           = */
 /* ========================================= */
@@ -22,6 +29,7 @@
 .holmes-debug nav:empty {
     outline: 3px dashed #f1c40f !important;
     min-height: 20px;
+    --holmes-layout: info;
 }
 
 /* ========================================= */
@@ -30,6 +38,7 @@
 
 .holmes-debug div div div div div div {
     outline: 2px dashed #f39c12 !important;
+    --holmes-layout: warning;
 }
 
 .holmes-debug div div div div div div:hover::after {
@@ -53,6 +62,7 @@
 
 .holmes-debug img:not([width]):not([height]):not([style*="width"]) {
     outline: 3px dashed #f39c12 !important;
+    --holmes-layout: warning;
 }
 
 .holmes-debug img:not([width]):not([height]):not([style*="width"]):hover::after {

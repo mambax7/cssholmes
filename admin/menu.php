@@ -45,7 +45,14 @@ $adminmenu[] = [
 ];
 
 $adminmenu[] = [
-    'title' => _AM_CSSHOLMES_PERMISSIONS,
+    'title' => _MI_CSSHOLMES_MANAGER_THEME_SETS,
+    'link'  => 'admin/theme_sets.php',
+    'desc'  => _MI_CSSHOLMES_MANAGER_THEME_SETS_DESC,
+    'icon'  => $pathIcon32 . '/view.png',
+];
+
+$adminmenu[] = [
+    'title' => \constant('CO_' . $moduleDirNameUpper . '_PERMISSIONS'),
     'link'  => 'admin/permissions.php',
     'icon'  => $pathIcon32 . '/permissions.png',
 ];

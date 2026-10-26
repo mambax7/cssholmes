@@ -26,6 +26,7 @@ final readonly class ThemeTarget
         public string $path,
         public string $label,
         public string $type = '',
+        public bool $generic = false,
     ) {
     }
 }

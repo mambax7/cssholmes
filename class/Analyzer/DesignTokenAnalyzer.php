@@ -39,7 +39,7 @@ final class DesignTokenAnalyzer implements AnalyzerInterface
         $manifestPath = $themePath . '/theme.json';
 
         if (!is_file($manifestPath)) {
-            return [];
+            return $context->isThemeFolder() ? $this->analyzeGeneric($context) : [];
         }
 
         $raw = file_get_contents($manifestPath);
@@ -71,6 +71,122 @@ final class DesignTokenAnalyzer implements AnalyzerInterface
         $this->checkHardcodedMatches($tokens, $cssFiles, $findings);
         $this->checkMissingFallbacks($cssFiles, $findings);
         $this->checkColorFormat($tokens, $manifestPath, $findings);
+
+        return $findings;
+    }
+
+    /**
+     * Generic themes have no token list in theme.json. Their tokens are the
+     * custom properties they declare in their own CSS under one prefix (for
+     * example --mt-), which is either given or learnt from the stylesheets.
+     *
+     * @return Finding[]
+     */
+    private function analyzeGeneric(AnalysisContext $context): array
+    {
+        $stylesheets = ThemeFiles::stylesheets($context->themePath);
+        if ([] === $stylesheets) {
+            return [];
+        }
+
+        $prefix = $context->tokenPrefix ?? ThemeFiles::learnTokenPrefix($stylesheets);
+        if (null === $prefix) {
+            return [];
+        }
+
+        $other = [];
+        foreach (ThemeFiles::templates($context->themePath) as $relative => $fullPath) {
+            $other[$relative] = (string)file_get_contents($fullPath);
+        }
+        foreach (ThemeFiles::scripts($context->themePath) as $relative => $content) {
+            $other[$relative] = $content;
+        }
+
+        $quotedPrefix = preg_quote($prefix, '/');
+        $namePattern = '--' . $quotedPrefix . '-[a-z0-9-]+';
+        $declared = [];
+        $used = [];
+        $missing = [];
+
+        foreach ($stylesheets as $file => $css) {
+            $css = preg_replace_callback(
+                '/\/\*.*?\*\//s',
+                static fn (array $match): string => str_repeat("\n", substr_count($match[0], "\n")),
+                $css
+            ) ?? $css;
+
+            if (preg_match_all('/(?<![\w-])(' . $namePattern . ')\s*:/i', $css, $matches)) {
+                foreach ($matches[1] as $name) {
+                    $declared[strtolower($name)] = true;
+                }
+            }
+
+            $lines = preg_split('/\R/', $css) ?: [];
+            foreach ($lines as $index => $line) {
+                if (!preg_match_all('/var\(\s*(' . $namePattern . ')\s*(,)?/i', $line, $matches, PREG_SET_ORDER)) {
+                    continue;
+                }
+
+                foreach ($matches as $match) {
+                    $name = strtolower($match[1]);
+                    $used[$name] = true;
+                    if (!isset($match[2]) && !isset($missing[$name])) {
+                        $missing[$name] = ['file' => $file, 'line' => $index + 1];
+                    }
+                }
+            }
+        }
+
+        // Templates and scripts may declare tokens (style="--mt-x: ...",
+        // setProperty('--mt-x', ...)) or read them.
+        foreach ($other as $content) {
+            if (preg_match_all('/(' . $namePattern . ')\s*["\']?\s*[:,]/i', $content, $matches)) {
+                foreach ($matches[1] as $name) {
+                    $declared[strtolower($name)] = true;
+                }
+            }
+            if (preg_match_all('/(' . $namePattern . ')/i', $content, $matches)) {
+                foreach ($matches[1] as $name) {
+                    $used[strtolower($name)] = true;
+                }
+            }
+        }
+
+        $findings = [];
+        foreach ($missing as $name => $reference) {
+            if (isset($declared[$name])) {
+                continue;
+            }
+
+            $findings[] = new Finding(
+                Severity::Warning,
+                'token/undefined-ref',
+                "CSS uses '{$name}' without a fallback, but the theme never declares it",
+                $reference['file'],
+                $reference['line'],
+                "Declare {$name} (for example in :root) or add a fallback: var({$name}, <value>)."
+            );
+        }
+
+        $unused = array_keys(array_diff_key($declared, $used));
+        sort($unused);
+        if ([] !== $unused) {
+            $shown = array_slice($unused, 0, 10);
+            $findings[] = new Finding(
+                Severity::Info,
+                'token/unused',
+                sprintf(
+                    '%d custom propert%s with the --%s- prefix declared but never read: %s%s',
+                    count($unused),
+                    1 === count($unused) ? 'y' : 'ies',
+                    $prefix,
+                    implode(', ', $shown),
+                    count($unused) > count($shown) ? ', ...' : ''
+                ),
+                'css',
+                suggestion: 'Remove them, or keep them if child themes or modules rely on them.'
+            );
+        }
 
         return $findings;
     }

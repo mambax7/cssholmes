@@ -1,0 +1,5 @@
+:root {
+    --ct-text: #222;
+    --ct-bg: #fff;
+}
+body { color: var(--ct-text); background: var(--ct-bg); }

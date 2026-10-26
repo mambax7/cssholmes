@@ -63,6 +63,13 @@ function xoops_module_update_cssholmes(\XoopsModule $module, $previousVersion = 
     // Ensure admin group always has all permissions (runs on every update)
     ensureAdminPermissions($moduleDirName, (int) $module->getVar('mid'));
 
+    // Since 3.0.0 Alpha 2 a new install grants the overlay and diagnostics to
+    // Webmasters only. Existing sites keep their permissions: an update never
+    // removes rights an administrator may have chosen. It only reports the
+    // Registered Users grants that came from the old defaults.
+    $helper->loadLanguage('admin');
+    reportRegisteredUserGrants($module, $moduleDirName);
+
     if ($previousVersion < 240) {
         //delete old HTML templates
         if (count($configurator->templateFolders) > 0) {
@@ -160,4 +167,46 @@ function ensureAdminPermissions(string $moduleDirName, int $moduleId): void
             $grouppermHandler->addRight($permName, 1, XOOPS_GROUP_ADMIN, $moduleId);
         }
     }
+}
+
+/**
+ * Add a note to the update log when Registered Users still hold the overlay or
+ * diagnostics permission (the defaults before 3.0.0 Alpha 2). Nothing is
+ * changed; the administrator decides in Admin > cssHolmes > Permissions.
+ */
+function reportRegisteredUserGrants(\XoopsModule $module, string $moduleDirName): void
+{
+    $grants = registeredUserGrants($moduleDirName, (int) $module->getVar('mid'));
+    if ([] === $grants) {
+        return;
+    }
+
+    $message = \defined('_AM_CSSHOLMES_PERM_USERS_NOTICE')
+        ? \constant('_AM_CSSHOLMES_PERM_USERS_NOTICE')
+        : 'Registered Users can still use the cssHolmes overlay or diagnostics (the defaults before 3.0.0 Alpha 2). '
+          . 'New installs grant them to Webmasters only. Review Admin > cssHolmes > Permissions.';
+    $module->setMessage($message . ' (' . implode(', ', $grants) . ')');
+}
+
+/**
+ * The overlay/diagnostics permissions Registered Users hold.
+ *
+ * @return string[] permission names
+ */
+function registeredUserGrants(string $moduleDirName, int $moduleId): array
+{
+    /** @var \XoopsGroupPermHandler $grouppermHandler */
+    $grouppermHandler = xoops_getHandler('groupperm');
+    $grants = [];
+    foreach (['_overlay', '_diagnose'] as $suffix) {
+        $criteria = new \CriteriaCompo(new \Criteria('gperm_modid', $moduleId));
+        $criteria->add(new \Criteria('gperm_name', $moduleDirName . $suffix));
+        $criteria->add(new \Criteria('gperm_groupid', XOOPS_GROUP_USERS));
+        $criteria->add(new \Criteria('gperm_itemid', 1));
+        if ($grouppermHandler->getCount($criteria) > 0) {
+            $grants[] = $moduleDirName . $suffix;
+        }
+    }
+
+    return $grants;
 }

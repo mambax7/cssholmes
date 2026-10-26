@@ -12,8 +12,6 @@ namespace XoopsModules\Cssholmes\Analyzer;
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 /**
- * Configurator Class
- *
  * @copyright   2000-2026 XOOPS Project (https://xoops.org)
  * @license     GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
  * @author      XOOPS Development Team, Mamba <mambax7@gmail.com>
@@ -31,113 +29,120 @@ final class AccessibilityAnalyzer implements AnalyzerInterface
         return 'Accessibility Analyzer';
     }
 
-    /** @return Finding[] */
+    /**
+     * Page-level checks (lang, main landmark, h1, heading order, skip link)
+     * run on theme.tpl with its includes inlined. Element checks (empty links
+     * and buttons, img alt, form labels, tabindex) run on every template file
+     * so findings carry a file and line. Smarty tags are neutralised first.
+     *
+     * @return Finding[]
+     */
     public function analyze(AnalysisContext $context): array
     {
-        $html = $this->resolveHtml($context);
-        if ('' === $html) {
+        $findings = [];
+
+        if (str_starts_with(trim($context->themePath), '<')) {
+            $html = SmartySource::htmlView(trim($context->themePath));
+            $this->runPageChecks($html, 'html', $findings);
+            $this->runElementChecks($html, 'html', $findings);
+
+            return $findings;
+        }
+
+        if (!$context->isThemeFolder()) {
             return [];
         }
 
-        $findings = [];
-        $this->checkLang($html, $findings);
-        $this->checkMainLandmark($html, $findings);
-        $this->checkH1($html, $findings);
-        $this->checkHeadingSkip($html, $findings);
-        $this->checkEmptyLinks($html, $findings);
-        $this->checkEmptyButtons($html, $findings);
-        $this->checkImgAlt($html, $findings);
-        $this->checkFormLabels($html, $findings);
-        $this->checkSkipLink($html, $findings);
-        $this->checkTabindex($html, $findings);
+        $resolver = new TemplateIncludeResolver($context->themePath);
+        $page = $resolver->expandedPage();
+        if ('' !== $page) {
+            $pageTemplate = $this->pageTemplateName($context->themePath);
+            $this->runPageChecks(SmartySource::htmlView($page), $pageTemplate, $findings);
+        }
+
+        foreach (ThemeFiles::templates($context->themePath) as $relativePath => $fullPath) {
+            $content = file_get_contents($fullPath);
+            if (false === $content) {
+                continue;
+            }
+
+            $this->runElementChecks(SmartySource::htmlView($content), $relativePath, $findings);
+        }
+
         $this->checkContrastTokenPairs($context, $findings);
 
         return $findings;
     }
 
-    private function resolveHtml(AnalysisContext $context): string
+    private function pageTemplateName(string $themePath): string
     {
-        if (str_starts_with(trim($context->themePath), '<')) {
-            return trim($context->themePath);
-        }
-
-        $themePath = $context->themePath;
-        $html = '';
-
-        $rootTemplate = $themePath . '/theme.tpl';
-        if (is_file($rootTemplate)) {
-            $content = file_get_contents($rootTemplate);
-            if (false !== $content) {
-                $html .= $content . "\n";
-            }
-        }
-
-        foreach (['tpl', 'xotpl', 'templates'] as $directory) {
-            $directoryPath = $themePath . '/' . $directory;
-            if (!is_dir($directoryPath)) {
-                continue;
-            }
-
-            $matches = glob($directoryPath . '/*.tpl');
-            if (false === $matches) {
-                continue;
-            }
-
-            foreach ($matches as $filePath) {
-                $content = file_get_contents($filePath);
-                if (false !== $content) {
-                    $html .= $content . "\n";
-                }
-            }
-        }
-
-        return $html;
+        return is_file($themePath . '/theme.tpl') ? 'theme.tpl' : 'theme.html';
     }
 
     /** @param Finding[] $findings */
-    private function checkLang(string $html, array &$findings): void
+    private function runPageChecks(string $html, string $target, array &$findings): void
+    {
+        $this->checkLang($html, $target, $findings);
+        $this->checkMainLandmark($html, $target, $findings);
+        $this->checkH1($html, $target, $findings);
+        $this->checkHeadingSkip($html, $target, $findings);
+        $this->checkSkipLink($html, $target, $findings);
+    }
+
+    /** @param Finding[] $findings */
+    private function runElementChecks(string $html, string $target, array &$findings): void
+    {
+        $this->checkEmptyElements($html, 'a', 'Empty link with no accessible name', $target, $findings);
+        $this->checkEmptyElements($html, 'button', 'Empty button with no accessible name', $target, $findings);
+        $this->checkImgAlt($html, $target, $findings);
+        $this->checkFormLabels($html, $target, $findings);
+        $this->checkTabindex($html, $target, $findings);
+    }
+
+    /** @param Finding[] $findings */
+    private function checkLang(string $html, string $target, array &$findings): void
     {
         if (preg_match('/<html\b/i', $html) && !preg_match('/<html\b[^>]*\blang\s*=/i', $html)) {
             $findings[] = new Finding(
                 Severity::Error,
                 'a11y/no-lang',
                 'Page has no lang attribute on <html>',
-                'theme.tpl',
-                suggestion: 'Add a lang attribute to <html>.'
+                $target,
+                suggestion: 'Add lang="<{$xoops_langcode}>" to <html>.'
             );
         }
     }
 
     /** @param Finding[] $findings */
-    private function checkMainLandmark(string $html, array &$findings): void
+    private function checkMainLandmark(string $html, string $target, array &$findings): void
     {
         if (!preg_match('/<main\b/i', $html) && !preg_match('/role\s*=\s*["\']main["\']/i', $html)) {
             $findings[] = new Finding(
                 Severity::Warning,
                 'a11y/no-main-landmark',
                 'Page has no <main> landmark',
-                'theme.tpl',
-                suggestion: 'Wrap primary content in <main>.'
+                $target,
+                suggestion: 'Wrap <{$xoops_contents}> in <main>.'
             );
         }
     }
 
     /** @param Finding[] $findings */
-    private function checkH1(string $html, array &$findings): void
+    private function checkH1(string $html, string $target, array &$findings): void
     {
         if (!preg_match('/<h1[\s>]/i', $html)) {
             $findings[] = new Finding(
-                Severity::Warning,
+                Severity::Info,
                 'a11y/no-h1',
-                'Page has no <h1> heading',
-                'theme.tpl',
-                suggestion: 'Add a primary heading.'
+                'The page template has no <h1>; each page then depends on module content for its main heading',
+                $target,
+                suggestion: 'Check that module pages print an <h1>, or give the theme one.'
             );
         }
     }
 
     /** @param Finding[] $findings */
-    private function checkHeadingSkip(string $html, array &$findings): void
+    private function checkHeadingSkip(string $html, string $target, array &$findings): void
     {
         if (!preg_match_all('/<h([1-6])[\s>]/i', $html, $matches)) {
             return;
@@ -151,7 +156,7 @@ final class AccessibilityAnalyzer implements AnalyzerInterface
                     Severity::Warning,
                     'a11y/heading-skip',
                     "Heading level skips from h{$previous} to h{$level}",
-                    'templates',
+                    $target,
                     suggestion: 'Add intermediate heading levels.'
                 );
                 break;
@@ -161,64 +166,54 @@ final class AccessibilityAnalyzer implements AnalyzerInterface
     }
 
     /** @param Finding[] $findings */
-    private function checkEmptyLinks(string $html, array &$findings): void
-    {
-        if (!preg_match_all('/<a\b([^>]*)>\s*<\/a>/i', $html, $matches)) {
+    private function checkEmptyElements(
+        string $html,
+        string $tag,
+        string $message,
+        string $target,
+        array &$findings
+    ): void {
+        $ruleId = 'a' === $tag ? 'a11y/empty-link' : 'a11y/empty-' . $tag;
+        $pattern = '/<' . $tag . '\b([^>]*)>\s*<\/' . $tag . '>/i';
+        if (!preg_match_all($pattern, $html, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER)) {
             return;
         }
 
-        foreach ($matches[1] as $attributes) {
+        foreach ($matches as $match) {
+            $attributes = (string)$match[1][0];
+            if ('a' === $tag && !preg_match('/\bhref\s*=/i', $attributes)) {
+                // <a id="top"></a> is a fragment target, not a link.
+                continue;
+            }
+
             $hasLabel = (bool)preg_match('/aria-label\s*=\s*["\'][^"\']+["\']/', $attributes);
             $hasLabelledBy = (bool)preg_match('/aria-labelledby\s*=/', $attributes);
-            if ($hasLabel || $hasLabelledBy) {
+            $hasTitle = (bool)preg_match('/\btitle\s*=\s*["\'][^"\']+["\']/', $attributes);
+            if ($hasLabel || $hasLabelledBy || $hasTitle || SmartySource::hasDynamicAttributes($attributes)) {
                 continue;
             }
 
             $findings[] = new Finding(
                 Severity::Error,
-                'a11y/empty-link',
-                'Empty link with no accessible name',
-                'templates',
-                suggestion: 'Add text content or aria-label.'
+                $ruleId,
+                $message,
+                $target,
+                SmartySource::lineAt($html, (int)$match[0][1]),
+                'Add text content or aria-label.'
             );
-            break;
         }
     }
 
     /** @param Finding[] $findings */
-    private function checkEmptyButtons(string $html, array &$findings): void
+    private function checkImgAlt(string $html, string $target, array &$findings): void
     {
-        if (!preg_match_all('/<button\b([^>]*)>\s*<\/button>/i', $html, $matches)) {
+        if (!preg_match_all('/<img\b([^>]*)>/i', $html, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER)) {
             return;
         }
 
-        foreach ($matches[1] as $attributes) {
-            $hasLabel = (bool)preg_match('/aria-label\s*=\s*["\'][^"\']+["\']/', $attributes);
-            $hasLabelledBy = (bool)preg_match('/aria-labelledby\s*=/', $attributes);
-            if ($hasLabel || $hasLabelledBy) {
-                continue;
-            }
-
-            $findings[] = new Finding(
-                Severity::Error,
-                'a11y/empty-button',
-                'Empty button with no accessible name',
-                'templates',
-                suggestion: 'Add text content or aria-label.'
-            );
-            break;
-        }
-    }
-
-    /** @param Finding[] $findings */
-    private function checkImgAlt(string $html, array &$findings): void
-    {
-        if (!preg_match_all('/<img\b([^>]*)>/i', $html, $matches)) {
-            return;
-        }
-
-        foreach ($matches[1] as $attributes) {
-            if (preg_match('/\balt\s*=/', $attributes)) {
+        foreach ($matches as $match) {
+            $attributes = (string)$match[1][0];
+            if (preg_match('/\balt\s*=/i', $attributes) || SmartySource::hasDynamicAttributes($attributes)) {
                 continue;
             }
 
@@ -226,30 +221,36 @@ final class AccessibilityAnalyzer implements AnalyzerInterface
                 Severity::Error,
                 'a11y/img-no-alt',
                 'Image without alt attribute',
-                'templates',
-                suggestion: 'Add alt text or alt="" for decorative images.'
+                $target,
+                SmartySource::lineAt($html, (int)$match[0][1]),
+                'Add alt text or alt="" for decorative images.'
             );
-            break;
         }
     }
 
     /** @param Finding[] $findings */
-    private function checkFormLabels(string $html, array &$findings): void
+    private function checkFormLabels(string $html, string $target, array &$findings): void
     {
-        if (!preg_match_all('/<(input|select|textarea)\b([^>]*)>/i', $html, $matches)) {
+        $pattern = '/<(input|select|textarea)\b([^>]*)>/i';
+        if (!preg_match_all($pattern, $html, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER)) {
             return;
         }
 
-        foreach ($matches[2] as $index => $attributes) {
-            $tag = strtolower((string)$matches[1][$index]);
-            if ('input' === $tag && preg_match('/type\s*=\s*["\'](hidden|submit|button|reset|image)["\']/i', $attributes)) {
+        foreach ($matches as $match) {
+            $tag = strtolower((string)$match[1][0]);
+            $attributes = (string)$match[2][0];
+            $unlabelledType = '/type\s*=\s*["\'](hidden|submit|button|reset|image)["\']/i';
+            if ('input' === $tag && preg_match($unlabelledType, $attributes)) {
                 continue;
             }
 
             $hasId = (bool)preg_match('/\bid\s*=\s*["\'][^"\']+["\']/', $attributes);
             $hasAriaLabel = (bool)preg_match('/aria-label\s*=\s*["\'][^"\']+["\']/', $attributes);
             $hasAriaLabelledBy = (bool)preg_match('/aria-labelledby\s*=/', $attributes);
-            if ($hasId || $hasAriaLabel || $hasAriaLabelledBy) {
+            if (
+                $hasId || $hasAriaLabel || $hasAriaLabelledBy || SmartySource::hasDynamicAttributes($attributes)
+                || $this->insideLabel($html, (int)$match[0][1])
+            ) {
                 continue;
             }
 
@@ -257,21 +258,43 @@ final class AccessibilityAnalyzer implements AnalyzerInterface
                 Severity::Warning,
                 'a11y/form-label',
                 "Form <{$tag}> without label: no id, aria-label, or aria-labelledby",
-                'templates',
-                suggestion: 'Add a <label for="id"> or aria-label.'
+                $target,
+                SmartySource::lineAt($html, (int)$match[0][1]),
+                'Add a <label for="id"> or aria-label.'
             );
-            break;
         }
     }
 
+    /**
+     * Whether the offset sits inside an open <label> element.
+     */
+    private function insideLabel(string $html, int $offset): bool
+    {
+        $before = strtolower(substr($html, 0, $offset));
+        $open = strrpos($before, '<label');
+        if (false === $open) {
+            return false;
+        }
+
+        $close = strrpos($before, '</label');
+
+        return false === $close || $close < $open;
+    }
+
     /** @param Finding[] $findings */
-    private function checkSkipLink(string $html, array &$findings): void
+    private function checkSkipLink(string $html, string $target, array &$findings): void
     {
         if (!preg_match('/<body\b[^>]*>(.*?)<(main|div|header|nav)\b/si', $html, $match)) {
             return;
         }
 
-        if (preg_match('/<a\b[^>]*href\s*=\s*["\']#(main|content|skip)["\']/', (string)$match[1])) {
+        $targets = ['main', 'content', 'main-content', 'maincontent', 'skip'];
+        if (preg_match('/<main\b[^>]*\bid\s*=\s*["\']([^"\']+)["\']/i', $html, $mainMatch)) {
+            $targets[] = $mainMatch[1];
+        }
+
+        $quoted = implode('|', array_map(static fn (string $id): string => preg_quote($id, '/'), $targets));
+        if (preg_match('/<a\b[^>]*href\s*=\s*["\']#(' . $quoted . ')["\']/i', (string)$match[1])) {
             return;
         }
 
@@ -279,19 +302,21 @@ final class AccessibilityAnalyzer implements AnalyzerInterface
             Severity::Info,
             'a11y/skip-link',
             'Page has no skip-to-content link',
-            'theme.tpl',
+            $target,
             suggestion: 'Add a visually-hidden skip link as the first body child.'
         );
     }
 
     /** @param Finding[] $findings */
-    private function checkTabindex(string $html, array &$findings): void
+    private function checkTabindex(string $html, string $target, array &$findings): void
     {
-        if (!preg_match_all('/tabindex\s*=\s*["\'](\d+)["\']/i', $html, $matches)) {
+        $pattern = '/tabindex\s*=\s*["\'](\d+)["\']/i';
+        if (!preg_match_all($pattern, $html, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER)) {
             return;
         }
 
-        foreach ($matches[1] as $value) {
+        foreach ($matches as $match) {
+            $value = (string)$match[1][0];
             if ((int)$value <= 0) {
                 continue;
             }
@@ -300,10 +325,10 @@ final class AccessibilityAnalyzer implements AnalyzerInterface
                 Severity::Warning,
                 'a11y/tabindex-positive',
                 "Element has tabindex=\"{$value}\" — positive tabindex disrupts tab order",
-                'templates',
-                suggestion: 'Use tabindex="0" or tabindex="-1" instead.'
+                $target,
+                SmartySource::lineAt($html, (int)$match[0][1]),
+                'Use tabindex="0" or tabindex="-1" instead.'
             );
-            break;
         }
     }
 

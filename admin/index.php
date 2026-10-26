@@ -29,12 +29,14 @@ use XoopsModules\Cssholmes\Workbench\PatchDraftBuilder;
 use XoopsModules\Cssholmes\Workbench\PatchApplier;
 use XoopsModules\Cssholmes\Workbench\ImportStore;
 use XoopsModules\Cssholmes\Workbench\PatchSuggester;
+use XoopsModules\Cssholmes\Workbench\ScanStore;
 
 require_once __DIR__ . '/admin_header.php';
 xoops_cp_header();
 
 $adminObject = Admin::getInstance();
 $adminObject->displayNavigation(basename(__FILE__));
+echo \XoopsModules\Cssholmes\Utility::registeredUserToolNotice($moduleDirName, (int)$xoopsModule->getVar('mid'));
 $adminObject->displayIndex();
 
 $queryKey = (string)$helper->getConfig('holmes_query_key');
@@ -440,6 +442,7 @@ if (null === $selectedTheme && [] !== $scopeThemes) {
 
 $findings = [];
 $analyzerResults = [];
+$previousScan = null;
 $findingCounts = [
     Severity::Error->value => 0,
     Severity::Warning->value => 0,
@@ -466,6 +469,14 @@ if (null !== $selectedTheme) {
     foreach ($findings as $finding) {
         $findingCounts[$finding->severity->value]++;
     }
+
+    // Keep a short scan history when the scan was requested explicitly, so the
+    // workbench can show what changed since the previous scan of this theme.
+    if ('' !== trim(Request::getString('scan_theme', '', 'GET'))) {
+        $scanStore = new ScanStore(\dirname(__DIR__));
+        $previousScan = $scanStore->latestForTheme($selectedTheme->scope, $selectedTheme->key);
+        $scanStore->saveScan($selectedTheme, $findingCounts, $analyzerResults);
+    }
 }
 
 $adminOverlayUrl = XOOPS_URL . '/modules/' . $moduleDirName . '/admin/index.php?' . $queryKey . '=xtf-theme,xtf-widget';
@@ -480,7 +491,7 @@ $examples = [
 
 echo '<div class="card" style="margin-top:1rem;padding:1rem 1.25rem;">';
 echo '<h3 style="margin-top:0;">cssHolmes Overlay Activation</h3>';
-echo '<p>Overlay diagnostics are opt-in for administrators on both the site and admin theme side. You can activate them from the query string, then keep working with the floating toolbar without re-adding the parameter on every page.</p>';
+echo '<p>Overlay diagnostics are opt-in for groups with the Use Overlay permission (Webmasters by default) on both the site and admin theme side. You can activate them from the query string, then keep working with the floating toolbar without re-adding the parameter on every page.</p>';
 echo '<p><code>' . htmlspecialchars($queryKey, ENT_QUOTES) . '=html5,xtf-theme,xtf-widget,a11y,layout</code></p>';
 echo '<ul>';
 foreach ($examples as $exampleUrl) {
@@ -489,7 +500,7 @@ foreach ($examples as $exampleUrl) {
 }
 echo '</ul>';
 echo '<p>The toolbar now persists by scope in the browser, so site and admin overlays can keep different profile sets while still supporting shareable preview URLs.</p>';
-echo '<p>The first VisBug-style tools are also live in the toolbar: <strong>inspect</strong>, <strong>measure</strong>, element locking on click, selector copy, keyboard shortcuts <code>I</code>, <code>M</code>, <code>T</code>, <code>P</code>, <code>U</code>, and <code>Esc</code>, plus token-aware color hints when the current XTF theme exposes matching values in <code>theme.json</code>. The toolbar can now preview local token edits on the selected element, adjust core typography properties, jump to the nearest widget or slot wrapper, make quick text edits on simple leaf text elements, copy readable or JSON inspection snapshots, keep a small undoable local change log, and <strong>export sel</strong> as a structured workbench payload with widget and slot context.</p>';
+echo '<p>The first VisBug-style tools are also live in the toolbar: <strong>inspect</strong>, <strong>measure</strong>, element locking on click, selector copy, keyboard shortcuts <code>I</code>, <code>M</code>, <code>T</code>, <code>P</code> and <code>U</code> (only while the toolbar is open, never together with Ctrl, Cmd or Alt, and never while you type in a form field) plus <code>Esc</code> to leave inspect and measure mode, plus token-aware color hints when the current XTF theme exposes matching values in <code>theme.json</code>. The toolbar can now preview local token edits on the selected element, adjust core typography properties, jump to the nearest widget or slot wrapper, make quick text edits on simple leaf text elements, copy readable or JSON inspection snapshots, keep a small undoable local change log, and <strong>export sel</strong> as a structured workbench payload with widget and slot context.</p>';
 echo '<p>If no XTF manifest is detected, cssHolmes falls back to a generic XOOPS mode. In that mode the HTML5, accessibility, layout, inspection, measurement, copy, and widget HTML scan tools still work, while token-aware theme analysis and token editing stay disabled.</p>';
 echo '</div>';
 
@@ -914,7 +925,8 @@ echo '</div>';
 
 echo '<div class="card" style="margin-top:1rem;padding:1rem 1.25rem;">';
 echo '<h3 style="margin-top:0;">Phase 2 Workbench</h3>';
-echo '<p>The server-side analyzer workbench now runs multiple Phase 2 checks against both frontend and admin XTF themes: manifest validation, design token usage, template structure, and accessibility-oriented review. The widget scan below applies widget-output rules directly to pasted HTML fragments.</p>';
+echo '<p>The server-side analyzer workbench runs its checks against frontend and admin themes: manifest validation, design token usage, template structure, and accessibility-oriented review. XTF themes (with <code>theme.json</code>) get every check; normal XOOPS themes are listed as <em>generic</em> and get the template, accessibility and custom-property checks. The analyzers understand Smarty tags and follow <code>&lt;{include file=...}&gt;</code> inside the theme. The widget scan below applies widget-output rules directly to pasted HTML fragments.</p>';
+echo '<p>The same checks run from the command line, for example as a release check: <code>php modules/' . htmlspecialchars($moduleDirName, ENT_QUOTES) . '/bin/holmes-scan.php themes/mytheme</code></p>';
 echo '<form method="get" action="" style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap;">';
 echo '<div><label for="scan_scope"><strong>Scope</strong></label><br>';
 echo '<select id="scan_scope" name="scan_scope" onchange="this.form.submit()">';
@@ -938,8 +950,8 @@ echo '</form>';
 
 if (null === $selectedTheme) {
     echo '<div style="margin-top:1rem;padding:1rem 1.25rem;border:1px solid #dbe3ef;border-radius:.85rem;background:#f8fafc;">';
-    echo '<p style="margin:0 0 .5rem 0;"><strong>Generic XOOPS mode:</strong> no XTF themes with a <code>theme.json</code> manifest were found for this scope.</p>';
-    echo '<p style="margin:0;">Theme token analysis is unavailable here, but the overlay still supports HTML5, accessibility, layout, inspect, measure, copy, export, and widget HTML scan workflows.</p>';
+    echo '<p style="margin:0 0 .5rem 0;"><strong>No themes found:</strong> no folder with a <code>theme.tpl</code>, <code>theme.html</code> or <code>theme.json</code> was found for this scope.</p>';
+    echo '<p style="margin:0;">The overlay still supports HTML5, accessibility, layout, inspect, measure, copy, export, and widget HTML scan workflows.</p>';
     echo '</div>';
 } else {
     echo '<div style="margin-top:1rem;">';
@@ -950,6 +962,17 @@ if (null === $selectedTheme) {
         . '<span style="display:inline-block;margin-right:1rem;color:#b45309;"><strong>Warnings:</strong> ' . (int)$findingCounts[Severity::Warning->value] . '</span>'
         . '<span style="display:inline-block;color:#1d4ed8;"><strong>Info:</strong> ' . (int)$findingCounts[Severity::Info->value] . '</span>'
         . '</p>';
+    if ($selectedTheme->generic) {
+        echo '<p><em>Generic XOOPS theme: no <code>theme.json</code>, so the XTF manifest checks are skipped and the token checks use the theme\'s own custom-property prefix.</em></p>';
+    }
+    if (is_array($previousScan)) {
+        $previousCounts = is_array($previousScan['counts'] ?? null) ? $previousScan['counts'] : [];
+        $deltaParts = [];
+        foreach (['error' => 'errors', 'warning' => 'warnings', 'info' => 'info'] as $severityKey => $severityLabel) {
+            $deltaParts[] = $severityLabel . ' ' . (int)($previousCounts[$severityKey] ?? 0) . ' &rarr; ' . (int)$findingCounts[$severityKey];
+        }
+        echo '<p><small>Previous scan (' . htmlspecialchars((string)($previousScan['created_at'] ?? ''), ENT_QUOTES) . '): ' . implode(', ', $deltaParts) . '</small></p>';
+    }
 
     if ([] === $findings) {
         echo '<p>No analyzer findings for this theme.</p>';

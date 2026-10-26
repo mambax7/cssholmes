@@ -62,6 +62,9 @@ class CssholmesCorePreload extends \XoopsPreloadItem
 
     private static function injectAssets(string $scope): void
     {
+        if (defined('XSTYLES_PREVIEW_FRAME') && XSTYLES_PREVIEW_FRAME === true) {
+            return;
+        }
         global $xoTheme, $xoopsUser;
 
         if (!is_object($xoTheme) || !is_object($xoopsUser)) {

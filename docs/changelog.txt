@@ -1,3 +1,9 @@
+<h5>3.3.0 Alpha 1 [2026-10-25]</h5>
+- Read-only resolved token inspection and conservative rendered text contrast estimates.
+- XTF data-theme mode support in draft and public CSS; content-based stylesheet ETags.
+- Published-only xStyles frame context with editor assets suppressed.
+- Added XMF 2 / XTF package contract, diagnostics and frame integration checks.
+
 <h5>3.0.0 Alpha 2 [NOT RELEASED]</h5>
 Dev: XOOPS 2.5.12, PHP 8.4, PHP 8.5.0
 <hr>
@@ -9,6 +15,23 @@ Dev: XOOPS 2.5.12, PHP 8.4, PHP 8.5.0
         - `grid` — show CSS Grid and Flexbox containers with column/row lines
         - `proto` / `deuter` / `trita` / `achro` — simulate color blindness types
 - added CSS Grid and Flexbox diagnostics to the front-end inspection overlay (mamba)
+- changed install defaults: Use Overlay and Use Diagnostics now go to the Webmasters group only; earlier versions also granted them to Registered Users (mamba)
+- updates do not change existing permissions: when Registered Users still hold the old overlay/diagnostics grants, the update log and the admin Index and Permissions pages show a notice so the administrator can remove them (mamba)
+- fixed the "Overlay query key" setting description, which claimed the overlay was for administrators only (english, french) (mamba)
+- fixed keyboard shortcuts I, M, T, P, U: they now ignore Ctrl/Cmd/Alt (Ctrl+P and Ctrl+U work again), never fire while typing, only work while the toolbar is open, and only block the key they handle (mamba)
+- changed Esc to leave inspect and measure mode and close the editors; minimising the toolbar does the same, so a minimised toolbar no longer captures clicks (mamba)
+- fixed the E/W counters ignoring html5 findings: every profile rule now sets a --holmes-{profile} severity marker that the counters read, instead of matching outline colours (mamba)
+- fixed the html5 body attribute rules (background, *margin, bgproperties), which never matched because the overlay puts holmes-debug on <html> (mamba)
+- changed the html5 profile to treat table summary as obsolete (grey) instead of requiring it (red) (mamba)
+- added Smarty-aware template reading to the analyzers: Smarty comments and tags are neutralised before HTML checks, so <img src="<{$x}>" alt="..."> is no longer cut at the first }> (mamba)
+- added include resolution to the analyzers: <{include file="$theme_name/tpl/x.tpl"}>, `$xoTheme->folderName`, |cat: chains and plain relative names are followed, so skip link, main, lang and module header checks see the included partials; missing theme includes are reported with file and line (mamba)
+- changed accessibility element checks (img alt, empty links and buttons, form labels, tabindex) to report every occurrence with file and line, to ignore <a> without href (fragment targets) and inputs wrapped in <label>, and lowered "no h1 in the theme" to info (mamba)
+- changed the workbench theme list to include every theme folder with theme.tpl or theme.html; themes without theme.json are scanned in generic mode (no manifest checks, token checks based on the theme's own custom-property prefix such as --mt-) (mamba)
+- fixed $xoops_sitename and $xoops_slogan being reported as unescaped: core already escapes them (and $xoops_requesturi and $xoops_meta_*) in class/theme.php; $xoops_pagetitle is still reported, with a suggestion that does not double-encode (mamba)
+- changed "theme.tpl does not print $xoops_module_header" from info to warning (mamba)
+- added the command-line theme scan bin/holmes-scan.php: runs the analyzers on a theme folder without a XOOPS install, text or --format=json output, exit code 1 on errors (or --fail-on=warning) for release checks and CI (mamba)
+- added scan history to the workbench (ScanStore): an explicit theme scan is stored (last 20 per theme) and compared with the previous one (mamba)
+- added unit tests for Smarty stripping, include resolution, the generic-theme analyzers and the CLI exit codes, with fixture themes in tests/Unit/fixtures (mamba)
 
 
 <h5>3.0.0 Alpha 1 [2026-03-26]</h5>
