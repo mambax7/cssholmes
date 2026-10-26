@@ -32,7 +32,7 @@ preference is used only when neither contains an explicit light/dark value.
 `FrontEndAssetManifest` describes assets; it does not register them. Do not call
 imagined registration methods or migrate preload hooks simply because the
 namespace exists. XMF/XTF packages inspected here require PHP 8.4; the 2.x
-module keeps its PHP 8.2 floor and does not unconditionally load those packages.
+module keeps its PHP 8.4 floor and does not unconditionally load those packages.
 
 ## Settings ownership
 
@@ -59,8 +59,8 @@ are not XTF token overrides and must remain separate.
 
 ## Evidence
 
-`php tests/fixtures.php <core>/htdocs` checks real core rendering without site
-sessions or a database and passes against the local 2.8 and 4.0 code.
+The separate xStyles module's `tests/fixtures.php` checks real core rendering
+without site sessions or a database; cssHolmes does not ship that script.
 cssHolmes `php tests/xtf-contract.php <core>/htdocs/xoops_lib/vendor/xoops` loads
 actual XMF/XTF classes without full bootstrap and checks identity, token CSS,
 asset contracts, preview CSS, portable semantic roundtrip, and exact same-theme

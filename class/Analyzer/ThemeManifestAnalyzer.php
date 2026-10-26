@@ -355,7 +355,7 @@ final class ThemeManifestAnalyzer implements AnalyzerInterface
             $items[] = $candidate;
         }
 
-        return array_values($items);
+        return $items;
     }
 
     /**
