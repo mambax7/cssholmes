@@ -1,21 +1,42 @@
-![alt XOOPS CMS](https://xoops.org/images/logoXoops4GithubRepository.png)
-## cssHolmes module for  [XOOPS CMS 2.5.10+](https://xoops.org)
-[![XOOPS CMS Module](https://img.shields.io/badge/XOOPS%20CMS-Module-blue.svg)](https://xoops.org)
-[![Software License](https://img.shields.io/badge/license-GPL-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-2.0.html)
+# cssHolmes for XOOPS
 
-[![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/XoopsModules25x/cssholmes.svg?style=flat)](https://scrutinizer-ci.com/g/XoopsModules25x/cssholmes/?branch=master)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/95b12220e0ac4056b9af52af708379c9)](https://www.codacy.com/app/XoopsModules25x/cssholmes)
-[![Code Climate](https://img.shields.io/codeclimate/github/XoopsModules25x/cssholmes.svg?style=flat)](https://codeclimate.com/github/XoopsModules25x/cssholmes)
-[![Latest Pre-Release](https://img.shields.io/github/tag/XoopsModules25x/cssholmes.svg?style=flat)](https://github.com/XoopsModules25x/cssholmes/tags/)
-[![Latest Version](https://img.shields.io/github/release/XoopsModules25x/cssholmes.svg?style=flat)](https://github.com/XoopsModules25x/cssholmes/releases/)
+cssHolmes combines HTML/CSS diagnostics, a visual theme designer, and a library
+of portable theme configuration sets. Preview changes, inspect tokens and
+contrast, and publish validated overrides without rewriting theme source files.
 
-**cssHolmes** module for [XOOPS CMS](https://xoops.org) is a "CSS Markup Detective", with diagnostic CSS stylesheet that can highlight potentially invalid, inaccessible or erroneous HTML(5) markup by adding one class.
+Requires **PHP 8.4+** and an installed XOOPS site. XOOPS 2.7 and 2.8 are the
+current integration targets; see the [compatibility and verification record](docs/compatibility.md)
+for what has actually been tested. XMF/XTF contract checks do not establish a
+native XOOPS 4 port.
 
-[![Tutorial Available](https://xoops.org/images/tutorial-available-blue.svg)](https://xoops.gitbook.io/cssholmes-tutorial/) Tutorial: see [GitBook](https://xoops.gitbook.io/cssholmes-tutorial/).
-To contribute to the Tutorial, [fork it on GitHub](https://github.com/XoopsDocs/cssholmes-tutorial)
+- [Visual designer](docs/visual-designer.md): selection, preview and saving.
+- [Theme sets](docs/theme-sets.md): library, palettes, import/export and reset.
+- [Tutorial](docs/TUTORIAL-cssholmes-XTF-XMF-v2.md).
+- [XMF/XTF migration boundaries](docs/xoops4-migration.md).
+- [Development and testing](CONTRIBUTING.md).
 
-[![Translations on Transifex](https://xoops.org/images/translations-transifex-blue.svg)](https://www.transifex.com/xoops)
+Install the module as `htdocs/modules/cssholmes` and use the XOOPS module
+administration screen to install or update it. Keep the site's shared dependencies
+in `xoops_lib`; this module has no separate Composer installation or vendor tree.
+Back up the site's files and database before an installed-module upgrade.
 
-Please visit us on https://xoops.org
+## Development checks
 
-Current and upcoming "next generation" versions of XOOPS CMS are crafted on GitHub at: https://github.com/XOOPS
+Use a complete source checkout, including the testing/tooling files supplied by
+[the final QA change](https://github.com/XoopsModules25x/cssholmes/pull/9).
+Documentation-only review branches are incomplete; release ZIPs intentionally
+exclude `tests/`, PHPUnit configuration and other development files. If
+`tests/run.php` is absent, obtain the complete source before running these commands.
+
+From that source directory, `php tests/run.php` runs the isolated PHP
+regressions plus the analyzer, CLI and diagnostic PHPUnit tests using shared
+`xoops_lib/vendor/bin/phpunit`. For a separate checkout, set `XOOPS_VENDOR_PATH`
+to that shared vendor directory. `php tests/run.php --browser` also runs the
+browser regressions with an existing Playwright/Chromium installation.
+
+Source and issues: [XoopsModules25x/cssholmes](https://github.com/XoopsModules25x/cssholmes).
+The repository's CI checks PHP 8.4/8.5; release tags run CI before creating a
+clean module ZIP. Qodana is optional and explicitly skips its scan when
+`QODANA_TOKEN` is unavailable. A skipped scan is not a quality result.
+
+Licensed under the [GNU GPL, version 2 or later](docs/license.txt).

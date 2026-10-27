@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "XOOPS portable theme set, version 1",
+  "description": "UTF-8 JSON, maximum 65536 encoded bytes and depth 16. Only explicit overrides travel; absent values inherit the destination theme. Runtime CSS allowlist validation remains authoritative. Custom themeRules apply only when sourceTheme equals the destination theme. Semantic alternatives merge in document order, later declarations win. Resolution is limited to 256 distinct CSS rules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "version", "name", "sourceTheme", "defaults", "tokens", "styles", "themeRules"],
+  "properties": {
+    "format": {"const": "xoops-theme-set"},
+    "version": {"const": 1},
+    "name": {"$ref": "#/$defs/name"},
+    "sourceTheme": {"type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,79}$"},
+    "defaults": {"const": "inherit-target-theme"},
+    "tokens": {
+      "description": "Optional mode/role overrides. Empty maps may be encoded as [] by PHP; nonempty maps must be objects. Missing modes and roles inherit existing theme styles. Alpha is 1; token references, other color spaces, and CSS expressions are unsupported.",
+      "anyOf": [
+        {"type": "array", "maxItems": 0},
+        {"type": "object", "additionalProperties": false, "properties": {
+          "all": {"$ref": "#/$defs/roles"},
+          "light": {"$ref": "#/$defs/roles"},
+          "dark": {"$ref": "#/$defs/roles"}
+        }}
+      ]
+    },
+    "styles": {"type": "array", "maxItems": 256, "items": {"$ref": "#/$defs/style"}},
+    "themeRules": {"type": "array", "maxItems": 256, "items": {"$ref": "#/$defs/themeRule"}},
+    "sourceRules": {"type": "array", "maxItems": 256, "items": {"$ref": "#/$defs/themeRule"}, "description": "Optional exact snapshot of authored overrides, never computed defaults. When sourceTheme matches the destination, this snapshot replaces semantic styles and themeRules, preserving distinct selector aliases. Tokens still apply before the snapshot. On other themes only semantic styles and tokens apply; raw snapshot selectors are omitted."}
+  },
+  "$defs": {
+    "name": {"type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[^<>\\u0000-\\u001f\\u007f]+$", "description": "Plain Unicode name; runtime additionally rejects Unicode control/format/private-use/unassigned characters and whitespace-only names."},
+    "colorToken": {
+      "type": "object", "additionalProperties": false, "required": ["$type", "$value"],
+      "properties": {
+        "$type": {"const": "color"},
+        "$value": {
+          "type": "object", "additionalProperties": false, "required": ["colorSpace", "components", "alpha"],
+          "properties": {
+            "colorSpace": {"const": "srgb"},
+            "components": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number", "minimum": 0, "maximum": 1}},
+            "alpha": {"const": 1}
+          }
+        }
+      }
+    },
+    "roles": {
+      "anyOf": [
+        {"type": "array", "maxItems": 0},
+        {"type": "object", "additionalProperties": false, "properties": {
+          "brand": {"$ref": "#/$defs/colorToken"}, "onBrand": {"$ref": "#/$defs/colorToken"},
+          "surface": {"$ref": "#/$defs/colorToken"}, "text": {"$ref": "#/$defs/colorToken"},
+          "muted": {"$ref": "#/$defs/colorToken"}, "border": {"$ref": "#/$defs/colorToken"},
+          "success": {"$ref": "#/$defs/colorToken"}, "danger": {"$ref": "#/$defs/colorToken"}
+        }}
+      ]
+    },
+    "mode": {"enum": ["all", "light", "dark"]},
+    "breakpoint": {"enum": ["all", "mobile", "tablet", "desktop"]},
+    "state": {"enum": ["normal", "hover", "focus"]},
+    "style": {
+      "type": "object", "additionalProperties": false,
+      "required": ["target", "mode", "breakpoint", "state", "declarations"],
+      "properties": {
+        "target": {"enum": ["body", "link", "heading.h1", "heading.h2", "heading.h3", "heading.h4", "heading.h5", "heading.h6", "button", "button.primary", "input", "comment.title", "comment.text", "article.title", "article.text", "quote", "table", "table.heading", "message.error", "message.success", "message.notice"]},
+        "mode": {"$ref": "#/$defs/mode"}, "breakpoint": {"$ref": "#/$defs/breakpoint"},
+        "state": {"$ref": "#/$defs/state"}, "declarations": {"$ref": "#/$defs/declarations"}
+      }
+    },
+    "themeRule": {
+      "type": "object", "additionalProperties": false,
+      "required": ["selector", "label", "mode", "breakpoint", "state", "declarations"],
+      "properties": {
+        "id": {"type": "string", "description": "Ignored and recalculated by runtime validation."},
+        "selector": {"type": "string", "minLength": 1, "maxLength": 240, "pattern": "^[a-zA-Z0-9_.# >-]+$", "description": "Runtime allows element/class/id compounds, descendant and child combinators, at most four compounds. Pseudo selectors, attributes, groups, universal selectors and designer UI selectors are rejected."},
+        "label": {"type": "string", "maxLength": 160, "pattern": "^[^<\\u0000-\\u001f\\u007f]*$", "description": "Runtime limit is 160 UTF-8 bytes."},
+        "mode": {"$ref": "#/$defs/mode"}, "breakpoint": {"$ref": "#/$defs/breakpoint"},
+        "state": {"$ref": "#/$defs/state"}, "declarations": {"$ref": "#/$defs/declarations"}
+      }
+    },
+    "cssColor": {"type": "string", "maxLength": 128, "pattern": "^(?:transparent|#(?:[a-fA-F0-9]{3}|[a-fA-F0-9]{4}|[a-fA-F0-9]{6}|[a-fA-F0-9]{8})|rgb\\(\\s*[0-9]{1,3}\\s*,\\s*[0-9]{1,3}\\s*,\\s*[0-9]{1,3}\\s*\\)|rgba\\(\\s*[0-9]{1,3}\\s*,\\s*[0-9]{1,3}\\s*,\\s*[0-9]{1,3}\\s*,\\s*(?:0(?:\\.[0-9]+)?|1(?:\\.0+)?|\\.[0-9]+)\\s*\\))$", "description": "Runtime additionally bounds decimal channels to 0..255. No named colors, URLs, variables or CSS expressions."},
+    "cssLength": {"type": "string", "maxLength": 128, "pattern": "^(?:0|(?:[0-9]{1,4}(?:\\.[0-9]{1,4})?|\\.[0-9]{1,4})(?:px|rem|em|%|vh|vw))$"},
+    "cssMargin": {"type": "string", "maxLength": 128, "pattern": "^(?:auto|0|-?(?:[0-9]{1,4}(?:\\.[0-9]{1,4})?|\\.[0-9]{1,4})(?:px|rem|em|%|vh|vw))$"},
+    "declarations": {
+      "description": "All values pass ThemeConfigStore's property-specific allowlist before persistence or CSS generation. Empty declarations disappear. Custom properties are unsupported.",
+      "anyOf": [
+        {"type": "array", "maxItems": 0},
+        {"type": "object", "additionalProperties": false, "properties": {
+          "color": {"$ref": "#/$defs/cssColor"}, "background-color": {"$ref": "#/$defs/cssColor"}, "border-color": {"$ref": "#/$defs/cssColor"},
+          "font-size": {"$ref": "#/$defs/cssLength"}, "gap": {"$ref": "#/$defs/cssLength"},
+          "border-width": {"$ref": "#/$defs/cssLength"}, "border-radius": {"$ref": "#/$defs/cssLength"},
+          "width": {"anyOf": [{"$ref": "#/$defs/cssLength"}, {"const": "auto"}]}, "height": {"anyOf": [{"$ref": "#/$defs/cssLength"}, {"const": "auto"}]},
+          "max-width": {"anyOf": [{"$ref": "#/$defs/cssLength"}, {"const": "none"}]}, "min-width": {"anyOf": [{"$ref": "#/$defs/cssLength"}, {"const": "auto"}]},
+          "letter-spacing": {"type": "string", "maxLength": 128, "pattern": "^(?:normal|0|-?(?:[0-9]{1,4}(?:\\.[0-9]{1,4})?|\\.[0-9]{1,4})(?:px|rem|em|%|vh|vw))$"},
+          "line-height": {"type": "string", "maxLength": 128, "pattern": "^(?:normal|0|(?:[0-9]{1,4}(?:\\.[0-9]{1,4})?|\\.[0-9]{1,4})(?:px|rem|em|%|vh|vw)?)$"},
+          "font-family": {"type": "string", "maxLength": 128, "pattern": "^[A-Za-z0-9'\", -]+$", "description": "Runtime validates comma-separated plain font names and balanced optional quotes."},
+          "margin-top": {"$ref": "#/$defs/cssMargin"}, "margin-right": {"$ref": "#/$defs/cssMargin"},
+          "margin-bottom": {"$ref": "#/$defs/cssMargin"}, "margin-left": {"$ref": "#/$defs/cssMargin"},
+          "margin-inline-start": {"$ref": "#/$defs/cssMargin"}, "margin-inline-end": {"$ref": "#/$defs/cssMargin"},
+          "margin-block-start": {"$ref": "#/$defs/cssMargin"}, "margin-block-end": {"$ref": "#/$defs/cssMargin"},
+          "padding-top": {"$ref": "#/$defs/cssLength"}, "padding-right": {"$ref": "#/$defs/cssLength"},
+          "padding-bottom": {"$ref": "#/$defs/cssLength"}, "padding-left": {"$ref": "#/$defs/cssLength"},
+          "padding-inline-start": {"$ref": "#/$defs/cssLength"}, "padding-inline-end": {"$ref": "#/$defs/cssLength"},
+          "padding-block-start": {"$ref": "#/$defs/cssLength"}, "padding-block-end": {"$ref": "#/$defs/cssLength"},
+          "font-weight": {"enum": ["normal", "bold", "100", "200", "300", "400", "500", "600", "700", "800", "900"]},
+          "text-align": {"enum": ["start", "end", "left", "right", "center", "justify"]},
+          "text-transform": {"enum": ["none", "uppercase", "lowercase", "capitalize"]},
+          "text-decoration": {"enum": ["none", "underline", "overline", "line-through"]},
+          "font-style": {"enum": ["normal", "italic", "oblique"]},
+          "border-style": {"enum": ["none", "solid", "dashed", "dotted", "double"]},
+          "display": {"enum": ["block", "inline", "inline-block", "flex", "inline-flex", "grid", "inline-grid", "none"]},
+          "align-items": {"enum": ["normal", "stretch", "start", "end", "center", "flex-start", "flex-end", "baseline"]},
+          "justify-content": {"enum": ["normal", "start", "end", "center", "flex-start", "flex-end", "space-between", "space-around", "space-evenly"]}
+        }}
+      ]
+    }
+  }
+}
