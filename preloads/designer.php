@@ -35,7 +35,7 @@ final class CssholmesDesignerPreload extends \XoopsPreloadItem
             $config = [
                 'theme' => $active, 'endpoint' => $moduleUrl . '/designer.php',
                 'styleUrl' => $styleUrl, 'stylesheetUrl' => $moduleUrl . '/assets/css/designer.css',
-                'token' => '', 'canSave' => $access['save'], 'labels' => cssholmes_designer_labels(),
+                'token' => '', 'canSave' => $access['save'], 'canExport' => $access['export'], 'labels' => cssholmes_designer_labels(),
                 'autoOpen' => \Xmf\Request::getString('designer', '0', 'GET') === '1',
                 'properties' => $store::properties(),
                 'libraryEndpoint' => $moduleUrl . '/sets.php',

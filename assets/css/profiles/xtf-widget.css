@@ -73,12 +73,12 @@
 /* = WIDGET ROOT CLASS (warning)           = */
 /* ========================================= */
 
-.holmes-debug .xtf-slot-widget > *:not([class*="xmf-"]) {
+.holmes-debug .xtf-slot-widget:not([class^="xmf-"]):not([class*=" xmf-"]) {
     outline: 3px solid #f39c12 !important;
     --holmes-xtf-widget: warning;
 }
 
-.holmes-debug .xtf-slot-widget > *:not([class*="xmf-"]):hover::after {
+.holmes-debug .xtf-slot-widget:not([class^="xmf-"]):not([class*=" xmf-"]):hover::after {
     content: "Holmes: Widget root should have an xmf- prefixed class";
     position: fixed;
     top: 0;

@@ -55,7 +55,7 @@ function xoops_module_pre_install_cssholmes(\XoopsModule $module)
  */
 function xoops_module_install_cssholmes(\XoopsModule $module)
 {
-    require \dirname(__DIR__, 3) . '/mainfile.php';
+    require_once \dirname(__DIR__, 3) . '/mainfile.php';
 
     $moduleDirName = \basename(\dirname(__DIR__));
 

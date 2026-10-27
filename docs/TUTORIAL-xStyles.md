@@ -12,7 +12,8 @@ or rewriting its original stylesheets.
 Install or update both modules, then open **xStyles → Go to module** to reach
 the frontend gallery. Log in as a cssHolmes module administrator, or use an
 account with **Overlay** and **Edit** permissions. Publishing also requires
-**Workbench** permission. These instructions cover frontend themes.
+**Workbench** permission; downloading CSS or portable style sets requires
+**Export** permission. These instructions cover frontend themes.
 
 The screenshots below show the actual designer and preview controls with an
 isolated demonstration example. Your theme supplies the appearance of the
