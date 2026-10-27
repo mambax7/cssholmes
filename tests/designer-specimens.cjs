@@ -3,11 +3,11 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const playwright = require(process.env.PLAYWRIGHT_MODULE || 'C:/Users/mamba/AppData/Roaming/npm/node_modules/openclaw/node_modules/playwright-core');
+const playwright = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const engine = process.env.XSTYLES_BROWSER || 'chromium';
 assert.ok(['chromium', 'firefox'].includes(engine));
 (async () => {
-    const browser = await playwright[engine].launch({ headless: true, ...(engine === 'chromium' ? { executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe' } : {}) });
+    const browser = await playwright[engine].launch({ headless: true, ...(engine === 'chromium' && process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
     try {
         for (const theme of ['xbootstrap5', 'mytheme6']) {
             const context = await browser.newContext({ viewport: { width: 1280, height: 960 }, extraHTTPHeaders: { 'X-Test-Role': 'writer' } });
