@@ -1,0 +1,16 @@
+/* Only cssHolmes workspace chrome; sample elements retain the theme's styles. */
+#xs-gallery [data-cssholmes-preview] { margin-block: 1rem; border-radius: var(--xs-ui-radius, 8px); font: 13px/1.5 system-ui, sans-serif; }
+#xs-gallery [data-cssholmes-preview] [hidden] { display: none; }
+#xs-gallery .cssholmes-preview-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-block: 14px; }
+#xs-gallery .cssholmes-preview-toolbar label { display: grid; gap: 5px; font-weight: 600; margin: 0; }
+#xs-gallery .cssholmes-preview-toolbar :is(button, select) { font: inherit; border: 1px solid #cbd2df; border-radius: 8px; padding: 7px 12px; min-block-size: 36px; background: #fff; color: #263e75; }
+#xs-gallery .cssholmes-preview-toolbar :is(button, select):focus-visible { outline: 3px solid #518ce9; outline-offset: 3px; }
+#xs-gallery .cssholmes-preview-panes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+#xs-gallery .cssholmes-preview-panes[data-layout=responsive] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#xs-gallery .cssholmes-preview-panes figure { margin: 0; min-inline-size: 0; }
+#xs-gallery .cssholmes-preview-panes figcaption { font-weight: 650; margin-block: 6px; }
+#xs-gallery .cssholmes-frame-status { font-size: 12px; }
+#xs-gallery .cssholmes-preview-scroll { overflow: auto; border: 1px solid #cbd2df; border-radius: 8px; background: #fff; }
+#xs-gallery .cssholmes-preview-scroll iframe { display: block; max-inline-size: none; border: 0; }
+@media (max-width: 700px) { #xs-gallery .cssholmes-preview-panes, #xs-gallery .cssholmes-preview-panes[data-layout=responsive] { grid-template-columns: minmax(0, 1fr); } }
+@media (min-width: 1100px) { #xs-gallery.cssholmes-editor-visible { box-sizing: border-box; padding-inline-end: 380px; } }

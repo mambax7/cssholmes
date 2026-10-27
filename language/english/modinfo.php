@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * Cssholmes module
  *
@@ -9,20 +9,19 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @copyright           XOOPS Project (https://xoops.org)
- * @license             http://www.fsf.org/copyleft/gpl.html GNU public license
- * @package             Cssholmes
- * @since               2.3.0
- * @author              kris <http://www.xoofoo.org>
+ * @copyright           2000-2026 XOOPS Project (https://xoops.org)
+ * @license             GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
+ * @author              kris <https://www.xoofoo.org>
+ * @author              XOOPS Development Team, Mamba <mambax7@gmail.com>
  **/
 
 // Module Info
 
 // The name of this module
-define('_MI_CSSHOLMES_NAME', 'Css Holmes');
+define('_MI_CSSHOLMES_NAME', 'cssHolmes');
 
 // A brief description of this module
-define('_MI_CSSHOLMES_DESC', 'CssHolmes is stand-alone diagnostic CSS stylesheet that can highlight potentially invalid or erroneous HTML(5) markup by adding one class');
+define('_MI_CSSHOLMES_DESC', 'cssHolmes is an opt-in XTF theme and widget diagnostics module with profile-based frontend overlays');
 
 // Admin menu links
 define('_MI_CSSHOLMES_MANAGER_INDEX', 'Index');
@@ -35,16 +34,21 @@ define('MI_CSSHOLMES_EDITOR_ADMIN', 'Editor: Admin');
 define('MI_CSSHOLMES_EDITOR_ADMIN_DESC', 'Select the Editor to use by the Admin');
 define('MI_CSSHOLMES_EDITOR_USER', 'Editor: User');
 define('MI_CSSHOLMES_EDITOR_USER_DESC', 'Select the Editor to use by the User');
+define('_MI_CSSHOLMES_QUERY_KEY', 'Overlay query key');
+define('_MI_CSSHOLMES_QUERY_KEY_DESC', 'Query-string key that activates the cssHolmes overlay, for example ?holmes=html5. It only works for groups with the Use Overlay permission (Webmasters by default).');
 
 //Help
-define('_MI_CSSHOLMES_DIRNAME', basename(dirname(dirname(__DIR__))));
+define('_MI_CSSHOLMES_DIRNAME', basename(dirname(__DIR__, 2)));
 define('_MI_CSSHOLMES_HELP_HEADER', __DIR__ . '/help/helpheader.tpl');
 define('_MI_CSSHOLMES_BACK_2_ADMIN', 'Back to Administration of ');
 define('_MI_CSSHOLMES_OVERVIEW', 'Overview');
 
 //define('_MI_CSSHOLMES_HELP_DIR', __DIR__);
 
-//help multi-page
+//help multipage
 define('_MI_CSSHOLMES_DISCLAIMER', 'Disclaimer');
 define('_MI_CSSHOLMES_LICENSE', 'License');
 define('_MI_CSSHOLMES_SUPPORT', 'Support');
+
+define('_MI_CSSHOLMES_MANAGER_THEME_SETS', 'Theme sets');
+define('_MI_CSSHOLMES_MANAGER_THEME_SETS_DESC', 'Browse, preview, share and activate named theme sets');
