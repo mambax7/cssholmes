@@ -241,14 +241,24 @@ if ('POST' === strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'))) {
                     $result = $patchApplier->apply($theme, $selectedChange, is_array($suggestions[0] ?? null) ? $suggestions[0] : []);
 
                     if ($result['success']) {
-                        $importStore->markChangeApplied(
-                            $selectedHistoryId,
-                            $changeIndex,
-                            (string)$result['target'],
-                            (string)$result['message'],
-                            is_array($result['rollback'] ?? null) ? $result['rollback'] : []
-                        );
-                        $workbenchNotice = (string)$result['message'];
+                        try {
+                            $recorded = $importStore->markChangeApplied(
+                                $selectedHistoryId,
+                                $changeIndex,
+                                (string)$result['target'],
+                                (string)$result['message'],
+                                is_array($result['rollback'] ?? null) ? $result['rollback'] : []
+                            );
+                            if (!$recorded) {
+                                throw new \RuntimeException('Import no longer exists.');
+                            }
+                            $workbenchNotice = (string)$result['message'];
+                        } catch (\Throwable $error) {
+                            $recovery = $patchApplier->rollback($theme, $selectedChange, $result['rollback']);
+                            $importErrors[] = $recovery['success']
+                                ? 'History could not be saved; the patch was rolled back.'
+                                : 'History could not be saved and automatic rollback failed. Restore the target from your backup before continuing.';
+                        }
                     } else {
                         $importErrors[] = (string)$result['message'];
                     }
