@@ -28,8 +28,9 @@ the admin workbench for server-side scans and exports.*
 
 If no `theme.json` manifest is detected, cssHolmes switches to generic mode.
 HTML5, accessibility, layout, inspection, measurement, copy, and export still
-work. Only the XTF-specific tools (token matching, slot jumping, theme
-scanning) stay disabled.
+work. Generic theme scanning remains available for themes containing `theme.tpl`
+or `theme.html`; only manifest-dependent checks and XTF-specific tools such as
+token matching and slot jumping are unavailable.
 
 ![Generic mode on a non-XTF XOOPS site](images/image003087.jpg)
 
@@ -77,6 +78,10 @@ is the information browser devtools cannot provide.
 ---
 
 ## Before and After
+
+All URLs in this tutorial use the default query key, `holmes`. If you changed
+**Preferences: holmes_query_key**, replace `holmes` in each example with your
+configured key (for example, `?themecheck=layout`). Profile values stay the same.
 
 The fastest way to understand what cssHolmes does is to see the same page
 with and without it.
