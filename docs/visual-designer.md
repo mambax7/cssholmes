@@ -142,8 +142,7 @@ the stored JSON by hand while editors are saving.
 ## Verification
 
 Use the complete source checkout described in [Development checks](../README.md#development-checks).
-These scripts arrive with the final QA change; documentation-only branches and
-release ZIPs do not contain the test suite.
+Release ZIPs do not contain the test suite.
 
 Run `php tests/designer-access.php`, `php tests/designer-store.php`, and
 `php tests/designer-http.php`. The HTTP check builds an isolated temporary test

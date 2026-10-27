@@ -15,8 +15,8 @@ that every legacy core/PHP combination has been tested.
 ## Local tooling verification, 2026-10-26
 
 The results below describe the complete candidate, including the test suite in
-[QA PR #9](https://github.com/XoopsModules27x/cssholmes/pull/9), not a documentation-only
-review branch. Release ZIPs omit development tests and configuration. Follow
+[QA PR #9](https://github.com/XoopsModules27x/cssholmes/pull/9).
+Release ZIPs omit development tests and configuration. Follow
 [Development checks](../README.md#development-checks) to obtain the source needed
 to reproduce these results.
 

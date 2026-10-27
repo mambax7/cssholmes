@@ -96,8 +96,7 @@ trait VersionChecks
         $moduleDirName      = \basename(\dirname(__DIR__, 2));
         $moduleDirNameUpper = \mb_strtoupper($moduleDirName);
         $update             = '';
-        $repository         = 'XoopsModules25x/' . $moduleDirName;
-        //        $repository         = 'XoopsModules25x/publisher'; //for testing only
+        $repository         = 'XoopsModules27x/' . $moduleDirName;
         $ret             = null;
         $infoReleasesUrl = "https://api.github.com/repos/$repository/releases";
         if ('github' === $source) {

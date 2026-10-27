@@ -1,6 +1,6 @@
 # Contributing to cssHolmes
 
-Submit focused pull requests to [mambax7/cssholmes](https://github.com/mambax7/cssholmes).
+Submit focused pull requests to [XoopsModules27x/cssholmes](https://github.com/XoopsModules27x/cssholmes).
 Use PSR-12, preserve public APIs and existing request/CSRF validation, and add a
 regression test beside the affected behavior. Describe the problem, behavior
 change, compatibility impact and commands actually run. Include screenshots for
