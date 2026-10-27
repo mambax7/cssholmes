@@ -30,7 +30,8 @@ If no `theme.json` manifest is detected, cssHolmes switches to generic mode.
 HTML5, accessibility, layout, inspection, measurement, copy, and export still
 work. Generic theme scanning remains available for themes containing `theme.tpl`
 or `theme.html`; only manifest-dependent checks and XTF-specific tools such as
-token matching and slot jumping are unavailable.
+token matching are unavailable. Slot selection still works wherever the page
+provides a `[data-slot]` ancestor; it does not require a manifest.
 
 ![Generic mode on a non-XTF XOOPS site](images/image003087.jpg)
 
@@ -60,7 +61,8 @@ properties, and variants. They follow the `.xmf-` CSS class convention.
 **Tokens = design variables.** A theme declares tokens in `theme.json` for
 colors, spacing, fonts, and radii. They become CSS custom properties like
 `--xtf-color-primary`. Using tokens instead of hardcoded values means
-changing one token updates the entire theme.
+changing a token can update declarations that reference it. Matching rendered
+colors alone does not establish that reference.
 
 **The relationship:**
 
@@ -94,7 +96,7 @@ with and without it.
 *Nothing visible. The page renders normally. You cannot tell which elements
 are widgets, where slot boundaries are, or whether colors use tokens.*
 
-**With cssHolmes activated** — same page, `?holmes=xtf-theme,widget,layout`:
+**With cssHolmes activated** — same page, `?holmes=xtf-theme,xtf-widget,layout`:
 
 ![Same page with cssHolmes theme and widget profiles active](images/image003068.jpg)
 
@@ -160,7 +162,7 @@ The toolbar is your working surface. It groups into three tiers:
 - `inspect` — hover to see element details, click to lock selection
 - `measure` — show pixel distances between elements
 - `widget` — jump from any child to the nearest widget wrapper
-- `slot` — jump to the nearest slot wrapper
+- `slot` — select the nearest ancestor carrying `[data-slot]`
 
 **Edit and experiment:**
 - `token` — preview color changes with token matching
@@ -168,14 +170,14 @@ The toolbar is your working surface. It groups into three tiers:
 - `text` — make text content editable for quick experiments
 
 **Capture and share:**
-- `copy text` — copy the selected element's text content
+- `copy text` — copy a readable inspection summary (selector, metrics and context)
 - `copy json` — copy the inspection snapshot as JSON
 - `export sel` — export the full inspection with context
 - `undo` — revert the last local edit
 
 **Diagnose (third row):**
 - `overflow` — highlight every element with overflowing content
-- `z-index` — show z-index values as colored labels on all positioned elements
+- `z-index` — label rendered elements with nonzero computed z-index values
 - `grid` — show CSS Grid and Flexbox containers with column/row lines
 - `proto` / `deuter` / `trita` / `achro` — simulate color blindness types
 
@@ -252,8 +254,9 @@ recognized XMF widget.*
 ### Step 3. Jump to the widget or slot boundary
 
 If you clicked a nested child — a paragraph, an icon, a span — the `widget`
-button jumps to the nearest `.xmf-*` widget wrapper. The `slot` button jumps
-to the nearest slot wrapper.
+button selects the nearest recognized widget wrapper, such as `.xtf-slot-widget`,
+`[data-widget]`, or an `xmf-` root class. The `slot` button selects the nearest
+`[data-slot]` ancestor; a wrapper class alone does not identify a slot.
 
 This is the most useful XTF-specific improvement over browser devtools. It
 answers: "Am I editing the theme shell, the slot wrapper, or the widget itself?"
@@ -271,8 +274,11 @@ Use:
 and alignment before touching any CSS file. Especially useful for density
 tuning in admin tables and widget cards.*
 
-These are local preview edits, not file writes. That is deliberate — the page
-stays safe while you experiment.
+These overlay edits change the current page in your browser and can be undone.
+They do not write theme files or publish changes. The token editor changes the
+selected element's matching foreground/background properties and its local token
+record; it does not change the global CSS variable. Inspect the source declaration
+before applying an exported token patch in the workbench.
 
 ### Step 5. Measure spacing
 
@@ -375,23 +381,25 @@ change `theme.json` or component CSS?
 3. Look at the **Color** line in the inspector. If a token matches, you will
    see it listed in the token field.
 
-4. If the color says `rgb(37, 99, 235)` and the token line shows
-   `--xtf-color-primary`, that means the value comes from the
-   `color.primary` token in `theme.json`. To change it globally, edit the
-   token — not this element's CSS.
+4. A listed token has a normalized value matching the element's computed
+   foreground or background color. For example, `--xtf-color-primary` may
+   match `rgb(37, 99, 235)` even when the declaration uses a literal color.
+   Inspect the winning CSS declaration in browser developer tools before
+   changing a global token; the match does not prove that declaration uses it.
 
-5. If no token is shown, the color is hardcoded. The `xtf-theme` profile
-   will outline it as a warning. Consider adding a token for it.
+5. No match means no loaded manifest token matched those computed colors.
+   The declaration might use another CSS variable, inheritance or a literal.
+   Inspect its source; absence of a match does not itself trigger an overlay warning.
 
-6. Use the `token` editor to preview a replacement. If you pick a color that
-   matches an existing token, cssHolmes suggests the token reference instead
-   of a raw hex value.
+6. Use the `token` editor to preview a replacement on the selected element's
+   matching color properties. It records a local token edit for review; it does
+   not suggest a CSS variable reference or update every use of that token.
 
 ![Token editor with color picker and token value](images/image003091.jpg)
 
-*The token editor shows the current color, a native color picker for
-previewing changes, the matched token key, and an apply button. The hex
-value at the bottom tells you exactly what is in `theme.json`.*
+*The token editor shows the matched token key, editable value and color picker.
+Its value starts from the loaded manifest and changes with local edits; it is
+not a live view of the saved `theme.json` after a preview.*
 
 ---
 
@@ -416,8 +424,9 @@ click elsewhere or press Esc.*
 
 ![Using copy text on the selected element](images/image003082.jpg)
 
-*With the element locked, `copy text` copies its text content and `copy json`
-copies the full inspection snapshot. Both are one-click operations.*
+*With the element locked, `copy text` copies a readable inspection summary;
+`copy json` copies the inspection snapshot as JSON. Neither button copies only
+the element's text content.*
 
 ![Text edit prompt on a selected element](images/image003077.jpg)
 
@@ -431,7 +440,7 @@ This is for quick content experiments — the change is local and undoable.*
 ### You inherit a theme with inconsistent colors
 
 1. `inspect` shows each element's color
-2. Token matching shows which colors map to `theme.json` tokens
+2. Token matching lists equal resolved values; inspect CSS declarations to confirm their source
 3. `token` editor lets you preview a change safely
 4. Export + workbench creates a patch draft for `theme.json`
 
@@ -516,12 +525,14 @@ This is the automated version of the manual "scroll right and squint" test.
 
 ### Z-Index Overlay
 
-Click `z-index` to show colored labels on every element that has an
-explicit `z-index` value (not `auto`). Each value gets a unique color so
-you can see the stacking hierarchy at a glance.
+Click `z-index` to label rendered elements whose computed z-index is neither
+`auto` nor `0`. Elements with both zero width and height, plus the cssHolmes
+toolbar and inspector, are skipped.
+Colors help scanning but can repeat for different values; read the numeric labels.
 
-The button shows the count: `z-index (12)` means twelve elements compete
-for stacking position on this page.
+The button shows the number of labels: `z-index (12)` means twelve elements
+were labeled. This is not a complete stacking-context analysis: zero-valued
+contexts are omitted, and values in different contexts are not directly comparable.
 
 **When to use it:**
 
@@ -536,7 +547,8 @@ for stacking position on this page.
 Open the admin dashboard with `?holmes=all` and click `z-index`. You will
 see labels like `z:10` on the sidebar, `z:100` on the header, `z:1000` on
 dropdown menus. If a widget badge shows `z:99999`, that is a red flag — it
-will fight with modals and overlays.
+may conflict with modals or overlays in the same stacking context. Check the
+ancestor contexts in browser developer tools before changing it.
 
 ### CSS Grid and Flexbox Overlay
 
