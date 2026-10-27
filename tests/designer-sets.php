@@ -157,6 +157,7 @@ try {
     $schema = json_decode(file_get_contents(dirname(__DIR__) . '/docs/theme-set.schema.json'), true, 32, JSON_THROW_ON_ERROR);
     check($schema['properties']['version']['const'] === 1, 'Schema is parseable and versioned');
     $file = $root . '/private/config/sets-library.json';
+    $validLibrary = file_get_contents($file);
     file_put_contents($file, str_repeat(' ', 4194305));
     rejects(fn() => $library->all(), RuntimeException::class);
     file_put_contents($file, '{broken');
@@ -169,6 +170,7 @@ try {
         restore_error_handler();
     }
     if ($linked) {
+        file_put_contents($file, $validLibrary);
         check(count((new SetLibrary($root . '/linked/config'))->all()) === count($library->all()), 'Trusted linked parent is supported');
         unlink($file);
         file_put_contents($root . '/outside.json', 'outside sentinel');
