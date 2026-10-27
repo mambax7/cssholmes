@@ -14,7 +14,7 @@
 
     const script = document.currentScript || Array.from(document.scripts).find((item) => (item.src || '').includes('/assets/js/holmes.js')) || null;
     const scriptUrl = script ? new URL(script.src, window.location.href) : new URL(window.location.href);
-    const moduleUrl = scriptUrl.searchParams.get('moduleUrl') || '';
+    if (!['http:', 'https:'].includes(scriptUrl.protocol) || scriptUrl.origin !== window.location.origin) return;
     const queryKey = scriptUrl.searchParams.get('queryKey') || 'holmes';
     const pageScope = scriptUrl.searchParams.get('scope') || 'site';
     const themeKey = scriptUrl.searchParams.get('themeKey') || '';
@@ -47,6 +47,10 @@
     let zIndexOverlays = [];
     let gridOverlays = [];
     let cachedCounts = null;
+
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+    }
 
     function normalizeProfiles(value) {
         const raw = String(value || '').trim();
@@ -127,7 +131,7 @@
                 const link = document.createElement('link');
                 link.id = id;
                 link.rel = 'stylesheet';
-                link.href = `${moduleUrl}/assets/css/profiles/${profile}.css`;
+                link.href = new URL(`../css/profiles/${profile}.css`, scriptUrl).href;
                 link.addEventListener('load', () => {
                     markCountsDirty();
                     refreshToolbar();
@@ -625,21 +629,21 @@
                 const widgetTarget = widgetTargetFor(target);
                 const slotTarget = slotTargetFor(target);
                 details.innerHTML = `
-                    <div class="cssholmes-detail-name">${shortSelector(target)}</div>
-                    <div class="cssholmes-detail-path"><code>${selectorPath(target)}</code></div>
+                    <div class="cssholmes-detail-name">${escapeHtml(shortSelector(target))}</div>
+                    <div class="cssholmes-detail-path"><code>${escapeHtml(selectorPath(target))}</code></div>
                     <div class="cssholmes-detail-grid">
                         <span>Size</span><strong>${Math.round(rect.width)} x ${Math.round(rect.height)}</strong>
                         <span>Pos</span><strong>${Math.round(rect.left)} / ${Math.round(rect.top)}</strong>
-                        <span>Margin</span><strong>${style.marginTop} ${style.marginRight} ${style.marginBottom} ${style.marginLeft}</strong>
-                        <span>Padding</span><strong>${style.paddingTop} ${style.paddingRight} ${style.paddingBottom} ${style.paddingLeft}</strong>
-                        <span>Font</span><strong>${style.fontSize} / ${style.lineHeight}</strong>
-                        <span>Color</span><strong>${style.color}</strong>
+                        <span>Margin</span><strong>${escapeHtml(style.marginTop)} ${escapeHtml(style.marginRight)} ${escapeHtml(style.marginBottom)} ${escapeHtml(style.marginLeft)}</strong>
+                        <span>Padding</span><strong>${escapeHtml(style.paddingTop)} ${escapeHtml(style.paddingRight)} ${escapeHtml(style.paddingBottom)} ${escapeHtml(style.paddingLeft)}</strong>
+                        <span>Font</span><strong>${escapeHtml(style.fontSize)} / ${escapeHtml(style.lineHeight)}</strong>
+                        <span>Color</span><strong>${escapeHtml(style.color)}</strong>
                         <span>Mode</span><strong>${genericMode ? 'generic-xoops' : 'xtf'}</strong>
-                        <span>Theme</span><strong>${themeKey || pageScope}</strong>
-                        ${widgetTarget ? `<span>Widget</span><strong>${widgetTarget.dataset.widget || shortSelector(widgetTarget)}</strong>` : ''}
-                        ${slotTarget ? `<span>Slot</span><strong>${slotTarget.dataset.slot || shortSelector(slotTarget)}</strong>` : ''}
+                        <span>Theme</span><strong>${escapeHtml(themeKey || pageScope)}</strong>
+                        ${widgetTarget ? `<span>Widget</span><strong>${escapeHtml(widgetTarget.dataset.widget || shortSelector(widgetTarget))}</strong>` : ''}
+                        ${slotTarget ? `<span>Slot</span><strong>${escapeHtml(slotTarget.dataset.slot || shortSelector(slotTarget))}</strong>` : ''}
                     </div>
-                    ${tokenMatches.length > 0 ? `<div class="cssholmes-token-list"><span>Tokens</span>${tokenMatches.map((token) => `<code>${token.key}</code>`).join('')}</div>` : ''}`;
+                    ${tokenMatches.length > 0 ? `<div class="cssholmes-token-list"><span>Tokens</span>${tokenMatches.map((token) => `<code>${escapeHtml(token.key)}</code>`).join('')}</div>` : ''}`;
                 if (copyTextButton instanceof HTMLButtonElement) {
                     copyTextButton.disabled = false;
                 }
@@ -731,13 +735,13 @@
                         ${tokenBindings.map((binding) => `
                             <div class="cssholmes-token-editor-row">
                                 <div class="cssholmes-token-editor-meta">
-                                    <code>${binding.key}</code>
-                                    <span>${binding.properties.join(' + ')}</span>
+                                    <code>${escapeHtml(binding.key)}</code>
+                                    <span>${escapeHtml(binding.properties.join(' + '))}</span>
                                 </div>
                                 <div class="cssholmes-token-editor-controls">
-                                    <input type="color" value="${binding.normalized}" data-role="token-color" data-token-key="${binding.key}">
-                                    <input type="text" value="${binding.value}" data-role="token-value" data-token-key="${binding.key}">
-                                    <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="apply-token" data-token-key="${binding.key}">apply</button>
+                                    <input type="color" value="${escapeHtml(binding.normalized)}" data-role="token-color" data-token-key="${escapeHtml(binding.key)}">
+                                    <input type="text" value="${escapeHtml(binding.value)}" data-role="token-value" data-token-key="${escapeHtml(binding.key)}">
+                                    <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="apply-token" data-token-key="${escapeHtml(binding.key)}">apply</button>
                                 </div>
                             </div>
                         `).join('')}
@@ -752,15 +756,15 @@
                     <div class="cssholmes-typography-editor-list">
                         ${typographyBindings.map((binding) => `
                             <div class="cssholmes-typography-editor-row">
-                                <label class="cssholmes-typography-editor-meta" for="cssholmes-typo-${binding.key}">
-                                    <span>${binding.label}</span>
-                                    <code>${binding.cssProperty}</code>
+                                <label class="cssholmes-typography-editor-meta" for="cssholmes-typo-${escapeHtml(binding.key)}">
+                                    <span>${escapeHtml(binding.label)}</span>
+                                    <code>${escapeHtml(binding.cssProperty)}</code>
                                 </label>
                                 <div class="cssholmes-typography-editor-controls">
                                     ${binding.input === 'select'
-                                        ? `<select id="cssholmes-typo-${binding.key}" data-role="typography-value" data-style-key="${binding.key}">${binding.options.map((option) => `<option value="${option}"${option === binding.value ? ' selected' : ''}>${option}</option>`).join('')}</select>`
-                                        : `<input id="cssholmes-typo-${binding.key}" type="text" value="${binding.value}" data-role="typography-value" data-style-key="${binding.key}">`}
-                                    <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="apply-typography" data-style-key="${binding.key}">apply</button>
+                                        ? `<select id="cssholmes-typo-${escapeHtml(binding.key)}" data-role="typography-value" data-style-key="${escapeHtml(binding.key)}">${binding.options.map((option) => `<option value="${escapeHtml(option)}"${option === binding.value ? ' selected' : ''}>${escapeHtml(option)}</option>`).join('')}</select>`
+                                        : `<input id="cssholmes-typo-${escapeHtml(binding.key)}" type="text" value="${escapeHtml(binding.value)}" data-role="typography-value" data-style-key="${escapeHtml(binding.key)}">`}
+                                    <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="apply-typography" data-style-key="${escapeHtml(binding.key)}">apply</button>
                                 </div>
                             </div>
                         `).join('')}
@@ -783,10 +787,10 @@
                     <div class="cssholmes-change-list">
                         ${changeLog
                             .slice(0, 5)
-                            .map((change, index) => `<div class="cssholmes-change-row"><span>#${index + 1}</span><strong>${change.kind}</strong><code>${change.selector}</code><em>${change.summary}</em></div>`)
+                            .map((change, index) => `<div class="cssholmes-change-row"><span>#${index + 1}</span><strong>${escapeHtml(change.kind)}</strong><code>${escapeHtml(change.selector)}</code><em>${escapeHtml(change.summary)}</em></div>`)
                             .join('')}
                     </div>
-                    <pre class="cssholmes-export">${exportPayload()}</pre>`;
+                    <pre class="cssholmes-export">${escapeHtml(exportPayload())}</pre>`;
             }
         }
     }
@@ -1533,7 +1537,7 @@
             <div class="cssholmes-shell">
                 <div class="cssholmes-row">
                     <span class="cssholmes-logo">cssHolmes</span>
-                    <span class="cssholmes-scope">${pageScope}</span>
+                    <span class="cssholmes-scope">${escapeHtml(pageScope)}</span>
                     <span class="cssholmes-mode">${genericMode ? 'generic' : 'xtf'}</span>
                     <span class="cssholmes-profiles">${PROFILE_ORDER.map((profile) => `<button type="button" class="cssholmes-btn${activeProfiles.includes(profile) ? ' cssholmes-btn--active' : ''}" data-profile="${profile}">${profile.replace('xtf-', '')}</button>`).join('')}</span>
                     <button type="button" class="cssholmes-btn cssholmes-btn--ghost" data-action="minimize" title="Minimize toolbar" style="margin-left:auto;font-size:15px;padding:0 .4rem;">&#x2015;</button>
