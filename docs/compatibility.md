@@ -14,16 +14,22 @@ that every legacy core/PHP combination has been tested.
 
 ## Local tooling verification, 2026-10-26
 
+Workbench imports are limited to 1 MiB per raw payload and 1,000 records;
+each history file is limited to 16 MiB, including scan history. Limits reject
+new writes without deleting rollback records. Back up and archive old history
+before continuing when a limit is reached. An oversized legacy history must
+be archived before the module update can migrate it.
+
 `XOOPS_VENDOR_PATH=<shared xoops_lib/vendor> php tests/run.php` passed on
-PHP 8.4.27 with shared PHPUnit 13.4.3: storage and set checks, 7 access checks,
-preview-context checks, 48 HTTP endpoint checks, and **35 PHPUnit tests / 115
+PHP 8.4.27 with shared PHPUnit 13.4.3: storage and set checks, 8 access checks,
+preview-context checks, 50 HTTP endpoint checks, and **35 PHPUnit tests / 115
 assertions**. The tests use temporary files and synthetic HTTP identities;
 production settings, credentials and sessions are not accessed. Symlink tests
 were skipped because the Windows account could not create symlinks.
 
-The same runner passed on PHP 8.5.12 (35 PHPUnit tests / 115 assertions and 48
-HTTP checks). The first run reported the HTTP test harness's deprecated
-`$http_response_header`; the production endpoints did not report that warning.
+The same runner passed on PHP 8.5.12 (35 PHPUnit tests / 115 assertions and 50
+HTTP checks). Follow-up regressions also cover complete color tokens, both
+image dimensions, bounded history writes and manifest path containment.
 
 Standard PHPStan 2.3.2 passed the level-5 scope in `phpstan.neon` without error
 suppressions. Shared optional strict rules are not part of this initial gate.

@@ -1,7 +1,7 @@
 # cssHolmes Tutorial — XTF Themes and XMF Widgets
 
 **Audience:** XOOPS designers, theme builders, theme editors, widget developers
-**Requires:** XOOPS 2.5.12+, cssHolmes installed and activated
+**Requires:** PHP 8.4+, cssHolmes installed and activated. See [tested compatibility boundaries](compatibility.md); the installer minimum is not a claim that every older XOOPS/PHP combination has been tested.
 **Status:** matches the current implementation as of 2026-03-26
 
 ---
@@ -72,8 +72,9 @@ theme.json
 ```
 
 When cssHolmes inspects an element, it can tell you which slot it belongs to,
-which widget rendered it, and which token (if any) controls its color. That
-is the information browser devtools cannot provide.
+which widget rendered it, and which manifest token values match its computed
+color. A match is a useful clue, not proof that the stylesheet references that
+token. Check the CSS declaration before changing a global token.
 
 ---
 

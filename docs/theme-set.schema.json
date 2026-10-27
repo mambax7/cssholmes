@@ -87,7 +87,7 @@
           "color": {"$ref": "#/$defs/cssColor"}, "background-color": {"$ref": "#/$defs/cssColor"}, "border-color": {"$ref": "#/$defs/cssColor"},
           "font-size": {"$ref": "#/$defs/cssLength"}, "gap": {"$ref": "#/$defs/cssLength"},
           "border-width": {"$ref": "#/$defs/cssLength"}, "border-radius": {"$ref": "#/$defs/cssLength"},
-          "width": {"anyOf": [{"$ref": "#/$defs/cssLength"}, {"const": "auto"}]}, "height": {"$ref": "#/$defs/cssLength"},
+          "width": {"anyOf": [{"$ref": "#/$defs/cssLength"}, {"const": "auto"}]}, "height": {"anyOf": [{"$ref": "#/$defs/cssLength"}, {"const": "auto"}]},
           "max-width": {"anyOf": [{"$ref": "#/$defs/cssLength"}, {"const": "none"}]}, "min-width": {"anyOf": [{"$ref": "#/$defs/cssLength"}, {"const": "auto"}]},
           "letter-spacing": {"type": "string", "maxLength": 128, "pattern": "^(?:normal|0|-?(?:[0-9]{1,4}(?:\\.[0-9]{1,4})?|\\.[0-9]{1,4})(?:px|rem|em|%|vh|vw))$"},
           "line-height": {"type": "string", "maxLength": 128, "pattern": "^(?:normal|0|(?:[0-9]{1,4}(?:\\.[0-9]{1,4})?|\\.[0-9]{1,4})(?:px|rem|em|%|vh|vw)?)$"},
