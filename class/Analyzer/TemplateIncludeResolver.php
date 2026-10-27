@@ -123,7 +123,9 @@ final class TemplateIncludeResolver
         if (str_starts_with($value, $this->themeName . '/')) {
             $relative = $this->normalise(substr($value, strlen($this->themeName) + 1));
 
-            return $this->themeResult($relative);
+            return $relative === '../'
+                ? ['status' => self::STATUS_EXTERNAL, 'path' => $value, 'exists' => false]
+                : $this->themeResult($relative);
         }
 
         $relative = $this->normalise($value);

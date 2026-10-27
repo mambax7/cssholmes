@@ -244,16 +244,16 @@ final class PatchSuggester
             if (str_contains($relative, 'theme.json')) {
                 $score += 25;
             }
-            if (str_contains($relative, '/xotpl/')) {
+            if (str_contains('/' . $relative, '/xotpl/')) {
                 $score += 20;
             }
-            if (str_contains($relative, '/tpl/')) {
+            if (str_contains('/' . $relative, '/tpl/')) {
                 $score += 15;
             }
-            if (str_contains($relative, '/css/')) {
+            if (str_contains('/' . $relative, '/css/')) {
                 $score += 10;
             }
-            if (str_contains($relative, '/templates/')) {
+            if (str_contains('/' . $relative, '/templates/')) {
                 $score += 10;
             }
             if (preg_match('/\.(tpl|html|css)$/', $relative)) {
