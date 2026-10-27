@@ -324,7 +324,7 @@
     const preview = document.createElement('style');
     preview.id = 'cssholmes-draft-style';
     let rules = [], baseline = [], history = [[]], historyIndex = 0;
-    let revision = 0, token = config.token, canSave = Boolean(config.canSave), canRestore = false;
+    let revision = 0, token = config.token, canSave = Boolean(config.canSave), canExport = Boolean(config.canExport), canRestore = false;
     let loaded = false, busy = false, visible = false, picking = false, selection = null, hovered = null;
     let context = { mode: 'all', breakpoint: 'all', state: 'normal' };
     let loadPromise = null;
@@ -556,7 +556,7 @@
         redoButton.disabled = busy || !loaded || historyIndex >= history.length - 1;
         restoreButton.disabled = busy || !loaded || !canSave || !canRestore;
         reloadButton.disabled = busy;
-        exportCssButton.disabled = exportJsonButton.disabled = busy || !loaded || invalid;
+        exportCssButton.disabled = exportJsonButton.disabled = busy || !loaded || !canExport || invalid;
         pickButton.disabled = busy || !loaded;
         resetButton.disabled = busy || !selection || currentIndex() === -1;
         ruleList.disabled = busy || !loaded;
@@ -572,7 +572,7 @@
             controls.like.disabled = busy || !loaded || !selected;
             controls.importPreview.disabled = busy || !loaded || !controls.file.files.length;
             controls.importSave.disabled = busy || !loaded || !canSave || !importDocument;
-            controls.exportSet.disabled = busy || !loaded || invalid;
+            controls.exportSet.disabled = busy || !loaded || !canExport || invalid;
             controls.defaults.disabled = controls.compare.disabled = busy || !loaded;
             controls.reset.disabled = busy || !loaded || !canSave;
             controls.file.disabled = busy;
@@ -603,6 +603,7 @@
         revision = data.state.revision;
         canRestore = Boolean(data.state.canRestore);
         canSave = Boolean(data.canSave);
+        canExport = Boolean(data.canExport);
         history = [clone(rules)];
         historyIndex = 0;
         loaded = true;
@@ -715,6 +716,7 @@
         if (data.token) token = data.token;
         if (!response.ok || !data.ok) throw new Error(data.error || t('request_failed'));
         if (typeof data.canSave === 'boolean') canSave = data.canSave;
+        if (typeof data.canExport === 'boolean') canExport = data.canExport;
         if (data.library) {
             library = data.library;
             // Likes and other metadata refreshes must not renew an older draft's revision.
@@ -942,6 +944,7 @@
     window.addEventListener('cssholmes:design', designEvent);
     document.addEventListener('cssholmes:design', designEvent);
     function download(extension, content, type) {
+        if (!canExport) return;
         const url = URL.createObjectURL(new Blob([content], { type }));
         const anchor = document.createElement('a');
         anchor.href = url;

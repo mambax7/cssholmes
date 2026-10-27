@@ -168,10 +168,23 @@
         return severity;
     }
 
+    function markUnlabelledControls() {
+        document.querySelectorAll('input, select, textarea').forEach(control => {
+            if (isInternal(control) || control.closest('[data-holmes-ui]')) return;
+            const selfNamed = control instanceof HTMLInputElement && ['hidden', 'button', 'submit', 'reset', 'image'].includes(control.type);
+            const labelled = Array.from(control.labels || []).some(label => label.textContent.trim())
+                || (control.getAttribute('aria-label') || '').trim()
+                || (control.getAttribute('aria-labelledby') || '').split(/\s+/).some(id => document.getElementById(id)?.textContent.trim())
+                || (control.getAttribute('title') || '').trim();
+            control.toggleAttribute('data-holmes-unlabelled', activeProfiles.includes('a11y') && !selfNamed && !labelled);
+        });
+    }
+
     function countFindings() {
         if (cachedCounts !== null) {
             return cachedCounts;
         }
+        markUnlabelledControls();
         let errors = 0;
         let warnings = 0;
         if (activeProfiles.length > 0 && document.body) {
@@ -1742,6 +1755,20 @@
             }
         });
         attachListeners();
+        let labelRefreshPending = false;
+        new MutationObserver(records => {
+            if (!activeProfiles.includes('a11y') || labelRefreshPending || !records.some(record => {
+                const element = record.target instanceof Element ? record.target : record.target.parentElement;
+                return element && !isInternal(element) && !element.closest('[data-holmes-ui]');
+            })) return;
+            labelRefreshPending = true;
+            window.requestAnimationFrame(() => {
+                labelRefreshPending = false;
+                markCountsDirty();
+                refreshToolbar();
+            });
+        }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true,
+            attributeFilter: ['id', 'for', 'aria-label', 'aria-labelledby', 'title', 'type'] });
         window.addEventListener('load', () => {
             markCountsDirty();
             refreshToolbar();

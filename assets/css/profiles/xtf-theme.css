@@ -90,26 +90,26 @@
 /* = DARK MODE BREAKAGE (error)            = */
 /* ========================================= */
 
-[data-theme="dark"] .holmes-debug [style*="background: #fff"],
-[data-theme="dark"] .holmes-debug [style*="background:#fff"],
-[data-theme="dark"] .holmes-debug [style*="background: white"],
-[data-theme="dark"] .holmes-debug [style*="background:white"],
-[data-theme="dark"] .holmes-debug [style*="color: #000"],
-[data-theme="dark"] .holmes-debug [style*="color:#000"],
-[data-theme="dark"] .holmes-debug [style*="color: black"],
-[data-theme="dark"] .holmes-debug [style*="color:black"],
-[data-theme="dark"] .holmes-debug [style*="background: #ffffff"],
-[data-theme="dark"] .holmes-debug [style*="background:#ffffff"] {
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="background: #fff"],
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="background:#fff"],
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="background: white"],
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="background:white"],
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="color: #000"],
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="color:#000"],
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="color: black"],
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="color:black"],
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="background: #ffffff"],
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="background:#ffffff"] {
     outline: 3px solid #9b59b6 !important;
     --holmes-xtf-theme: warning;
 }
 
-[data-theme="dark"] .holmes-debug [style*="background: #fff"]:hover::after,
-[data-theme="dark"] .holmes-debug [style*="background:#fff"]:hover::after,
-[data-theme="dark"] .holmes-debug [style*="background: white"]:hover::after,
-[data-theme="dark"] .holmes-debug [style*="color: #000"]:hover::after,
-[data-theme="dark"] .holmes-debug [style*="color:#000"]:hover::after,
-[data-theme="dark"] .holmes-debug [style*="color: black"]:hover::after {
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="background: #fff"]:hover::after,
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="background:#fff"]:hover::after,
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="background: white"]:hover::after,
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="color: #000"]:hover::after,
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="color:#000"]:hover::after,
+:is(.holmes-debug[data-theme="dark"], .holmes-debug [data-theme="dark"]) [style*="color: black"]:hover::after {
     content: "Holmes: Hardcoded light color does not adapt to dark mode";
     position: fixed;
     top: 0;
