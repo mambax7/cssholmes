@@ -15,7 +15,7 @@ assert.ok(['chromium', 'firefox'].includes(engine));
             page.on('pageerror', error => errors.push(error.message));
             page.on('dialog', dialog => dialog.accept());
             const url = `${process.argv[2]}/${theme}.php`;
-            await page.goto(url);
+            await page.goto(`${url}#xs-theme-cards`);
             assert.equal(await page.locator('.xs-example').count(), 3);
             const heading = page.locator('#xs-theme-cards_card-title');
             const original = await heading.evaluate(el => getComputedStyle(el).fontSize);
@@ -25,7 +25,7 @@ assert.ok(['chromium', 'firefox'].includes(engine));
             const frames = async () => {
                 await page.locator('[data-xs-responsive] > summary').click();
                 await page.selectOption('[data-xs-width]', 'all');
-                await page.waitForFunction(() => document.querySelectorAll('[data-xs-frames] iframe').length === 3 && [...document.querySelectorAll('[data-xs-frames] iframe')].every(f => f.contentDocument?.querySelector('#xs-theme-cards_card-title')));
+                await page.waitForFunction(() => document.querySelectorAll('[data-xs-frames] iframe').length === 3 && [...document.querySelectorAll('[data-xs-frames] iframe')].every(f => f.contentDocument?.readyState === 'complete' && f.contentDocument.querySelector('#xs-theme-cards_card-title')));
                 assert.deepEqual(await page.locator('[data-xs-frames] iframe').evaluateAll(nodes => nodes.map(f => f.contentWindow.innerWidth)), [360, 768, 1280]);
             };
             const frameSizes = () => page.locator('[data-xs-frames] iframe').evaluateAll(nodes => nodes.map(f => f.contentWindow.getComputedStyle(f.contentDocument.querySelector('#xs-theme-cards_card-title')).fontSize));
