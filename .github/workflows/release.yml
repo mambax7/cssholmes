@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-[0-9A-Za-z]*'
+      - '[0-9]+.[0-9]+.[0-9]+-[0-9A-Za-z]*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  qa:
+    uses: ./.github/workflows/ci.yml
+  release:
+    needs: qa
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build clean module archive
+        id: archive
+        run: |
+          NOTES="docs/RELEASE-${GITHUB_REF_NAME#v}.md"
+          if [ ! -f "$NOTES" ]; then
+            echo "::error::Release notes missing: $NOTES"
+            exit 1
+          fi
+          echo "notes=$NOTES" >> "$GITHUB_OUTPUT"
+          ZIP="cssholmes-${GITHUB_REF_NAME}.zip"
+          git archive --format=zip --prefix=cssholmes/ -o "$ZIP" HEAD
+          echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          files: ${{ steps.archive.outputs.zip }}
+          overwrite_files: false
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          make_latest: ${{ !contains(github.ref_name, '-') }}
+          body_path: ${{ steps.archive.outputs.notes }}

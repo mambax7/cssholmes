@@ -1,0 +1,2 @@
+:root { --st-text: #111; }
+body { color: var(--st-text); border-color: var(--st-border); }

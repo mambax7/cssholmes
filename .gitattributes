@@ -1,5 +1,29 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+*.php text eol=lf
+*.yml text eol=lf
+
+# Development tools and temporary output do not belong in module distributions.
+/.github export-ignore
+/.build export-ignore
+/.qodana export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.codeclimate.yml export-ignore
+/.scrutinizer.yml export-ignore
+/tests export-ignore
+/phpstan.neon export-ignore
+/phpunit.xml.dist export-ignore
+/qodana.yaml export-ignore
+/CONTRIBUTING.md export-ignore
+/vendor export-ignore
+/node_modules export-ignore
+/composer.json export-ignore
+/composer.lock export-ignore
+/package-lock.json export-ignore
+/coverage export-ignore
+/reports export-ignore
+/data/workbench/*.json export-ignore
 
 # Custom for Visual Studio
 *.cs     diff=csharp

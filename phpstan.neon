@@ -1,0 +1,19 @@
+# Framework-independent production code; installed XOOPS adapters are verified separately.
+# Use standard PHPStan rules (see CONTRIBUTING.md), without ambient extension-installer rules.
+parameters:
+    level: 5
+    phpVersion: 80400
+    treatPhpDocTypesAsCertain: false
+    paths:
+        - class/Analyzer
+        - class/Cli
+        - class/Diagnostics
+        - class/Designer
+        - class/Workbench/JsonHistory.php
+        - class/Workbench/ImportStore.php
+        - class/Workbench/ScanStore.php
+        - class/Workbench/PatchApplier.php
+    tmpDir: .build/phpstan
+    reportUnmatchedIgnoredErrors: true
+    parallel:
+        maximumNumberOfProcesses: 2
