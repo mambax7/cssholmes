@@ -20,7 +20,15 @@ administration screen to install or update it. Keep the site's shared dependenci
 in `xoops_lib`; this module has no separate Composer installation or vendor tree.
 Back up the site's files and database before an installed-module upgrade.
 
-From an installed module directory, `php tests/run.php` runs the isolated PHP
+## Development checks
+
+Use a complete source checkout, including the testing/tooling files supplied by
+[the final QA change](https://github.com/XoopsModules25x/cssholmes/pull/9).
+Documentation-only review branches are incomplete; release ZIPs intentionally
+exclude `tests/`, PHPUnit configuration and other development files. If
+`tests/run.php` is absent, obtain the complete source before running these commands.
+
+From that source directory, `php tests/run.php` runs the isolated PHP
 regressions plus the analyzer, CLI and diagnostic PHPUnit tests using shared
 `xoops_lib/vendor/bin/phpunit`. For a separate checkout, set `XOOPS_VENDOR_PATH`
 to that shared vendor directory. `php tests/run.php --browser` also runs the
