@@ -13,6 +13,7 @@ Requires PHP 8.4+. Alpha prerelease for testing; see docs/compatibility.md for t
 - Prevented unsafe imported patches and rollback over later template edits; fixed literal CSS replacements and scan diagnostics.
 - Enforced designer export permission, protected manifest edits from external symlinks, and bounded import history without deleting rollback records.
 - Corrected named-color and image-dimension checks, form-label associations, missing-landmark counters, dark-mode detection and widget-root highlighting.
+- Escaped inspected page text and exported changes in overlay HTML, derived diagnostic stylesheet URLs from the module script, and simplified font-family validation.
 - Avoided repeated core initialization during install, made uninstall backup names unique, and removed duplicate GD status output.
 - Supported trusted deployment symlinks while retaining storage-file checks; corrected legacy copy and database helper failures.
 - Excluded local workbench JSON records from release archives so upgrades do not overwrite a site's saved workbench data.
