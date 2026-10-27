@@ -93,6 +93,9 @@ try {
     };
     if ($method === 'GET') {
         $action = \Xmf\Request::getString('action', 'list', 'GET');
+        if ($action === 'export' && !$access['export']) {
+            $reply(403, ['ok' => false, 'error' => 'Export permission is required.']);
+        }
         if (in_array($action, ['preview', 'export'], true)) {
             $preview = $resolve(\Xmf\Request::getString('id', '', 'GET'));
             $extra[$action === 'export' ? 'exported' : 'preview'] = $action === 'export' ? $preview['document'] : $preview;
@@ -103,6 +106,9 @@ try {
         $operation = $data['op'] ?? null;
         if (!is_string($operation)) {
             throw new InvalidArgumentException('An operation is required.');
+        }
+        if ($operation === 'exportCurrent' && !$access['export']) {
+            $reply(403, ['ok' => false, 'error' => 'Export permission is required.']);
         }
         if (!$access['save'] && !in_array($operation, ['like', 'exportCurrent', 'previewImport'], true)) {
             $reply(403, ['ok' => false, 'error' => 'Workbench permission is required to change saved sets or the active theme.']);
@@ -201,7 +207,7 @@ try {
     }
     natcasesort($themes);
     $reply(200, $extra + [
-        'ok' => true, 'state' => $state, 'canSave' => $access['save'], 'isAdmin' => $admin,
+        'ok' => true, 'state' => $state, 'canSave' => $access['save'], 'canExport' => $access['export'], 'isAdmin' => $admin,
         'token' => $GLOBALS['xoopsSecurity']->createToken(1800, 'CSSHOLMES_DESIGNER'),
         'library' => [
             'themes' => array_values($themes), 'sets' => array_map($summary, $library->all()),

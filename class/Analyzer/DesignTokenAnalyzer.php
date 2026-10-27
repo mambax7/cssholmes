@@ -379,7 +379,8 @@ final class DesignTokenAnalyzer implements AnalyzerInterface
      */
     private function checkColorFormat(array $tokens, string $manifestPath, array &$findings): void
     {
-        $colorPattern = '/^(#([0-9a-f]{3,8})|rgb[a]?\s*\(|hsl[a]?\s*\(|transparent|currentcolor|inherit)/i';
+        $namedColors = explode(' ', 'aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond blue blueviolet brown burlywood cadetblue chartreuse chocolate coral cornflowerblue cornsilk crimson cyan darkblue darkcyan darkgoldenrod darkgray darkgreen darkgrey darkkhaki darkmagenta darkolivegreen darkorange darkorchid darkred darksalmon darkseagreen darkslateblue darkslategray darkslategrey darkturquoise darkviolet deeppink deepskyblue dimgray dimgrey dodgerblue firebrick floralwhite forestgreen fuchsia gainsboro ghostwhite gold goldenrod gray green greenyellow grey honeydew hotpink indianred indigo ivory khaki lavender lavenderblush lawngreen lemonchiffon lightblue lightcoral lightcyan lightgoldenrodyellow lightgray lightgreen lightgrey lightpink lightsalmon lightseagreen lightskyblue lightslategray lightslategrey lightsteelblue lightyellow lime limegreen linen magenta maroon mediumaquamarine mediumblue mediumorchid mediumpurple mediumseagreen mediumslateblue mediumspringgreen mediumturquoise mediumvioletred midnightblue mintcream mistyrose moccasin navajowhite navy oldlace olive olivedrab orange orangered orchid palegoldenrod palegreen paleturquoise palevioletred papayawhip peachpuff peru pink plum powderblue purple rebeccapurple red rosybrown royalblue saddlebrown salmon sandybrown seagreen seashell sienna silver skyblue slateblue slategray slategrey snow springgreen steelblue tan teal thistle tomato turquoise violet wheat white whitesmoke yellow yellowgreen');
+        $colorPattern = '/^(?:#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})|(?:rgba?|hsla?)\s*\(.+\)|transparent|currentcolor|inherit)$/iD';
 
         foreach ($tokens as $key => $value) {
             if (!is_string($key) || !is_string($value) || !str_contains($key, 'color')) {
@@ -387,7 +388,7 @@ final class DesignTokenAnalyzer implements AnalyzerInterface
             }
 
             $candidate = trim($value);
-            if ('' === $candidate || preg_match($colorPattern, $candidate)) {
+            if ('' === $candidate || in_array(strtolower($candidate), $namedColors, true) || preg_match($colorPattern, $candidate)) {
                 continue;
             }
 

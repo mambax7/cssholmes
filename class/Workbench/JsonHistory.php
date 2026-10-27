@@ -6,6 +6,7 @@ namespace XoopsModules\Cssholmes\Workbench;
 /** Private history with atomic writes and a lock spanning each read/modify/write. */
 final class JsonHistory
 {
+    private const MAX_BYTES = 16777216;
     private string $directory;
     private string $base;
     private bool $locked = false;
@@ -85,7 +86,10 @@ final class JsonHistory
 
     private function decode(string $path): array
     {
-        $json = file_get_contents($path);
+        $json = file_get_contents($path, false, null, 0, self::MAX_BYTES + 1);
+        if (is_string($json) && strlen($json) > self::MAX_BYTES) {
+            throw new \RuntimeException('Workbench history exceeds 16 MiB. Back up and archive old records before continuing.');
+        }
         if ($json === false) {
             throw new \RuntimeException('Unable to read workbench history.');
         }
@@ -102,6 +106,9 @@ final class JsonHistory
             throw new \LogicException('Workbench writes require a transaction lock.');
         }
         $json = json_encode(array_values($records), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        if (strlen($json) > self::MAX_BYTES) {
+            throw new \RuntimeException('Workbench history exceeds 16 MiB; no changes were saved. Archive old records before continuing.');
+        }
         $path = $this->directory . '/' . $this->file;
         $temporary = tempnam($this->directory, '.history-');
         if ($temporary === false) {
