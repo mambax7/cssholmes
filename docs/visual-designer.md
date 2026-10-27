@@ -55,6 +55,7 @@ the cssHolmes module to remain active.
    changes the current draft; **Discard draft** returns to the last save.
    **Reset selected** removes that rule's overrides; save to publish the reset.
 6. **More actions** contains CSS/JSON exports and **Restore previous save**.
+   Downloading either export requires **Export** permission.
    Restore replaces the saved configuration and consumes the one previous-save
    slot. A conflicting save from another editor is rejected rather than lost.
 
@@ -83,7 +84,12 @@ updates reach visitors without requiring a settings resave.
 
 Select an element and expand **Tokens and contrast**. Search resolved custom
 properties (including XTF `--xtf-*` tokens), inspect swatches and read the measured
-foreground/background pair. Only the first matching element is measured. Plain
+foreground/background pair. These are resolved values, not declaration-level
+tracing: the panel cannot identify which CSS declaration supplied a value or
+prove that a matching property references a token. Inspect the source declaration
+in browser developer tools before changing a global token.
+
+Only the first matching element is measured. Plain
 text with supported solid sRGB backgrounds is supported; nested content, native
 controls, images/gradients, uncertain layers and compositing effects report
 **Cannot determine automatically**. A measured ratio is an estimate, not a theme
