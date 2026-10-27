@@ -82,7 +82,7 @@ final class ScanCommand
 
         if ('json' === $options['format']) {
             $payload = 1 === count($reports) ? $reports[0] : ['themes' => $reports];
-            $flags = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
+            $flags = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR;
             fwrite($this->stdout, json_encode($payload, $flags) . "\n");
         } else {
             foreach ($reports as $report) {

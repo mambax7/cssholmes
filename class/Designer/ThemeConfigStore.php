@@ -17,11 +17,22 @@ final class ThemeConfigStore
 {
     private string $themesRoot;
     private string $configRoot;
+    private string $storageBoundary;
+    private string $resolvedBoundary;
 
     public function __construct(string $themesRoot, string $configRoot)
     {
         $this->themesRoot = $this->absolutePath($themesRoot);
         $this->configRoot = $this->absolutePath($configRoot);
+        $this->storageBoundary = dirname($this->configRoot);
+        while (!file_exists($this->storageBoundary) && !is_link($this->storageBoundary)
+            && dirname($this->storageBoundary) !== $this->storageBoundary) {
+            $this->storageBoundary = dirname($this->storageBoundary);
+        }
+        if (!is_dir($this->storageBoundary) || realpath($this->storageBoundary) === false) {
+            throw new RuntimeException('Invalid trusted storage parent.');
+        }
+        $this->resolvedBoundary = (string) realpath($this->storageBoundary);
         $themesPath = $this->resolvedPath($this->themesRoot);
         $configPath = $this->resolvedPath($this->configRoot);
         if ($configPath === $themesPath || str_starts_with($configPath, $themesPath . '/')) {
@@ -328,7 +339,6 @@ final class ThemeConfigStore
         if ($theme !== basename($theme) || !preg_match('/^[A-Za-z0-9_][A-Za-z0-9_.-]{0,79}$/D', $theme)) {
             throw new InvalidArgumentException('Invalid theme.');
         }
-        $this->checkDirectory($this->themesRoot, false);
         $names = $this->io(fn() => scandir($this->themesRoot));
         $folder = $this->themesRoot . '/' . $theme;
         if (!in_array($theme, $names, true) || !is_dir($folder) || is_link($folder)
@@ -359,6 +369,12 @@ final class ThemeConfigStore
 
     private function checkDirectory(string $directory, bool $create): void
     {
+        if ($directory === $this->storageBoundary) {
+            if (realpath($directory) !== $this->resolvedBoundary) {
+                throw new RuntimeException('Trusted storage parent changed.');
+            }
+            return;
+        }
         $parent = dirname($directory);
         if ($parent !== $directory) {
             $this->checkDirectory($parent, false);
