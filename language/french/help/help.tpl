@@ -7,7 +7,7 @@
     <p>holmes.css is useful for checking the quality of your code (up to W3C HTML5 standards), nitpicking over ensuring markup is valid and semantic and accessibility guidelines are met, and when you are tasked to fix up and debug an old, OLD website.
         It has a simple implementation and a mostly unobtrusive effect on your page. Not recommended for live environments.</p>
     <p>Remember too that these are just guidelines: if something is flagged but you can't change it for a good reason, don't worry about it :) Also use a validator if you want to be 100% sure.</p>
-    <p>Inspired by <a class='tooltip' href='http://csswizardry.com/inuitcss/' title='Inuit Css' rel='external'>InuitCss</a>, <a class='tooltip' href='http://meyerweb.com/eric/tools/css/diagnostics/' title='Css diagnostics by Eric Meyer' rel='external'>Eric Meyer</a>, <a class='tooltip' href='http://www.nealgrosskopf.com/tech/thread.php?pid=17' title='NealGrossKopf thread' rel='external'>NealGrossKopf</a> and procrastination from coursework!</p><br> <br>
+    <p>Inspired by <a class='tooltip' href='https://csswizardry.com/inuitcss/' title='Inuit Css' rel='external'>InuitCss</a>, <a class='tooltip' href='https://meyerweb.com/eric/tools/css/diagnostics/' title='Css diagnostics by Eric Meyer' rel='external'>Eric Meyer</a>, <a class='tooltip' href='https://www.nealgrosskopf.com/tech/thread.php?pid=17' title='NealGrossKopf thread' rel='external'>NealGrossKopf</a> and procrastination from coursework!</p><br> <br>
     </p>
 
     <h4 class="odd">INSTALL/UNINSTALL</h4>

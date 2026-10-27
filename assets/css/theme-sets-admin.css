@@ -1,0 +1,45 @@
+#cssholmes-theme-sets { color: var(--text-primary, #202936); max-inline-size: 100%; font: inherit; line-height: 1.35; }
+#cssholmes-theme-sets * { box-sizing: border-box; }
+#cssholmes-theme-sets h1 { font-size: 1.75rem; margin-block: .8rem .4rem; }
+#cssholmes-theme-sets h2 { font-size: 1.25rem; margin-block: 0 .5rem; }
+#cssholmes-theme-sets h3 { font-size: 1rem; margin-block: 0 .6rem; }
+#cssholmes-theme-sets button, #cssholmes-theme-sets select, #cssholmes-theme-sets input { font: inherit; color: #202936; background: #fff; border: 1px solid #a3adbb; border-radius: .25rem; padding: .4rem .6rem; max-inline-size: 100%; }
+#cssholmes-theme-sets button, #cssholmes-theme-sets a { cursor: pointer; }
+#cssholmes-theme-sets button:hover { background: #eef3f9; }
+#cssholmes-theme-sets :focus-visible { outline: 3px solid #245bd1; outline-offset: 2px; }
+#cssholmes-theme-sets a { color: #164ba8; text-decoration: underline; }
+#cssholmes-theme-sets [hidden] { display: none !important; }
+#cssholmes-theme-sets .chs-status { min-block-size: 2.2rem; padding: .5rem .7rem; border-inline-start: 3px solid #245bd1; background: var(--bg-tertiary, #f1f5fa); overflow-wrap: anywhere; }
+#cssholmes-theme-sets .chs-controls { display: flex; flex-wrap: wrap; gap: .8rem; align-items: end; margin-block: 1rem; }
+#cssholmes-theme-sets .chs-field { display: inline-flex; flex-direction: column; gap: .25rem; max-inline-size: 100%; margin-inline-end: .6rem; margin-block-end: .6rem; }
+#cssholmes-theme-sets .chs-field > span { font-weight: 600; }
+#cssholmes-theme-sets .chs-table-wrap { overflow-x: auto; max-inline-size: 100%; }
+#cssholmes-theme-sets table { inline-size: 100%; min-inline-size: 780px; border-collapse: collapse; background: var(--bg-secondary, #fff); margin: 0; }
+#cssholmes-theme-sets caption { text-align: start; padding: .45rem .5rem; font-weight: 600; color: inherit; }
+#cssholmes-theme-sets td, #cssholmes-theme-sets th { text-align: start; padding: 4px 8px; border-block-start: 1px solid var(--border-light, #ddd); vertical-align: middle; overflow-wrap: anywhere; }
+#cssholmes-theme-sets thead th { white-space: nowrap; }
+#cssholmes-theme-sets tbody th[scope="row"] { min-inline-size: 10rem; max-inline-size: 22rem; }
+#cssholmes-theme-sets tbody th[scope="row"] { background: transparent; color: inherit; font-weight: 600; }
+#cssholmes-theme-sets .chs-category th { background: var(--bg-tertiary, #e4e4e4); color: var(--text-primary, #202936); }
+#cssholmes-theme-sets .chs-category button { margin-inline-start: 12px; }
+#cssholmes-theme-sets table button, #cssholmes-theme-sets .chs-actions a { display: inline-block; padding: 3px 6px; font: inherit; line-height: 1.25; white-space: nowrap; }
+#cssholmes-theme-sets .chs-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 5px; min-inline-size: 21rem; }
+#cssholmes-theme-sets .chs-date { white-space: nowrap; }
+#cssholmes-theme-sets .chs-sample-toggle { display: inline-flex; align-items: center; gap: 5px; margin-block: 0 .6rem; }
+#cssholmes-theme-sets input[type="checkbox"] { inline-size: auto; margin: 0; }
+#cssholmes-theme-sets .chs-sample-note { color: var(--text-secondary, #555); margin-block: .4rem; }
+#cssholmes-theme-sets .chs-sample-badge { display: inline-block; margin-inline-start: 6px; font-size: .9em; font-weight: 400; color: var(--text-secondary, #555); }
+#cssholmes-theme-sets .chs-like-count { display: inline-block; min-inline-size: 1.6rem; margin-inline-end: .5rem; }
+#cssholmes-theme-sets .chs-palettes, #cssholmes-theme-sets .chs-import { margin-block-start: 2rem; border-block-start: 1px solid #c8d0db; padding-block-start: 1.2rem; }
+#cssholmes-theme-sets .chs-palette-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 1rem; margin-block-start: .7rem; }
+#cssholmes-theme-sets .chs-palette { border: 1px solid #c8d0db; background: var(--bg-secondary, #fff); padding: 1rem; border-radius: .3rem; }
+#cssholmes-theme-sets .chs-palette ul { padding-inline-start: 1.2rem; font-size: .85rem; }
+#cssholmes-theme-sets .chs-swatches { display: flex; flex-wrap: wrap; gap: .5rem; }
+#cssholmes-theme-sets .chs-swatches span { font-size: .75rem; text-align: center; }
+#cssholmes-theme-sets .chs-swatches span::before { content: ''; display: block; block-size: 2rem; border: 1px solid #a3adbb; border-radius: .2rem; background: var(--chs-swatch); }
+#cssholmes-theme-sets .chs-import-review { margin-block: .8rem; }
+#cssholmes-theme-sets .chs-import-review ul { border-inline-start: 3px solid #a06600; background: var(--bg-tertiary, #fff8e5); padding: .7rem 1.7rem; }
+@media (max-width: 600px) {
+    #cssholmes-theme-sets .chs-controls { display: grid; grid-template-columns: minmax(0, 1fr); }
+    #cssholmes-theme-sets .chs-field { display: flex; margin-inline-end: 0; }
+}
