@@ -169,7 +169,7 @@ try {
         restore_error_handler();
     }
     if ($linked) {
-        rejects(fn() => new SetLibrary($root . '/linked/config'), RuntimeException::class);
+        check(count((new SetLibrary($root . '/linked/config'))->all()) === count($library->all()), 'Trusted linked parent is supported');
         unlink($file);
         file_put_contents($root . '/outside.json', 'outside sentinel');
         check(symlink($root . '/outside.json', $file), 'File symlink fixture');

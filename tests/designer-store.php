@@ -127,6 +127,8 @@ try {
         rejects(fn() => $store->load('linked'));
         symlink($root . '/private/configs', $root . '/linked-storage');
         rejects(fn() => (new ThemeConfigStore($root . '/themes', $root . '/linked-storage'))->load('alpha'), RuntimeException::class);
+        symlink($root . '/private', $root . '/trusted-parent');
+        check((new ThemeConfigStore($root . '/themes', $root . '/trusted-parent/configs'))->load('alpha') === $store->load('alpha'), 'Trusted deployment symlink is supported');
     } else {
         echo "Symlink checks skipped: this account cannot create symlinks.\n";
     }

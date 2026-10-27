@@ -9,6 +9,10 @@ parameters:
         - class/Cli
         - class/Diagnostics
         - class/Designer
+        - class/Workbench/JsonHistory.php
+        - class/Workbench/ImportStore.php
+        - class/Workbench/ScanStore.php
+        - class/Workbench/PatchApplier.php
     tmpDir: .build/phpstan
     reportUnmatchedIgnoredErrors: true
     parallel:
