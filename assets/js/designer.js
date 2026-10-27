@@ -429,7 +429,7 @@
         if (value.length > 128 || /[;{}@!\\/<>\x00-\x1f\x7f]/.test(value) || !CSS.supports(name, value)) return false;
         const options = config.properties?.[name]?.options || enums[name];
         if (options) return options.includes(value);
-        if (name === 'font-family') return /^(?:[A-Za-z][A-Za-z0-9 -]*|"[A-Za-z][A-Za-z0-9 -]*"|'[A-Za-z][A-Za-z0-9 -]*')(?:\s*,\s*(?:[A-Za-z][A-Za-z0-9 -]*|"[A-Za-z][A-Za-z0-9 -]*"|'[A-Za-z][A-Za-z0-9 -]*'))*$/.test(value);
+        if (name === 'font-family') return value.split(',').every(family => /^(?:[A-Za-z][A-Za-z0-9 -]*|"[A-Za-z][A-Za-z0-9 -]*"|'[A-Za-z][A-Za-z0-9 -]*')$/.test(family.trim()));
         if (['color', 'background-color', 'border-color'].includes(name)) {
             if (value === 'transparent' || /^#(?:[a-f0-9]{3}|[a-f0-9]{4}|[a-f0-9]{6}|[a-f0-9]{8})$/i.test(value)) return true;
             const match = value.match(/^(rgb|rgba)\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(?:\s*,\s*(0(?:\.\d+)?|1(?:\.0+)?|\.\d+))?\s*\)$/);
