@@ -14,6 +14,12 @@ that every legacy core/PHP combination has been tested.
 
 ## Local tooling verification, 2026-10-26
 
+The results below describe the complete candidate, including the test suite in
+[QA PR #9](https://github.com/XoopsModules25x/cssholmes/pull/9), not a documentation-only
+review branch. Release ZIPs omit development tests and configuration. Follow
+[Development checks](../README.md#development-checks) to obtain the source needed
+to reproduce these results.
+
 Workbench imports are limited to 1 MiB per raw payload and 1,000 records;
 each history file is limited to 16 MiB, including scan history. Limits reject
 new writes without deleting rollback records. Back up and archive old history

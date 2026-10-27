@@ -59,6 +59,10 @@ are not XTF token overrides and must remain separate.
 
 ## Evidence
 
+The commands below require the complete source checkout, including the final QA
+change. They are not available in documentation-only branches or release ZIPs;
+see [Development checks](../README.md#development-checks).
+
 The separate xStyles module's `tests/fixtures.php` checks real core rendering
 without site sessions or a database; cssHolmes does not ship that script.
 cssHolmes `php tests/xtf-contract.php <core>/htdocs/xoops_lib/vendor/xoops` loads
