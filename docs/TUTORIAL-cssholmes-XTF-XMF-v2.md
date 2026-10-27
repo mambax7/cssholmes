@@ -2,7 +2,7 @@
 
 **Audience:** XOOPS designers, theme builders, theme editors, widget developers
 **Requires:** PHP 8.4+, cssHolmes installed and activated. See [tested compatibility boundaries](compatibility.md); the installer minimum is not a claim that every older XOOPS/PHP combination has been tested.
-**Status:** matches the current implementation as of 2026-03-26
+**Version covered:** cssHolmes 3.3.0 Alpha 1
 
 ---
 
@@ -196,15 +196,16 @@ The admin side is where inspection results become actual work.
 The workbench workflow:
 
 1. **Theme scan** — select a theme, run analyzers, review findings by category
-2. **Export/Import** — paste JSON from toolbar inspections into the workbench
+2. **Export/Import** — paste the review payload from `export sel` or the Local Changes `export` button into the workbench
 3. **Review** — accept or reject individual changes
 4. **Patch draft** — generate suggested edits with likely file targets
 5. **History** — compare scans over time to track regressions
 
 ![Export import area in the workbench](images/image003064.jpg)
 
-*Paste toolbar JSON here to convert live experiments into structured review
-items. The workbench adds file targets and patch suggestions.*
+*Paste the `export sel` review payload or Local Changes export here. These contain
+a `changes` array that the workbench can review. The `copy json` snapshot is for
+inspection/debugging and is not accepted as a workbench import.*
 
 ---
 
@@ -294,23 +295,25 @@ between cards, gaps inside slot shells, padding symmetry in admin panels.*
 
 When you find a useful change:
 
-- `copy json` copies the current inspection snapshot
-- `export sel` exports the full context with selector, metrics, widget, slot,
-  and theme information
+- `copy json` copies the current inspection snapshot for inspection/debugging;
+  it has no `changes` array and cannot be imported into the workbench.
+- `export sel` copies a review payload containing the selected element's
+  inspection context and an `inspect` item in its `changes` array.
+- The Local Changes `export` button copies recorded edits as review items.
 
 ![Exported JSON inspection payload](images/image003083.jpg)
 
-*The exported JSON keeps everything together: selector path, computed values,
-theme name, widget name, slot name, and matched tokens. Paste this into the
-admin workbench for structured review.*
+*The `export sel` review payload keeps selector path, computed values, theme,
+widget, slot and matched tokens together. Use this payload for workbench review;
+use Local Changes export when you want to review the edits you recorded.*
 
 ### Step 7. Review in the workbench
 
-Paste the exported JSON into the admin workbench. It converts your experiments
-into:
+Paste the review payload from `export sel` or Local Changes export into the admin
+workbench. Do not paste a `copy json` inspection snapshot. Review payloads provide:
 
 1. structured review items with likely target files
-2. patch drafts showing what to change and where
+2. patch drafts for supported recorded edits; inspection-only items supply context
 3. a shared record that designers and developers can both read
 
 ![Theme scan results in the admin workbench](images/image003085.jpg)
@@ -665,8 +668,10 @@ slot placement, and widget output. cssHolmes can see across all of those.
 
 1. Toolbar edits are preview edits, not direct file writes.
 2. Patch drafts are guidance, not automatic safe commits.
-3. Token matching depends on `theme.json` values being exposed as CSS
-   custom properties.
+3. Overlay token matching requires loaded `theme.json` token values that match
+   the element's normalized computed `color` or `backgroundColor`. A literal CSS
+   color can match too; the declaration does not need to reference a custom
+   property. A value match does not identify the declaration's source.
 4. Widget scan works best with representative pasted HTML, not full
    registry-driven widget introspection.
 5. Browser-level manual verification is still important before shipping.
