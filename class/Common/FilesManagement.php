@@ -55,25 +55,28 @@ trait FilesManagement
      */
     public static function recurseCopy($src, $dst): void
     {
-        $dir = \opendir($src);
-        //        @mkdir($dst);
-        try {
-            if (!\mkdir($dst) && !\is_dir($dst)) {
-                throw new \RuntimeException('The directory ' . $dst . ' could not be created.');
-            }
-        } catch (\RuntimeException $e) {
-            echo 'Caught exception: ', $e->getMessage(), "<br>\n";
+        if (!\is_dir($dst) && !\mkdir($dst) && !\is_dir($dst)) {
+            throw new \RuntimeException('The destination directory could not be created.');
         }
-        while (false !== ($file = \readdir($dir))) {
-            if (('.' !== $file) && ('..' !== $file)) {
-                if (\is_dir($src . '/' . $file)) {
-                    self::recurseCopy($src . '/' . $file, $dst . '/' . $file);
-                } else {
-                    \copy($src . '/' . $file, $dst . '/' . $file);
+        $dir = \opendir($src);
+        if ($dir === false) {
+            throw new \RuntimeException('The source directory could not be opened.');
+        }
+        try {
+            while (false !== ($file = \readdir($dir))) {
+                if (('.' !== $file) && ('..' !== $file)) {
+                    if (\is_dir($src . '/' . $file)) {
+                        self::recurseCopy($src . '/' . $file, $dst . '/' . $file);
+                    } else {
+                        if (!\copy($src . '/' . $file, $dst . '/' . $file)) {
+                            throw new \RuntimeException('Unable to copy a source file.');
+                        }
+                    }
                 }
             }
+        } finally {
+            \closedir($dir);
         }
-        \closedir($dir);
     }
 
     /**

@@ -18,6 +18,8 @@ final class SetLibrary
 {
     private const MAX_BYTES = 4194304;
     private string $root;
+    private string $storageBoundary;
+    private string $resolvedBoundary;
     private SetFormat $format;
 
     public function __construct(string $configRoot)
@@ -27,6 +29,15 @@ final class SetLibrary
             throw new RuntimeException('Invalid theme set storage configuration.');
         }
         $this->root = rtrim(preg_replace('~/+~', '/', $path), '/');
+        $this->storageBoundary = dirname($this->root);
+        while (!file_exists($this->storageBoundary) && !is_link($this->storageBoundary)
+            && dirname($this->storageBoundary) !== $this->storageBoundary) {
+            $this->storageBoundary = dirname($this->storageBoundary);
+        }
+        if (!is_dir($this->storageBoundary) || realpath($this->storageBoundary) === false) {
+            throw new RuntimeException('Invalid trusted storage parent.');
+        }
+        $this->resolvedBoundary = (string) realpath($this->storageBoundary);
         $themes = str_replace('\\', '/', XOOPS_ROOT_PATH) . '/themes';
         $this->format = new SetFormat(new ThemeConfigStore($themes, $this->root));
         $this->directory($this->root, false);
@@ -302,6 +313,12 @@ final class SetLibrary
 
     private function directory(string $directory, bool $create): void
     {
+        if ($directory === $this->storageBoundary) {
+            if (realpath($directory) !== $this->resolvedBoundary) {
+                throw new RuntimeException('Trusted storage parent changed.');
+            }
+            return;
+        }
         $parent = dirname($directory);
         if ($parent !== $directory) {
             $this->directory($parent, $create);

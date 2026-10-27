@@ -206,30 +206,30 @@ class SysUtility
      */
     public static function cloneRecord($tableName, $id_field, $id)
     {
-        $new_id = false;
-        $table  = $GLOBALS['xoopsDB']->prefix($tableName);
-        // copy content of the record you wish to clone
-        $sql    = "SELECT * FROM $table WHERE $id_field='" . $id . "' ";
-        $result = $GLOBALS['xoopsDB']->query($sql);
-        if ($GLOBALS['xoopsDB']->isResultSet($result)) {
-            $tempTable = $GLOBALS['xoopsDB']->fetchArray($result, \MYSQLI_ASSOC);
+        $db = $GLOBALS['xoopsDB'];
+        $table = $db->prefix($tableName);
+        foreach ([$table, $id_field] as $identifier) {
+            if (!is_string($identifier) || preg_match('/^[A-Za-z0-9_]+$/D', $identifier) !== 1) {
+                throw new \InvalidArgumentException('Invalid database identifier.');
+            }
         }
-        if (!$tempTable) {
-            \trigger_error($GLOBALS['xoopsDB']->error());
+        $sql = "SELECT * FROM `$table` WHERE `$id_field`=" . $db->quote((string)$id);
+        $result = $db->query($sql);
+        if (!$db->isResultSet($result) || !($result instanceof \mysqli_result)) {
+            throw new \RuntimeException('Unable to read the record to clone.');
         }
-        // set the auto-incremented id's value to blank.
-        unset($tempTable[$id_field]);
-        // insert cloned copy of the original  record
-        $sql    = "INSERT INTO $table (" . \implode(', ', \array_keys($tempTable)) . ") VALUES ('" . \implode("', '", \array_values($tempTable)) . "')";
-        $result = $GLOBALS['xoopsDB']->queryF($sql);
-if (!$GLOBALS['xoopsDB']->isResultSet($result)) {
-   \trigger_error(\sprintf(\_DB_QUERY_ERROR, $sql) . $GLOBALS['xoopsDB']->error(), \E_USER_ERROR);
-
-}
-        // Return the new id
-        $new_id = $GLOBALS['xoopsDB']->getInsertId();
-
-        return $new_id;
+        $row = $db->fetchArray($result);
+        if (!$row) {
+            return false;
+        }
+        unset($row[$id_field]);
+        $columns = array_map(static fn (string $column): string => '`' . str_replace('`', '``', $column) . '`', array_keys($row));
+        $values = array_map(static fn ($value): string => $value === null ? 'NULL' : $db->quote((string)$value), array_values($row));
+        $sql = "INSERT INTO `$table` (" . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')';
+        if ($db->queryF($sql) === false) {
+            throw new \RuntimeException('Unable to clone the record.');
+        }
+        return $db->getInsertId();
     }
 
     /**
@@ -240,16 +240,15 @@ if (!$GLOBALS['xoopsDB']->isResultSet($result)) {
      */
     public static function tableExists(string $tablename): bool
     {
-        $ret    = false;
         $trace = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 1);
         \trigger_error(__FUNCTION__ . " is deprecated, called from {$trace[0]['file']} line {$trace[0]['line']}");
         $GLOBALS['xoopsLogger']->addDeprecated(
             \basename(\dirname(__DIR__, 2)) . ' Module: ' . __FUNCTION__ . ' function is deprecated, please use Xmf\Database\Tables method(s) instead.' . " Called from {$trace[0]['file']}line {$trace[0]['line']}"
         );
-$sql = "SHOW TABLES LIKE '$tablename'";
-$result = self::queryFAndCheck($GLOBALS['xoopsDB'], $sql);
+        $sql = 'SHOW TABLES LIKE ' . $GLOBALS['xoopsDB']->quote(addcslashes($tablename, '%_\\'));
+        $result = self::queryFAndCheck($GLOBALS['xoopsDB'], $sql);
 
-        return $ret;
+        return $GLOBALS['xoopsDB']->getRowsNum($result) > 0;
     }
 
     /**
