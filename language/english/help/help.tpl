@@ -90,7 +90,7 @@
 
     <div class="even">
         <p>The current local tutorial for designers and developers is:</p>
-        <p><code>docs/TUTORIAL-cssholmes-XTF-XMF.md</code></p>
+        <p><code>docs/TUTORIAL-cssholmes-XTF-XMF-v2.md</code></p>
         <p>It focuses on XTF themes, XMF widgets, admin themes, inspection/export workflow, and the cases where cssHolmes becomes indispensable.</p>
         <p>Additional strategic planning material is also available locally in:</p>
         <p><code>docs/PROPOSAL-cssholmes-v2.md</code></p>
