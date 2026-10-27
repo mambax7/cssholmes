@@ -22,6 +22,6 @@ No module-local Composer or vendor installation is needed. Saving a named set do
 
 ## Compatibility and limitations
 
-PHP 8.4/8.5 are the QA targets. See `docs/compatibility.md` for precise test evidence. The retained XOOPS 2.5.12 installer minimum is not a claim that all older core/PHP combinations were tested.
+PHP 8.4/8.5 are the QA targets. Clean installation and upgrade from 3.0.0 passed on a disposable XOOPS 2.7.4-RC2 site with PHP 8.4.27, including authenticated save/reload, anonymous published styles, permission checks and restoration. See `docs/compatibility.md` for precise test evidence. The retained XOOPS 2.5.12 installer minimum is not a claim that all older core/PHP combinations were tested.
 
 This alpha does not publish admin-theme changes or provide a native XOOPS 4 port. Contrast readings are conservative estimates, not an accessibility certificate. Legacy Common PHPUnit tests still need modernization; they are outside the documented standalone suite. Qodana is optional and requires a repository token.

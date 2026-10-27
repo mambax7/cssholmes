@@ -683,6 +683,10 @@
     function selectedSet() { return library.sets.find(item => item.id === libraryControls?.select.value); }
     function showSelectedSet(rename = false) {
         const controls = libraryControls, selected = selectedSet();
+        // Some Chromium builds leave selectedcontent empty after rebuilding the options.
+        const selectedContent = controls.select.querySelector('selectedcontent');
+        const selectedOption = controls.select.selectedOptions[0];
+        if (selectedContent) selectedContent.replaceChildren(...[...(selectedOption?.childNodes || [])].map(child => child.cloneNode(true)));
         const palette = library.palettes.find(item => item.id === controls.select.value);
         controls.info.textContent = selected ? t('set_details', { author: selected.author.name, count: selected.likes }) : '';
         controls.like.textContent = t(selected?.liked ? 'unlike' : 'like');

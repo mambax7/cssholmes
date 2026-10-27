@@ -8,7 +8,7 @@ that every legacy core/PHP combination has been tested.
 | --- | --- |
 | PHP 8.4 | Isolated storage, sets, permissions, preview and HTTP regressions; Analyzer/Cli/Diagnostics PHPUnit suite. |
 | PHP 8.5 | The same isolated PHP checks passed locally on PHP 8.5.12; also a CI matrix target. |
-| XOOPS 2.7 | Integration target; this tooling change does not establish an authenticated installed-site save/reload result. |
+| XOOPS 2.7.4-RC2 | Clean ZIP installation and 3.0.0-to-3.3.0 upgrade tested in a disposable installed site on PHP 8.4.27; normal login, designer save/reload, visitor CSS, permissions, CSRF and restore passed with the default theme. |
 | XOOPS 2.8 Alpha | Current local integration target. Synthetic test-core endpoint results are distinct from an installed-site smoke test. |
 | XOOPS 4 / XMF 2 / XTF | Opt-in package contract checks only; native routes, authentication and module installation remain unverified. |
 
@@ -29,6 +29,22 @@ Standard PHPStan 2.3.2 passed the level-5 scope in `phpstan.neon` without error
 suppressions. Shared optional strict rules are not part of this initial gate.
 CI uses PHPUnit 11.5 and PHPStan 2.x installed outside the module checkout.
 Local success with PHPUnit 13 does not substitute for an actual CI run on 11.5.
+
+## Installed-site release smoke test, 2026-10-26
+
+A clean `git archive` ZIP was installed using the real XOOPS 2.7.4-RC2 module
+installer in a separate loopback-only site and database. No production tables,
+users or settings were copied. Normal administrator login and the xStyles
+designer UI saved a heading override, which survived reload and reached an
+anonymous visitor. Anonymous endpoint access and an invalid CSRF token were
+rejected. A second save and restoration of the previous save passed.
+
+Fresh-install editor/diagnostic permissions were restricted to administrators.
+The old 3.0.0 package was then installed and upgraded to 3.3.0: its custom
+query-key preference and existing Registered Users grant were preserved;
+administrator grants were complete. Saved designer settings were byte-identical
+before and after the upgrade. These checks used PHP 8.4.27, Chrome and the
+default frontend theme; they do not establish every theme/core combination.
 
 An explicit broader check,
 `php <shared-vendor>/bin/phpunit -c phpunit.xml.dist tests/Unit`, produced

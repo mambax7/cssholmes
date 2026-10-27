@@ -174,12 +174,7 @@ const root = path.resolve(__dirname, '..');
         await select.selectOption('palette-calm');
         assert.equal(await select.locator('option[value="palette-calm"] .palette-option-swatches span').count(), 2, 'Palette choices should carry their own swatches');
         if (await page.evaluate(() => CSS.supports('appearance', 'base-select'))) {
-            try {
-                await select.locator('selectedcontent .palette-option-swatches span').first().waitFor();
-            } catch (failure) {
-                console.error(await select.evaluate(element => ({ html: element.outerHTML, value: element.value, appearance: getComputedStyle(element).appearance })));
-                throw failure;
-            }
+            await select.locator('selectedcontent .palette-option-swatches span').first().waitFor();
             assert.equal(await select.locator('selectedcontent .palette-option-swatches span').count(), 2, 'The selected palette should show its swatches too');
             assert.equal(await select.locator('selectedcontent .palette-option-swatches span').first().evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(255, 255, 255)');
         }
