@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * Cssholmes module
  *
@@ -9,11 +9,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @copyright           XOOPS Project (https://xoops.org)
- * @license             http://www.fsf.org/copyleft/gpl.html GNU public license
- * @package             Cssholmes
- * @since               2.3.0
- * @author              kris <http://www.xoofoo.org>
+ * @copyright           2000-2026 XOOPS Project (https://xoops.org)
+ * @license             GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
+ * @author              kris <https://www.xoofoo.org>, XOOPS Development Team
  **/
 
 // admin menu title and link
@@ -23,31 +21,45 @@ use XoopsModules\Cssholmes\{
     Helper
 };
 
-require dirname(__DIR__) . '/preloads/autoloader.php';
+require \dirname(__DIR__) . '/preloads/autoloader.php';
 
-$moduleDirName      = basename(dirname(__DIR__));
-$moduleDirNameUpper = mb_strtoupper($moduleDirName);
+$moduleDirName      = \basename(\dirname(__DIR__));
+$moduleDirNameUpper = \mb_strtoupper($moduleDirName);
 
 /** @var Helper $helper */
 $helper = Helper::getInstance();
 $helper->loadLanguage('common');
 $helper->loadLanguage('feedback');
 
-$pathIcon32 = Admin::menuIconPath('');
-if (is_object($helper->getModule())) {
-    $pathModIcon32 = $helper->getModule()->getInfo('modicons32');
+$pathIcon32    = Admin::menuIconPath('');
+$pathModIcon32 = XOOPS_URL . '/modules/' . $moduleDirName . '/assets/images/icons/32/';
+if (is_object($helper->getModule()) && false !== $helper->getModule()->getInfo('modicons32')) {
+    $pathModIcon32 = $helper->url($helper->getModule()->getInfo('modicons32'));
 }
 
 $adminmenu[] = [
     'title' => _MI_CSSHOLMES_MANAGER_INDEX,
     'link'  => 'admin/index.php',
     'desc'  => _MI_CSSHOLMES_MANAGER_INDEX_DESC,
-    'icon' => $pathIcon32 . '/home.png',
+    'icon'  => $pathIcon32 . '/home.png',
+];
+
+$adminmenu[] = [
+    'title' => _MI_CSSHOLMES_MANAGER_THEME_SETS,
+    'link'  => 'admin/theme_sets.php',
+    'desc'  => _MI_CSSHOLMES_MANAGER_THEME_SETS_DESC,
+    'icon'  => $pathIcon32 . '/view.png',
+];
+
+$adminmenu[] = [
+    'title' => \constant('CO_' . $moduleDirNameUpper . '_PERMISSIONS'),
+    'link'  => 'admin/permissions.php',
+    'icon'  => $pathIcon32 . '/permissions.png',
 ];
 
 $adminmenu[] = [
     'title' => _MI_CSSHOLMES_MANAGER_ABOUT,
     'link'  => 'admin/about.php',
     'desc'  => _MI_CSSHOLMES_MANAGER_ABOUT_DESC,
-    'icon' => $pathIcon32 . '/about.png',
+    'icon'  => $pathIcon32 . '/about.png',
 ];

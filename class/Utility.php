@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XoopsModules\Cssholmes;
 
@@ -18,16 +18,12 @@ namespace XoopsModules\Cssholmes;
 /**
  * Module:  xSitemap
  *
- * @package      \module\xsitemap\class
- * @license      http://www.fsf.org/copyleft/gpl.html GNU public license
+ * @license      GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
  * @copyright    https://xoops.org 2001-2017 &copy; XOOPS Project
  * @author       ZySpec <zyspec@yahoo.com>
  * @author       Mamba <mambax7@gmail.com>
  * @since        File available since version 1.54
  */
-
-use XoopsModules\Cssholmes;
-use XoopsModules\Cssholmes\Common;
 
 /**
  * Class Utility
@@ -35,4 +31,42 @@ use XoopsModules\Cssholmes\Common;
 class Utility extends Common\SysUtility
 {
     //--------------- Custom module methods -----------------------------
+
+    /**
+     * Overlay and diagnostics permissions that Registered Users hold. These
+     * were the install defaults before 3.0.0 Alpha 2; updates leave them in
+     * place and the admin pages show a notice while they exist.
+     *
+     * @return string[] permission names
+     */
+    public static function registeredUserToolGrants(string $moduleDirName, int $moduleId): array
+    {
+        /** @var \XoopsGroupPermHandler $grouppermHandler */
+        $grouppermHandler = \xoops_getHandler('groupperm');
+        $grants = [];
+        foreach (['_overlay', '_diagnose'] as $suffix) {
+            if ($grouppermHandler->checkRight($moduleDirName . $suffix, 1, [\XOOPS_GROUP_USERS], $moduleId, false)) {
+                $grants[] = $moduleDirName . $suffix;
+            }
+        }
+
+        return $grants;
+    }
+
+    /**
+     * HTML notice for the admin pages when Registered Users hold overlay or
+     * diagnostics rights; '' when they do not.
+     */
+    public static function registeredUserToolNotice(string $moduleDirName, int $moduleId): string
+    {
+        if ([] === self::registeredUserToolGrants($moduleDirName, $moduleId)) {
+            return '';
+        }
+
+        $text = \defined('_AM_CSSHOLMES_PERM_USERS_NOTICE')
+            ? (string)\constant('_AM_CSSHOLMES_PERM_USERS_NOTICE')
+            : 'Registered Users can still use the cssHolmes overlay or diagnostics. Review the permissions.';
+
+        return '<div class="warningMsg" style="margin:0 0 1rem 0;">' . htmlspecialchars($text, ENT_QUOTES) . '</div>';
+    }
 }

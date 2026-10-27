@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * You may not change or alter any portion of this comment or credits
  * of supporting developers from this source code or any supporting source code
@@ -10,30 +10,16 @@
  */
 
 /**
- * @copyright    XOOPS Project https://xoops.org/
- * @license      GNU GPL 2 or later (https://www.gnu.org/licenses/gpl-2.0.html)
- * @package
- * @since
+ * @copyright    2000-2026 XOOPS Project (https://xoops.org)
+ * @license      GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
  * @author       XOOPS Development Team
  */
 
-use XoopsModules\Cssholmes;
+use XoopsModules\Cssholmes as Module;
 
 if ((!defined('XOOPS_ROOT_PATH')) || !($GLOBALS['xoopsUser'] instanceof \XoopsUser)
     || !$GLOBALS['xoopsUser']->isAdmin()) {
     exit('Restricted access' . PHP_EOL);
-}
-
-/**
- * @param string $tablename
- *
- * @return bool
- */
-function tableExists($tablename)
-{
-    $result = $GLOBALS['xoopsDB']->queryF("SHOW TABLES LIKE '$tablename'");
-
-    return ($GLOBALS['xoopsDB']->getRowsNum($result) > 0) ? true : false;
 }
 
 /**
@@ -44,11 +30,11 @@ function tableExists($tablename)
  */
 function xoops_module_pre_update_cssholmes(\XoopsModule $module)
 {
-    $moduleDirName = basename(dirname(__DIR__));
-    /** @var Cssholmes\Helper $helper */
-    /** @var Cssholmes\Utility $utility */
-    $helper  = Cssholmes\Helper::getInstance();
-    $utility = new Cssholmes\Utility();
+    $moduleDirName = \basename(\dirname(__DIR__));
+    /** @var Module\Helper $helper */
+    /** @var Module\Utility $utility */
+    $helper  = Module\Helper::getInstance();
+    $utility = new Module\Utility();
 
     $xoopsSuccess = $utility::checkVerXoops($module);
     $phpSuccess   = $utility::checkVerPhp($module);
@@ -65,14 +51,24 @@ function xoops_module_pre_update_cssholmes(\XoopsModule $module)
  */
 function xoops_module_update_cssholmes(\XoopsModule $module, $previousVersion = null)
 {
-    $moduleDirName      = basename(dirname(__DIR__));
-    $moduleDirNameUpper = mb_strtoupper($moduleDirName);
+    $moduleDirName      = \basename(\dirname(__DIR__));
+    $moduleDirNameUpper = \mb_strtoupper($moduleDirName);
 
-    /** @var Cssholmes\Helper $helper */ /** @var Cssholmes\Utility $utility */
-    /** @var Cssholmes\Common\Configurator $configurator */
-    $helper       = Cssholmes\Helper::getInstance();
-    $utility      = new Cssholmes\Utility();
-    $configurator = new Cssholmes\Common\Configurator();
+    /** @var Module\Helper $helper */ /** @var Module\Utility $utility */
+    /** @var Module\Common\Configurator $configurator */
+    $helper       = Module\Helper::getInstance();
+    $utility      = new Module\Utility();
+    $configurator = new Module\Common\Configurator();
+
+    // Ensure admin group always has all permissions (runs on every update)
+    ensureAdminPermissions($moduleDirName, (int) $module->getVar('mid'));
+
+    // Since 3.0.0 Alpha 2 a new install grants the overlay and diagnostics to
+    // Webmasters only. Existing sites keep their permissions: an update never
+    // removes rights an administrator may have chosen. It only reports the
+    // Registered Users grants that came from the old defaults.
+    $helper->loadLanguage('admin');
+    reportRegisteredUserGrants($module, $moduleDirName);
 
     if ($previousVersion < 240) {
         //delete old HTML templates
@@ -110,7 +106,7 @@ function xoops_module_update_cssholmes(\XoopsModule $module, $previousVersion = 
             //    foreach (array_keys($GLOBALS['uploadFolders']) as $i) {
             foreach (array_keys($configurator->oldFolders) as $i) {
                 $tempFolder = $GLOBALS['xoops']->path('modules/' . $moduleDirName . $configurator->oldFolders[$i]);
-                /* @var XoopsObjectHandler $folderHandler */
+                /** @var XoopsObjectHandler $folderHandler */
                 $folderHandler = XoopsFile::getHandler('folder', $tempFolder);
                 $folderHandler->delete($tempFolder);
             }
@@ -126,7 +122,7 @@ function xoops_module_update_cssholmes(\XoopsModule $module, $previousVersion = 
 
         //  ---  COPY blank.png FILES ---------------
         if (count($configurator->copyBlankFiles) > 0) {
-            $file = dirname(__DIR__) . '/assets/images/blank.png';
+            $file = \dirname(__DIR__) . '/assets/images/blank.png';
             foreach (array_keys($configurator->copyBlankFiles) as $i) {
                 $dest = $configurator->copyBlankFiles[$i] . '/blank.png';
                 $utility::copyFile($file, $dest);
@@ -144,4 +140,73 @@ function xoops_module_update_cssholmes(\XoopsModule $module, $previousVersion = 
     }
 
     return true;
+}
+
+/**
+ * Ensure the admin group has all cssHolmes permissions.
+ *
+ * Runs on every update so admin permissions are never accidentally lost,
+ * even if the permissions table was cleared or a new permission was added.
+ */
+function ensureAdminPermissions(string $moduleDirName, int $moduleId): void
+{
+    /** @var \XoopsGroupPermHandler $grouppermHandler */
+    $grouppermHandler = xoops_getHandler('groupperm');
+
+    $permissionNames = [
+        $moduleDirName . '_overlay',
+        $moduleDirName . '_diagnose',
+        $moduleDirName . '_edit',
+        $moduleDirName . '_export',
+        $moduleDirName . '_workbench',
+        $moduleDirName . '_view',
+    ];
+
+    foreach ($permissionNames as $permName) {
+        if (!$grouppermHandler->checkRight($permName, 1, [XOOPS_GROUP_ADMIN], $moduleId)) {
+            $grouppermHandler->addRight($permName, 1, XOOPS_GROUP_ADMIN, $moduleId);
+        }
+    }
+}
+
+/**
+ * Add a note to the update log when Registered Users still hold the overlay or
+ * diagnostics permission (the defaults before 3.0.0 Alpha 2). Nothing is
+ * changed; the administrator decides in Admin > cssHolmes > Permissions.
+ */
+function reportRegisteredUserGrants(\XoopsModule $module, string $moduleDirName): void
+{
+    $grants = registeredUserGrants($moduleDirName, (int) $module->getVar('mid'));
+    if ([] === $grants) {
+        return;
+    }
+
+    $message = \defined('_AM_CSSHOLMES_PERM_USERS_NOTICE')
+        ? \constant('_AM_CSSHOLMES_PERM_USERS_NOTICE')
+        : 'Registered Users can still use the cssHolmes overlay or diagnostics (the defaults before 3.0.0 Alpha 2). '
+          . 'New installs grant them to Webmasters only. Review Admin > cssHolmes > Permissions.';
+    $module->setMessage($message . ' (' . implode(', ', $grants) . ')');
+}
+
+/**
+ * The overlay/diagnostics permissions Registered Users hold.
+ *
+ * @return string[] permission names
+ */
+function registeredUserGrants(string $moduleDirName, int $moduleId): array
+{
+    /** @var \XoopsGroupPermHandler $grouppermHandler */
+    $grouppermHandler = xoops_getHandler('groupperm');
+    $grants = [];
+    foreach (['_overlay', '_diagnose'] as $suffix) {
+        $criteria = new \CriteriaCompo(new \Criteria('gperm_modid', $moduleId));
+        $criteria->add(new \Criteria('gperm_name', $moduleDirName . $suffix));
+        $criteria->add(new \Criteria('gperm_groupid', XOOPS_GROUP_USERS));
+        $criteria->add(new \Criteria('gperm_itemid', 1));
+        if ($grouppermHandler->getCount($criteria) > 0) {
+            $grants[] = $moduleDirName . $suffix;
+        }
+    }
+
+    return $grants;
 }

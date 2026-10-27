@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XoopsModules\Cssholmes\Common;
 
@@ -16,16 +16,12 @@ namespace XoopsModules\Cssholmes\Common;
  */
 
 /**
- *
- * @license      https://www.fsf.org/copyleft/gpl.html GNU public license
+ * @license      GNU GPL 2.0 or later (https://www.gnu.org/licenses/gpl-2.0.html)
  * @copyright    https://xoops.org 2000-2020 &copy; XOOPS Project
  * @author       ZySpec <zyspec@yahoo.com>
  * @author       Mamba <mambax7@gmail.com>
  */
 
-use MyTextSanitizer;
-use XoopsFormDhtmlTextArea;
-use XoopsFormTextArea;
 use XoopsModules\Cssholmes\Helper;
 
 /**
@@ -70,35 +66,35 @@ class SysUtility
             $total_length = mb_strlen($ending);
             $open_tags    = [];
             $truncate     = '';
-            foreach ($lines as $line_matchings) {
+            foreach ($lines as $lineMatchings) {
                 // if there is any html-tag in this line, handle it and add it (uncounted) to the output
-                if (!empty($line_matchings[1])) {
+                if (!empty($lineMatchings[1])) {
                     // if it's an "empty element" with or without xhtml-conform closing slash
-                    if (\preg_match('/^<(\s*.+?\/\s*|\s*(img|br|input|hr|area|base|basefont|col|frame|isindex|link|meta|param)(\s.+?)?)>$/is', $line_matchings[1])) {
+                    if (\preg_match('/^<(\s*.+?\/\s*|\s*(img|br|input|hr|area|base|basefont|col|frame|isindex|link|meta|param)(\s.+?)?)>$/is', $lineMatchings[1])) {
                         // do nothing
                         // if tag is a closing tag
-                    } elseif (\preg_match('/^<\s*\/([^\s]+?)\s*>$/s', $line_matchings[1], $tag_matchings)) {
+                    } elseif (\preg_match('/^<\s*\/(\S+?)\s*>$/s', $lineMatchings[1], $tag_matchings)) {
                         // delete tag from $open_tags list
                         $pos = \array_search($tag_matchings[1], $open_tags, true);
                         if (false !== $pos) {
                             unset($open_tags[$pos]);
                         }
                         // if tag is an opening tag
-                    } elseif (\preg_match('/^<\s*([^\s>!]+).*?' . '>$/s', $line_matchings[1], $tag_matchings)) {
+                    } elseif (\preg_match('/^<\s*([^\s>!]+).*?' . '>$/s', $lineMatchings[1], $tag_matchings)) {
                         // add tag to the beginning of $open_tags list
-                        \array_unshift($open_tags, mb_strtolower($tag_matchings[1]));
+                        \array_unshift($open_tags, \mb_strtolower($tag_matchings[1]));
                     }
                     // add html-tag to $truncate'd text
-                    $truncate .= $line_matchings[1];
+                    $truncate .= $lineMatchings[1];
                 }
                 // calculate the length of the plain text part of the line; handle entities as one character
-                $content_length = mb_strlen(\preg_replace('/&[0-9a-z]{2,8};|&#[0-9]{1,7};|[0-9a-f]{1,6};/i', ' ', $line_matchings[2]));
+                $content_length = mb_strlen(\preg_replace('/&[0-9a-z]{2,8};|&#\d{1,7};|[0-9a-f]{1,6};/i', ' ', $lineMatchings[2]));
                 if ($total_length + $content_length > $length) {
                     // the number of characters which are left
                     $left            = $length - $total_length;
                     $entities_length = 0;
                     // search for html entities
-                    if (\preg_match_all('/&[0-9a-z]{2,8};|&#[0-9]{1,7};|[0-9a-f]{1,6};/i', $line_matchings[2], $entities, \PREG_OFFSET_CAPTURE)) {
+                    if (\preg_match_all('/&[0-9a-z]{2,8};|&#\d{1,7};|[0-9a-f]{1,6};/i', $lineMatchings[2], $entities, \PREG_OFFSET_CAPTURE)) {
                         // calculate the real length of all entities in the legal range
                         foreach ($entities[0] as $entity) {
                             if ($left >= $entity[1] + 1 - $entities_length) {
@@ -110,11 +106,11 @@ class SysUtility
                             }
                         }
                     }
-                    $truncate .= mb_substr($line_matchings[2], 0, $left + $entities_length);
+                    $truncate .= mb_substr($lineMatchings[2], 0, $left + $entities_length);
                     // maximum lenght is reached, so get off the loop
                     break;
                 }
-                $truncate     .= $line_matchings[2];
+                $truncate     .= $lineMatchings[2];
                 $total_length += $content_length;
 
                 // if the maximum length is reached, get off the loop
@@ -191,14 +187,112 @@ class SysUtility
     /**
      * @param $fieldname
      * @param $table
-     *
-     * @return bool
      */
-    public function fieldExists($fieldname, $table)
+    public static function fieldExists(string $fieldname, string $table): bool
     {
         global $xoopsDB;
-        $result = $xoopsDB->queryF("SHOW COLUMNS FROM   $table LIKE '$fieldname'");
+                $sql ="SHOW COLUMNS FROM   $table LIKE '$fieldname'";
+        $result = self::queryFAndCheck($xoopsDB, $sql);
 
         return ($xoopsDB->getRowsNum($result) > 0);
+    }
+
+    /**
+     * @param array|string $tableName
+     * @param string       $id_field
+     * @param int          $id
+     *
+     * @return mixed
+     */
+    public static function cloneRecord($tableName, $id_field, $id)
+    {
+        $new_id = false;
+        $table  = $GLOBALS['xoopsDB']->prefix($tableName);
+        // copy content of the record you wish to clone
+        $sql    = "SELECT * FROM $table WHERE $id_field='" . $id . "' ";
+        $result = $GLOBALS['xoopsDB']->query($sql);
+        if ($GLOBALS['xoopsDB']->isResultSet($result)) {
+            $tempTable = $GLOBALS['xoopsDB']->fetchArray($result, \MYSQLI_ASSOC);
+        }
+        if (!$tempTable) {
+            \trigger_error($GLOBALS['xoopsDB']->error());
+        }
+        // set the auto-incremented id's value to blank.
+        unset($tempTable[$id_field]);
+        // insert cloned copy of the original  record
+        $sql    = "INSERT INTO $table (" . \implode(', ', \array_keys($tempTable)) . ") VALUES ('" . \implode("', '", \array_values($tempTable)) . "')";
+        $result = $GLOBALS['xoopsDB']->queryF($sql);
+if (!$GLOBALS['xoopsDB']->isResultSet($result)) {
+   \trigger_error(\sprintf(\_DB_QUERY_ERROR, $sql) . $GLOBALS['xoopsDB']->error(), \E_USER_ERROR);
+
+}
+        // Return the new id
+        $new_id = $GLOBALS['xoopsDB']->getInsertId();
+
+        return $new_id;
+    }
+
+    /**
+     * Check if dB table exists
+     *
+     * @param string $tablename dB tablename with prefix
+     * @return bool true if table exists
+     */
+    public static function tableExists(string $tablename): bool
+    {
+        $ret    = false;
+        $trace = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 1);
+        \trigger_error(__FUNCTION__ . " is deprecated, called from {$trace[0]['file']} line {$trace[0]['line']}");
+        $GLOBALS['xoopsLogger']->addDeprecated(
+            \basename(\dirname(__DIR__, 2)) . ' Module: ' . __FUNCTION__ . ' function is deprecated, please use Xmf\Database\Tables method(s) instead.' . " Called from {$trace[0]['file']}line {$trace[0]['line']}"
+        );
+$sql = "SHOW TABLES LIKE '$tablename'";
+$result = self::queryFAndCheck($GLOBALS['xoopsDB'], $sql);
+
+        return $ret;
+    }
+
+    /**
+     * Query and check if the result is a valid result set
+     *
+     * @param \XoopsMySQLDatabase $xoopsDB XOOPS Database
+     * @param string              $sql     a valid MySQL query
+     * @param int                 $limit   number of records to return
+     * @param int                 $start   offset of first record to return
+     *
+     * @return \mysqli_result query result
+     */
+    public static function queryAndCheck(\XoopsMySQLDatabase $xoopsDB, string $sql, $limit = 0, $start = 0): \mysqli_result
+    {
+        $result = $xoopsDB->query($sql, $limit, $start);
+
+        if (!$xoopsDB->isResultSet($result)) {
+            throw new \RuntimeException(
+                \sprintf(\_DB_QUERY_ERROR, $sql) . $xoopsDB->error(), \E_USER_ERROR);
+        }
+
+        return $result;
+    }
+
+    /**
+     * QueryF and check if the result is a valid result set
+     *
+     * @param \XoopsMySQLDatabase $xoopsDB XOOPS Database
+     * @param string              $sql     a valid MySQL query
+     * @param int                 $limit   number of records to return
+     * @param int                 $start   offset of first record to return
+     *
+     * @return \mysqli_result query result
+     */
+    public static function queryFAndCheck(\XoopsMySQLDatabase $xoopsDB, string $sql, $limit = 0, $start = 0): \mysqli_result
+    {
+        $result = $xoopsDB->queryF($sql, $limit, $start);
+
+        if (!$xoopsDB->isResultSet($result)) {
+            throw new \RuntimeException(
+                \sprintf(\_DB_QUERY_ERROR, $sql) . $xoopsDB->error(), \E_USER_ERROR);
+        }
+
+        return $result;
     }
 }
