@@ -23,6 +23,7 @@
 /package-lock.json export-ignore
 /coverage export-ignore
 /reports export-ignore
+/data/workbench/*.json export-ignore
 
 # Custom for Visual Studio
 *.cs     diff=csharp

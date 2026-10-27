@@ -15,6 +15,7 @@
 /.php-cs-fixer.cache
 /coverage/
 /reports/
+/data/workbench/*.json
 /templates_c/
 .env
 .env.*
