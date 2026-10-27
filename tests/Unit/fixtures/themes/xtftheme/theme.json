@@ -1,0 +1,8 @@
+{
+    "name": "XTF Fixture",
+    "version": "1.0.0",
+    "slots": ["header"],
+    "slot_templates": {"header": "tpl/header.tpl"},
+    "assets": {"css": ["css/theme.css"]},
+    "tokens": {"color.text": "#222222", "color.bg": "#ffffff"}
+}
