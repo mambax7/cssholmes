@@ -908,7 +908,7 @@ final class PatchApplier
 
     private function manifestPath(ThemeTarget $theme): string
     {
-        return rtrim($theme->path, '/\\') . '/theme.json';
+        return $this->absoluteThemePath($theme, 'theme.json');
     }
 
     private function relativeThemePath(ThemeTarget $theme, string $absolutePath): string

@@ -64,8 +64,14 @@ final class ImportStore
      */
     public function saveImport(array $summary, string $rawPayload): array
     {
+        if (strlen($rawPayload) > 1048576) {
+            throw new \InvalidArgumentException('Imports must not exceed 1 MiB.');
+        }
         return $this->history->locked(function () use ($summary, $rawPayload) {
             $records = $this->readStore();
+            if (count($records) >= 1000) {
+                throw new \RuntimeException('Import history is full. Back up and archive old records before importing more.');
+            }
             $record = [
                 'id' => date('YmdHis') . '-' . substr(bin2hex(random_bytes(4)), 0, 8),
                 'created_at' => date(DATE_ATOM),

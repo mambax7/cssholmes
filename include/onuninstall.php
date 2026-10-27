@@ -49,7 +49,7 @@ function xoops_module_uninstall_cssholmes(\XoopsModule $module)
     $dirInfo = new \SplFileInfo($uploadDirectory);
     if ($dirInfo->isDir()) {
         // The directory exists so rename it
-        $date = date('Y-m-d');
+        $date = date('Y-m-d-His') . '-' . bin2hex(random_bytes(6));
         $renamed = false;
         try {
             $renamed = rename($uploadDirectory, $uploadDirectory . "_bak_$date");

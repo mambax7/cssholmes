@@ -12,10 +12,14 @@ final class Access
     public static function capabilities(mixed $user, int $moduleId, callable $permission): array
     {
         if ($moduleId < 1 || !is_object($user)) {
-            return ['edit' => false, 'save' => false];
+            return ['edit' => false, 'save' => false, 'export' => false];
         }
         $admin = $user->isAdmin($moduleId);
         $edit = $admin || ($permission('cssholmes_overlay') && $permission('cssholmes_edit'));
-        return ['edit' => $edit, 'save' => $edit && ($admin || $permission('cssholmes_workbench'))];
+        return [
+            'edit' => $edit,
+            'save' => $edit && ($admin || $permission('cssholmes_workbench')),
+            'export' => $edit && ($admin || $permission('cssholmes_export')),
+        ];
     }
 }

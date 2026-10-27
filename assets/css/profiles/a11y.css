@@ -1,0 +1,159 @@
+/**
+ * cssHolmes v2 — Accessibility Profile
+ *
+ * Detects common accessibility problems:
+ * - Missing lang on html
+ * - No main landmark
+ * - Empty links and buttons without accessible names
+ * - Images without alt
+ * - Form controls without labels
+ * - Positive tabindex values
+ *
+ * Color legend:
+ *   Red (#e74c3c)    = error
+ *   Purple (#9b59b6) = accessibility concern
+ */
+
+/* Severity marker read by the toolbar counters (E/W): every rule that flags
+   an element also sets --holmes-a11y to error, warning or info. The reset
+   below has zero specificity, so the marker never inherits to children. */
+:where(.holmes-debug *) {
+    --holmes-a11y: none;
+}
+
+/* ========================================= */
+/* = MISSING LANG (error)                  = */
+/* ========================================= */
+
+.holmes-debug:not([lang]) {
+    border: 5px solid #9b59b6 !important;
+    --holmes-a11y: warning;
+}
+
+.holmes-debug:not([lang])::before {
+    content: "Holmes: <html> has no lang attribute";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #9b59b6;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+}
+
+/* ========================================= */
+/* = NO MAIN LANDMARK (warning)            = */
+/* ========================================= */
+
+.holmes-debug body:not(:has(main)):not(:has([role="main"])) {
+    border-bottom: 5px solid #9b59b6 !important;
+    --holmes-a11y: warning;
+}
+
+/* ========================================= */
+/* = EMPTY LINKS (error)                   = */
+/* ========================================= */
+
+.holmes-debug a:empty:not([aria-label]):not([aria-labelledby]):not(:has(img[alt])) {
+    outline: 3px solid #e74c3c !important;
+    --holmes-a11y: error;
+}
+
+.holmes-debug a:empty:not([aria-label]):not([aria-labelledby]):hover::after {
+    content: "Holmes: Empty link with no accessible name";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = EMPTY BUTTONS (error)                 = */
+/* ========================================= */
+
+.holmes-debug button:empty:not([aria-label]):not([aria-labelledby]) {
+    outline: 3px solid #e74c3c !important;
+    --holmes-a11y: error;
+}
+
+.holmes-debug button:empty:not([aria-label]):not([aria-labelledby]):hover::after {
+    content: "Holmes: Empty button with no accessible name";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = IMAGES WITHOUT ALT (error)            = */
+/* ========================================= */
+
+.holmes-debug img:not([alt]) {
+    outline: 3px solid #e74c3c !important;
+    --holmes-a11y: error;
+}
+
+/* ========================================= */
+/* = FORM CONTROLS WITHOUT LABELS (warning)= */
+/* ========================================= */
+
+.holmes-debug [data-holmes-unlabelled] {
+    outline: 3px solid #9b59b6 !important;
+    --holmes-a11y: warning;
+}
+
+.holmes-debug [data-holmes-unlabelled]:hover::after {
+    content: "Holmes: Form control without label or aria-label";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #9b59b6;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ========================================= */
+/* = POSITIVE TABINDEX (warning)           = */
+/* ========================================= */
+
+.holmes-debug [tabindex]:not([tabindex="0"]):not([tabindex="-1"]):not([tabindex=""]) {
+    outline: 3px solid #9b59b6 !important;
+    --holmes-a11y: warning;
+}
+
+.holmes-debug [tabindex]:not([tabindex="0"]):not([tabindex="-1"]):not([tabindex=""]):hover::after {
+    content: "Holmes: Positive tabindex disrupts natural tab order";
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 8px 12px;
+    background: #9b59b6;
+    color: #fff;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+    z-index: 99998;
+    pointer-events: none;
+    white-space: nowrap;
+}
