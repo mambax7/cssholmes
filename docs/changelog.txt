@@ -1,6 +1,7 @@
 <h5>3.3.0 Alpha 1 [2026-10-26]</h5>
 Requires PHP 8.4+. Alpha prerelease for testing; see docs/compatibility.md for tested environments and limitations.
 <hr>
+- Moved the official repository to XoopsModules27x/cssholmes and updated source, help and release links.
 - Added a visual theme designer with scoped selectors, colors, typography, spacing, live preview, undo/redo and explicit Save to theme publication.
 - Added private per-theme override storage, export, previous-save restoration and optimistic conflict checks without rewriting theme source files.
 - Added a named style-set library with preview, categories, likes and validated portable import/export; saving a set does not publish it.

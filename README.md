@@ -22,9 +22,7 @@ Back up the site's files and database before an installed-module upgrade.
 
 ## Development checks
 
-Use a complete source checkout, including the testing/tooling files supplied by
-[the final QA change](https://github.com/XoopsModules25x/cssholmes/pull/9).
-Documentation-only review branches are incomplete; release ZIPs intentionally
+Use a complete source checkout from the repository. Release ZIPs intentionally
 exclude `tests/`, PHPUnit configuration and other development files. If
 `tests/run.php` is absent, obtain the complete source before running these commands.
 
@@ -34,7 +32,7 @@ regressions plus the analyzer, CLI and diagnostic PHPUnit tests using shared
 to that shared vendor directory. `php tests/run.php --browser` also runs the
 browser regressions with an existing Playwright/Chromium installation.
 
-Source and issues: [XoopsModules25x/cssholmes](https://github.com/XoopsModules25x/cssholmes).
+Source and issues: [XoopsModules27x/cssholmes](https://github.com/XoopsModules27x/cssholmes).
 The repository's CI checks PHP 8.4/8.5; release tags run CI before creating a
 clean module ZIP. Qodana is optional and explicitly skips its scan when
 `QODANA_TOKEN` is unavailable. A skipped scan is not a quality result.

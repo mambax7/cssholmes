@@ -107,7 +107,7 @@
 
     <h4 class="odd">DEVELOPMENT</h4> <br>
     <p class="even">
-        This module is Open Source and we would love your help in making it better. You can fork this module on <a href="https://github.com/XoopsModules25x/cssholmes" target="_blank">GitHub</a><br><br>
+        This module is Open Source and we would love your help in making it better. You can fork this module on <a href="https://github.com/XoopsModules27x/cssholmes" target="_blank">GitHub</a><br><br>
         But there is more happening on GitHub:<br><br>
         - <a href="https://github.com/xoops" target="_blank">XOOPS Core</a> <br>
         - <a href="https://github.com/XoopsModules25x" target="_blank">XOOPS Modules</a><br>
