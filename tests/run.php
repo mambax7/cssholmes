@@ -13,7 +13,7 @@ if (!is_file($phpunit)) {
 
 $commands = [];
 $browser = in_array('--browser', $argv, true);
-foreach (['review-regressions', 'designer-store', 'designer-sets', 'designer-access', 'preview-context', 'designer-http'] as $test) {
+foreach (['review-followup', 'review-regressions', 'designer-store', 'designer-sets', 'designer-access', 'preview-context', 'designer-http'] as $test) {
     $command = [PHP_BINARY, '-d', 'auto_prepend_file=' . __DIR__ . '/bootstrap.php', __DIR__ . '/' . $test . '.php'];
     if ($browser && $test === 'designer-http') {
         $command[] = '--browser';

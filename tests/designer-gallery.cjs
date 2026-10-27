@@ -15,7 +15,7 @@ const root = path.resolve(__dirname, '..');
         let state = { theme: 'demo', revision: 'one', canRestore: false, rules: [
             { id: 'heading', label: 'Heading', selector: 'h1.sample', mode: 'all', breakpoint: 'all', state: 'normal', declarations: { 'font-size': '22px', color: '#aaaaaa' } }
         ] };
-        const config = { theme: 'demo', endpoint: '/api', stylesheetUrl: '/designer.css', styleUrl: '/saved.css', canSave: true };
+        const config = { theme: 'demo', endpoint: '/api', stylesheetUrl: '/designer.css', styleUrl: '/saved.css', canSave: true, canExport: true };
         const sample = '<section class="xs-example" id="xs-heading" data-xs-section="typography"><header><h2>Heading hierarchy</h2><p class="xs-designer-actions" hidden><button data-xs-inspect>Inspect example</button><button data-xs-edit>Edit styles</button></p></header><div data-xs-specimen><h1 class="sample">A community worth sharing</h1></div></section>';
         const baseStyle = '<style>body{margin:20px;background:white;color:#172033;font-family:system-ui}h1.sample{font-size:18px}#xs-gallery{max-width:100%}.xs-designer-actions[hidden]{display:none}.xs-controls{padding:16px;background:#f5f7fb;border:1px solid #cbd2df}</style>';
         page.on('pageerror', error => errors.push(error.message));
@@ -28,7 +28,7 @@ const root = path.resolve(__dirname, '..');
                     assert.equal(body.revision, state.revision);
                     state = { ...state, revision: 'next', rules: body.rules };
                 }
-                return route.fulfill({ json: { ok: true, state, canSave: true, token: 'test-token' } });
+                return route.fulfill({ json: { ok: true, state, canSave: true, canExport: true, token: 'test-token' } });
             }
             if (url.pathname === '/designer.css') return route.fulfill({ contentType: 'text/css', body: fs.readFileSync(path.join(root, 'assets/css/designer.css'), 'utf8') });
             if (url.pathname === '/saved.css') {

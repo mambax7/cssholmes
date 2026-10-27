@@ -63,6 +63,7 @@ namespace {
         public function getByDirname($name) { return new TestModule(); }
         public function checkRight($name, $item, $groups, $module) {
             return in_array('writer', $groups, true) || in_array('writer2', $groups, true)
+                || (in_array('exporter', $groups, true) && in_array($name, ['cssholmes_edit', 'cssholmes_overlay', 'cssholmes_export'], true))
                 || (in_array('preview', $groups, true) && in_array($name, ['cssholmes_edit', 'cssholmes_overlay'], true));
         }
     }
@@ -161,7 +162,7 @@ try {
     $check($status === 403, 'Anonymous config reads must be denied');
     [$status, $text] = $request('designer.php?theme=demo', null, 'preview');
     $preview = json_decode($text, true, 16, JSON_THROW_ON_ERROR);
-    $check($status === 200 && $preview['canSave'] === false, 'Preview role must remain read-only');
+    $check($status === 200 && $preview['canSave'] === false && $preview['canExport'] === false, 'Preview role must remain read-only');
     $payload = ['op' => 'save', 'theme' => 'demo', 'revision' => $preview['state']['revision'], 'token' => 'test-token', 'rules' => [[
         'selector' => '.comTitle', 'label' => 'Comment titles', 'mode' => 'all', 'breakpoint' => 'all', 'state' => 'normal',
         'declarations' => ['color' => '#123456', 'font-size' => '24px'],
@@ -226,7 +227,9 @@ try {
     $check($status === 200 && $adapted['preview']['warnings'] !== [] && !str_contains(json_encode($adapted['preview']['rules']), 'brand-widget'), 'Cross-theme preview must report skipped source-only selectors');
     $check(str_contains(json_encode($adapted['preview']['rules']), 'comTitle'), 'Semantic component styling must survive adaptation');
     $check(($adapted['preview']['set'] ?? null) === ['id' => $set['id'], 'revision' => $set['revision']], 'Preview must identify the exact set revision that supplied its rules');
-    [$status, $text] = $request('sets.php?theme=demo&action=export&id=' . $set['id'], null, 'writer');
+    [$status] = $request('sets.php?theme=demo&action=export&id=' . $set['id'], null, 'preview');
+    $check($status === 403, 'Read access must not authorize set exports');
+    [$status, $text] = $request('sets.php?theme=demo&action=export&id=' . $set['id'], null, 'exporter');
     $exported = json_decode($text, true, 32, JSON_THROW_ON_ERROR)['exported'];
     $check($status === 200 && $exported['defaults'] === 'inherit-target-theme' && $exported['version'] === 1 && !isset($exported['author']), 'Portable exports must specify defaults and omit local identities');
     $update = array_replace($newSet, ['op' => 'updateSet', 'id' => $set['id'], 'setRevision' => $set['revision'], 'name' => 'Changed name']);
@@ -259,7 +262,9 @@ try {
     $check($status === 200 && $imported['set']['theme'] === 'demo2' && $imported['set']['author']['id'] === 2, 'Imports must create a local author-owned copy in the chosen theme');
     [$status] = $request('sets.php', ['theme' => 'demo', 'op' => 'deleteSet', 'id' => $set['id'], 'setRevision' => $updated['set']['revision'], 'token' => 'test-token'], 'writer2');
     $check($status === 403, 'Another author cannot delete a set');
-    [$status, $text] = $request('sets.php', ['theme' => 'demo', 'token' => 'test-token', 'op' => 'exportCurrent', 'name' => '', 'rules' => []], 'preview');
+    [$status] = $request('sets.php', ['theme' => 'demo', 'token' => 'test-token', 'op' => 'exportCurrent', 'name' => '', 'rules' => []], 'preview');
+    $check($status === 403, 'Preview permission must not authorize draft exports');
+    [$status, $text] = $request('sets.php', ['theme' => 'demo', 'token' => 'test-token', 'op' => 'exportCurrent', 'name' => '', 'rules' => []], 'exporter');
     $check($status === 200 && json_decode($text, true)['document']['format'] === 'xoops-theme-set', 'Portable export works without a set name or publishing permission');
     [$status, $text] = $request('sets.php', ['theme' => 'demo2', 'token' => 'test-token', 'op' => 'previewImport', 'document' => ['theme' => 'demo', 'rules' => $newSet['rules']]], 'preview');
     $check($status === 200 && json_decode($text, true)['preview']['document']['version'] === 1, 'Legacy theme/rules exports must convert safely to the portable format');
