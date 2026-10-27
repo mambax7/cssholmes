@@ -1,5 +1,8 @@
 # Visual theme designer
 
+Start with the [illustrated cssHolmes + xStyles tutorial](TUTORIAL-xStyles.md)
+for a short inspect, edit, compare and publish walkthrough.
+
 The designer uses a guided property sidebar: select an element, inspect its
 scope, preview styles, then explicitly save to the active theme. xStyles is
 the repeatable fixture canvas; cssHolmes owns editing and theme persistence.

@@ -1,16 +1,20 @@
-<h5>3.3.0 Alpha 1 [2026-10-25]</h5>
+<h5>3.3.0 Alpha 1 [2026-10-26]</h5>
+Requires PHP 8.4+. Alpha prerelease for testing; see docs/compatibility.md for tested environments and limitations.
+<hr>
+- Added a visual theme designer with scoped selectors, colors, typography, spacing, live preview, undo/redo and explicit Save to theme publication.
+- Added private per-theme override storage, export, previous-save restoration and optimistic conflict checks without rewriting theme source files.
+- Added a named style-set library with preview, categories, likes and validated portable import/export; saving a set does not publish it.
 - Added xStyles example inspection/editing, private published-versus-draft comparison and three-width draft previews.
 - Added contrast-to-color controls and temporary selected-element highlighting.
-- Preserve the editing revision across library refreshes so concurrent set updates are rejected safely.
+- Preserved the editing revision across library refreshes so concurrent set updates are rejected safely.
 - Added shared QA runner, PHP 8.4/8.5 CI, optional Qodana and release packaging without module-local development dependencies.
 - Read-only resolved token inspection and conservative rendered text contrast estimates.
 - XTF data-theme mode support in draft and public CSS; content-based stylesheet ETags.
-- Published-only xStyles frame context with editor assets suppressed.
+- Kept ordinary xStyles comparison frames published-only with editor assets suppressed; private draft panes accept only the matching theme.
 - Added XMF 2 / XTF package contract, diagnostics and frame integration checks.
+- Added an illustrated cssHolmes + xStyles tutorial, shared-tool contributor instructions and explicit compatibility documentation.
 
-<h5>3.0.0 Alpha 2 [NOT RELEASED]</h5>
-Dev: XOOPS 2.5.12, PHP 8.4, PHP 8.5.0
-<hr>
+Earlier unreleased development included in this release:
 - added permission checks to all admin workbench pages and actions (mamba)
 - added a new "cssHolmes Admin" permission for granular control over who can access the admin workbench (mamba)
 - added **Diagnose (third row):**

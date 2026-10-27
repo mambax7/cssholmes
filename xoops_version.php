@@ -21,7 +21,7 @@ $moduleDirName = basename(__DIR__);
 
 $modversion['version']             = '3.3.0';
 $modversion['module_status']       = 'Alpha 1';
-$modversion['release_date']        = '2026/10/25';
+$modversion['release_date']        = '2026/10/26';
 $modversion['name']                = _MI_CSSHOLMES_NAME;
 $modversion['description']         = _MI_CSSHOLMES_DESC;
 $modversion['author']              = 'Kris - https://www.xoofoo.org, Mamba: XOOPS Project';
