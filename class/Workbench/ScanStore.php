@@ -26,8 +26,11 @@ final class ScanStore
     private const STORE_FILE = 'scans.json';
     private const MAX_PER_THEME = 20;
 
-    public function __construct(private readonly string $modulePath)
+    private JsonHistory $history;
+
+    public function __construct(string $modulePath)
     {
+        $this->history = new JsonHistory($modulePath, self::STORE_FILE);
     }
 
     /**
@@ -82,22 +85,24 @@ final class ScanStore
      */
     public function saveScan(ThemeTarget $theme, array $counts, array $analyzerResults): array
     {
-        $records = $this->readStore();
-        $record = [
-            'id' => date('YmdHis') . '-' . substr(bin2hex(random_bytes(4)), 0, 8),
-            'created_at' => date(DATE_ATOM),
-            'scope' => $theme->scope,
-            'theme_key' => $theme->key,
-            'theme_label' => $theme->label,
-            'theme_path' => $theme->path,
-            'counts' => $counts,
-            'findings' => $this->flattenFindings($analyzerResults),
-        ];
+        return $this->history->locked(function () use ($theme, $counts, $analyzerResults) {
+            $records = $this->readStore();
+            $record = [
+                'id' => date('YmdHis') . '-' . substr(bin2hex(random_bytes(4)), 0, 8),
+                'created_at' => date(DATE_ATOM),
+                'scope' => $theme->scope,
+                'theme_key' => $theme->key,
+                'theme_label' => $theme->label,
+                'theme_path' => $theme->path,
+                'counts' => $counts,
+                'findings' => $this->flattenFindings($analyzerResults),
+            ];
 
-        $records[] = $record;
-        $this->writeStore($this->prune($records, $theme->scope, $theme->key));
+            $records[] = $record;
+            $this->writeStore($this->prune($records, $theme->scope, $theme->key));
 
-        return $record;
+            return $record;
+        });
     }
 
     /**
@@ -165,52 +170,13 @@ final class ScanStore
         return $flattened;
     }
 
-    private function storePath(): string
-    {
-        return $this->modulePath . '/data/workbench/' . self::STORE_FILE;
-    }
-
-    private function ensureDirectory(): void
-    {
-        $directory = dirname($this->storePath());
-        if (!is_dir($directory)) {
-            mkdir($directory, 0777, true);
-        }
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
     private function readStore(): array
     {
-        $path = $this->storePath();
-        if (!is_file($path)) {
-            return [];
-        }
-
-        $json = file_get_contents($path);
-        if (false === $json || '' === trim($json)) {
-            return [];
-        }
-
-        $decoded = json_decode($json, true);
-        if (!is_array($decoded)) {
-            return [];
-        }
-
-        return array_values(array_filter($decoded, 'is_array'));
+        return $this->history->read();
     }
 
-    /**
-     * @param array<int, array<string, mixed>> $records
-     */
     private function writeStore(array $records): void
     {
-        $this->ensureDirectory();
-        file_put_contents(
-            $this->storePath(),
-            json_encode(array_values($records), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-            LOCK_EX
-        );
+        $this->history->write($records);
     }
 }

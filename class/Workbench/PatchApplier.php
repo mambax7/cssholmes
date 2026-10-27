@@ -198,6 +198,7 @@ final class PatchApplier
                 'kind' => 'text',
                 'target' => $target,
                 'original_content' => $existing,
+                'written_hash' => hash('sha256', $updated),
             ],
         ];
     }
@@ -289,7 +290,7 @@ final class PatchApplier
         $styleProperty = is_string($change['style_property'] ?? null) ? trim((string)$change['style_property']) : '';
         $after = is_string($change['after'] ?? null) ? trim((string)$change['after']) : '';
 
-        if ('' === $selector || '' === $styleProperty || '' === $after) {
+        if (!$this->validStyle($selector, $styleProperty, $after)) {
             return [
                 'success' => false,
                 'message' => 'Style apply requires a selector, CSS property, and non-empty value.',
@@ -335,7 +336,7 @@ final class PatchApplier
             ? trim((string)($matches[0] ?? ''))
             : '';
         $updated = preg_match($pattern, (string)$existing) === 1
-            ? (string)preg_replace($pattern, $block . PHP_EOL, (string)$existing, 1)
+            ? (string)preg_replace_callback($pattern, static fn(): string => $block . PHP_EOL, (string)$existing, 1)
             : rtrim((string)$existing) . PHP_EOL . PHP_EOL . $block . PHP_EOL;
 
         $directory = dirname($absoluteTarget);
@@ -493,7 +494,7 @@ final class PatchApplier
 
         $pattern = '/\/\* cssHolmes:begin ' . preg_quote($blockId, '/') . ' \*\/.*?\/\* cssHolmes:end ' . preg_quote($blockId, '/') . ' \*\/\s*/s';
         $updated = '' !== $previousBlock
-            ? (string)preg_replace($pattern, $previousBlock . PHP_EOL, (string)$existing, 1)
+            ? (string)preg_replace_callback($pattern, static fn(): string => $previousBlock . PHP_EOL, (string)$existing, 1)
             : (string)preg_replace($pattern, '', (string)$existing, 1);
 
         if ($updated === (string)$existing) {
@@ -546,6 +547,13 @@ final class PatchApplier
             ];
         }
 
+        $current = is_file($absoluteTarget) ? file_get_contents($absoluteTarget) : false;
+        $writtenHash = $appliedMeta['written_hash'] ?? '';
+        if (!is_string($writtenHash) || $writtenHash === '' || $current === false
+            || !hash_equals($writtenHash, hash('sha256', $current))
+            || preg_match('/\.(tpl|html)$/i', $target) !== 1) {
+            return ['success' => false, 'message' => 'The template changed after this patch, or its revision is unavailable. Review and restore it manually.', 'target' => $target];
+        }
         if (false === file_put_contents($absoluteTarget, $originalContent, LOCK_EX)) {
             return [
                 'success' => false,
@@ -716,7 +724,7 @@ final class PatchApplier
         $styleProperty = is_string($change['style_property'] ?? null) ? trim((string)$change['style_property']) : '';
         $after = is_string($change['after'] ?? null) ? trim((string)$change['after']) : '';
 
-        if ('' === $selector || '' === $styleProperty || '' === $after) {
+        if (!$this->validStyle($selector, $styleProperty, $after)) {
             return [
                 'supported' => false,
                 'can_apply' => false,
@@ -817,8 +825,11 @@ final class PatchApplier
     {
         $targets = array_values(array_filter(
             is_array($suggestion['targets'] ?? null) ? $suggestion['targets'] : [],
-            static fn ($target): bool => is_string($target) && preg_match('/\.(tpl|html|php)$/i', (string)$target) === 1
+            static fn ($target): bool => is_string($target) && preg_match('/\.(tpl|html)$/i', (string)$target) === 1
         ));
+        if ($targets === [] && !empty($suggestion['targets'])) {
+            return '';
+        }
 
         foreach ($targets as $target) {
             $absoluteTarget = $this->absoluteThemePath($theme, (string)$target);
@@ -833,7 +844,7 @@ final class PatchApplier
 
         /** @var \SplFileInfo $fileInfo */
         foreach ($iterator as $fileInfo) {
-            if ($fileInfo->isFile() && preg_match('/\.(tpl|html|php)$/i', $fileInfo->getFilename()) === 1) {
+            if ($fileInfo->isFile() && preg_match('/\.(tpl|html)$/i', $fileInfo->getFilename()) === 1) {
                 return $this->relativeThemePath($theme, $fileInfo->getPathname());
             }
         }
@@ -841,9 +852,14 @@ final class PatchApplier
         return '';
     }
 
-    /**
-     * @param array<string, mixed> $change
-     */
+    private function validStyle(string $selector, string $property, string $value): bool
+    {
+        return $selector !== '' && $value !== ''
+            && preg_match('/^-{0,2}[a-z][a-z0-9-]*$/D', $property) === 1
+            && preg_match('~[{};\r\n\x00]|/\*|\*/~', $selector . $value) === 0;
+    }
+
+    /** @param array<string, mixed> $change */
     private function styleBlock(string $blockId, array $change): string
     {
         $selector = trim((string)($change['selector'] ?? ''));
@@ -880,7 +896,14 @@ final class PatchApplier
         $absolute = $themeRoot . '/' . $relativePath;
         $normalized = str_replace('\\', '/', $absolute);
 
-        return str_starts_with($normalized, $themeRoot . '/') ? $absolute : '';
+        $resolvedRoot = realpath($theme->path);
+        $resolved = realpath($absolute);
+        if ($resolvedRoot === false || $resolved === false) {
+            return '';
+        }
+        $resolvedRoot = str_replace('\\', '/', $resolvedRoot);
+        $resolved = str_replace('\\', '/', $resolved);
+        return str_starts_with($resolved, $resolvedRoot . '/') ? $resolved : '';
     }
 
     private function manifestPath(ThemeTarget $theme): string

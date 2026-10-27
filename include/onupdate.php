@@ -60,6 +60,14 @@ function xoops_module_update_cssholmes(\XoopsModule $module, $previousVersion = 
     $utility      = new Module\Utility();
     $configurator = new Module\Common\Configurator();
 
+    try {
+        (new Module\Workbench\ImportStore(dirname(__DIR__)))->all();
+        (new Module\Workbench\ScanStore(dirname(__DIR__)))->all();
+    } catch (\Throwable $error) {
+        $module->setErrors('Unable to migrate workbench history to private storage. Back up and reconcile any legacy and private history files before retrying.');
+        return false;
+    }
+
     // Ensure admin group always has all permissions (runs on every update)
     ensureAdminPermissions($moduleDirName, (int) $module->getVar('mid'));
 

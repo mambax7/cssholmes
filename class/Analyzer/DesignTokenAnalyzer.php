@@ -243,11 +243,15 @@ final class DesignTokenAnalyzer implements AnalyzerInterface
 
                 foreach ($matches as $match) {
                     $fallback = isset($match[2]) && '' !== trim((string)$match[2]) ? trim((string)$match[2]) : null;
-                    $references[(string)$match[1]] = [
+                    $variable = (string)$match[1];
+                    $references[$variable] ??= [
                         'file' => $file,
                         'line' => $lineNumber + 1,
                         'fallback' => $fallback,
                     ];
+                    if ($fallback === null) {
+                        $references[$variable]['fallback'] = null;
+                    }
                 }
             }
         }
