@@ -9,6 +9,9 @@ Requires PHP 8.4+. Alpha prerelease for testing; see docs/compatibility.md for t
 - Preserved the editing revision across library refreshes so concurrent set updates are rejected safely.
 - Kept selected palette names and swatches visible after library refreshes across Chromium versions.
 - Added shared QA runner, PHP 8.4/8.5 CI, optional Qodana and release packaging without module-local development dependencies.
+- Moved workbench histories to private storage with migration, locked updates and atomic writes; removed bundled development history.
+- Prevented unsafe imported patches and rollback over later template edits; fixed literal CSS replacements and scan diagnostics.
+- Supported trusted deployment symlinks while retaining storage-file checks; corrected legacy copy and database helper failures.
 - Excluded local workbench JSON records from release archives so upgrades do not overwrite a site's saved workbench data.
 - Read-only resolved token inspection and conservative rendered text contrast estimates.
 - XTF data-theme mode support in draft and public CSS; content-based stylesheet ETags.

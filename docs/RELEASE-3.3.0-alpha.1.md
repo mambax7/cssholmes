@@ -15,6 +15,7 @@ An alpha prerelease for testing theme inspection, visual editing and reusable st
 1. Back up the site, database and existing private cssHolmes settings.
 2. Extract the release ZIP so its `cssholmes` directory is under `htdocs/modules/`.
 3. Install or update cssHolmes through XOOPS module administration. Existing permissions are preserved on update; review legacy Registered Users overlay/diagnostics grants.
+   Workbench history migrates from `data/workbench/*.json` to `XOOPS_VAR_PATH/configs/cssholmes/workbench/`. Keep these private files in backups. If both locations contain different histories, the update stops for manual reconciliation rather than overwriting either copy. Legacy text patches without a saved revision must be restored manually.
 4. For the new gallery controls, also deploy the xStyles `feat/cssholmes-integration` update and update that module. cssHolmes works independently without xStyles.
 5. Read `docs/TUTORIAL-xStyles.md` in the package for the illustrated workflow.
 
