@@ -50,6 +50,7 @@
 
 .holmes-debug body:not(:has(main)):not(:has([role="main"])) {
     border-bottom: 5px solid #9b59b6 !important;
+    --holmes-a11y: warning;
 }
 
 /* ========================================= */
@@ -113,16 +114,12 @@
 /* = FORM CONTROLS WITHOUT LABELS (warning)= */
 /* ========================================= */
 
-.holmes-debug input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([aria-label]):not([aria-labelledby]):not([id]),
-.holmes-debug select:not([aria-label]):not([aria-labelledby]):not([id]),
-.holmes-debug textarea:not([aria-label]):not([aria-labelledby]):not([id]) {
+.holmes-debug [data-holmes-unlabelled] {
     outline: 3px solid #9b59b6 !important;
     --holmes-a11y: warning;
 }
 
-.holmes-debug input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([aria-label]):not([id]):hover::after,
-.holmes-debug select:not([aria-label]):not([id]):hover::after,
-.holmes-debug textarea:not([aria-label]):not([id]):hover::after {
+.holmes-debug [data-holmes-unlabelled]:hover::after {
     content: "Holmes: Form control without label or aria-label";
     position: fixed;
     top: 0;
