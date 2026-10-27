@@ -65,7 +65,8 @@ see [Development checks](../README.md#development-checks).
 
 The separate xStyles module's `tests/fixtures.php` checks real core rendering
 without site sessions or a database; cssHolmes does not ship that script.
-cssHolmes `php tests/xtf-contract.php <core>/htdocs/xoops_lib/vendor/xoops` loads
+cssHolmes `php tests/xtf-contract.php "/path/to/core/htdocs/xoops_lib/vendor/xoops"`
+(replace the example core path) loads
 actual XMF/XTF classes without full bootstrap and checks identity, token CSS,
 asset contracts, preview CSS, portable semantic roundtrip, and exact same-theme
 rules. These checks cannot certify native route registration or authentication.

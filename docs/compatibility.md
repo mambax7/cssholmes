@@ -26,7 +26,14 @@ new writes without deleting rollback records. Back up and archive old history
 before continuing when a limit is reached. An oversized legacy history must
 be archived before the module update can migrate it.
 
-`XOOPS_VENDOR_PATH=<shared xoops_lib/vendor> php tests/run.php` passed on
+The POSIX-shell command below uses an example path; replace it with your shared
+vendor directory before running it:
+
+```sh
+XOOPS_VENDOR_PATH="/path/to/xoops_lib/vendor" php tests/run.php
+```
+
+This check passed on
 PHP 8.4.27 with shared PHPUnit 13.4.3: storage and set checks, 8 access checks,
 preview-context checks, 50 HTTP endpoint checks, and **35 PHPUnit tests / 115
 assertions**. The tests use temporary files and synthetic HTTP identities;
@@ -59,7 +66,8 @@ before and after the upgrade. These checks used PHP 8.4.27, Chrome and the
 default frontend theme; they do not establish every theme/core combination.
 
 An explicit broader check,
-`php <shared-vendor>/bin/phpunit -c phpunit.xml.dist tests/Unit`, produced
+`php "/path/to/xoops_lib/vendor/bin/phpunit" -c phpunit.xml.dist tests/Unit`
+(replace the example path), produced
 58 tests, 115 assertions, 14 errors, 1 runner warning and 9 incomplete tests on
 PHPUnit 13.4.3. Eleven errors come from removed `getMockForTrait()` APIs; three
 Helper errors need `xoops_getHandler()` from an installed core. The warning is
