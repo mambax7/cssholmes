@@ -1,20 +1,84 @@
-<h5>1.3 Beta 1   [WORK IN PROGRESS - NOT RELEASED]</h5>  Dev: XOOPS 2.5.11, PHP 7.4.8
+<h5>3.3.0 Alpha 1 [2026-10-26]</h5>
+Requires PHP 8.4+. Alpha prerelease for testing; see docs/compatibility.md for tested environments and limitations.
 <hr>
-- update to XOOPS 2.5.10 GUI (mamba)
-- update to PHP 7.2 (mamba)
-- code clean-up and cosmetics (mamba)
-- added testsuite.tpl in the front end (mamba)
-- namespaces, autoload (mamba)
+- Added a visual theme designer with scoped selectors, colors, typography, spacing, live preview, undo/redo and explicit Save to theme publication.
+- Added private per-theme override storage, export, previous-save restoration and optimistic conflict checks without rewriting theme source files.
+- Added a named style-set library with preview, categories, likes and validated portable import/export; saving a set does not publish it.
+- Added xStyles example inspection/editing, private published-versus-draft comparison and three-width draft previews.
+- Added contrast-to-color controls and temporary selected-element highlighting.
+- Preserved the editing revision across library refreshes so concurrent set updates are rejected safely.
+- Kept selected palette names and swatches visible after library refreshes across Chromium versions.
+- Added shared QA runner, PHP 8.4/8.5 CI, optional Qodana and release packaging without module-local development dependencies.
+- Read-only resolved token inspection and conservative rendered text contrast estimates.
+- XTF data-theme mode support in draft and public CSS; content-based stylesheet ETags.
+- Kept ordinary xStyles comparison frames published-only with editor assets suppressed; private draft panes accept only the matching theme.
+- Added XMF 2 / XTF package contract, diagnostics and frame integration checks.
+- Added an illustrated cssHolmes + xStyles tutorial, shared-tool contributor instructions and explicit compatibility documentation.
+- Verified clean ZIP installation and upgrade from 3.0.0 on a disposable XOOPS 2.7.4-RC2 site: configuration, existing permissions and saved designer overrides are preserved.
 
-2012/08/30: Version 1.2
-=================================
+Earlier unreleased development included in this release:
+- added permission checks to all admin workbench pages and actions (mamba)
+- added a new "cssHolmes Admin" permission for granular control over who can access the admin workbench (mamba)
+- added **Diagnose (third row):**
+        - `overflow` — highlight every element with overflowing content
+        - `z-index` — show z-index values as colored labels on all positioned elements
+        - `grid` — show CSS Grid and Flexbox containers with column/row lines
+        - `proto` / `deuter` / `trita` / `achro` — simulate color blindness types
+- added CSS Grid and Flexbox diagnostics to the front-end inspection overlay (mamba)
+- changed install defaults: Use Overlay and Use Diagnostics now go to the Webmasters group only; earlier versions also granted them to Registered Users (mamba)
+- updates do not change existing permissions: when Registered Users still hold the old overlay/diagnostics grants, the update log and the admin Index and Permissions pages show a notice so the administrator can remove them (mamba)
+- fixed the "Overlay query key" setting description, which claimed the overlay was for administrators only (english, french) (mamba)
+- fixed keyboard shortcuts I, M, T, P, U: they now ignore Ctrl/Cmd/Alt (Ctrl+P and Ctrl+U work again), never fire while typing, only work while the toolbar is open, and only block the key they handle (mamba)
+- changed Esc to leave inspect and measure mode and close the editors; minimising the toolbar does the same, so a minimised toolbar no longer captures clicks (mamba)
+- fixed the E/W counters ignoring html5 findings: every profile rule now sets a --holmes-{profile} severity marker that the counters read, instead of matching outline colours (mamba)
+- fixed the html5 body attribute rules (background, *margin, bgproperties), which never matched because the overlay puts holmes-debug on <html> (mamba)
+- changed the html5 profile to treat table summary as obsolete (grey) instead of requiring it (red) (mamba)
+- added Smarty-aware template reading to the analyzers: Smarty comments and tags are neutralised before HTML checks, so <img src="<{$x}>" alt="..."> is no longer cut at the first }> (mamba)
+- added include resolution to the analyzers: <{include file="$theme_name/tpl/x.tpl"}>, `$xoTheme->folderName`, |cat: chains and plain relative names are followed, so skip link, main, lang and module header checks see the included partials; missing theme includes are reported with file and line (mamba)
+- changed accessibility element checks (img alt, empty links and buttons, form labels, tabindex) to report every occurrence with file and line, to ignore <a> without href (fragment targets) and inputs wrapped in <label>, and lowered "no h1 in the theme" to info (mamba)
+- changed the workbench theme list to include every theme folder with theme.tpl or theme.html; themes without theme.json are scanned in generic mode (no manifest checks, token checks based on the theme's own custom-property prefix such as --mt-) (mamba)
+- fixed $xoops_sitename and $xoops_slogan being reported as unescaped: core already escapes them (and $xoops_requesturi and $xoops_meta_*) in class/theme.php; $xoops_pagetitle is still reported, with a suggestion that does not double-encode (mamba)
+- changed "theme.tpl does not print $xoops_module_header" from info to warning (mamba)
+- added the command-line theme scan bin/holmes-scan.php: runs the analyzers on a theme folder without a XOOPS install, text or --format=json output, exit code 1 on errors (or --fail-on=warning) for release checks and CI (mamba)
+- added scan history to the workbench (ScanStore): an explicit theme scan is stored (last 20 per theme) and compared with the previous one (mamba)
+- added unit tests for Smarty stripping, include resolution, the generic-theme analyzers and the CLI exit codes, with fixture themes in tests/Unit/fixtures (mamba)
+
+
+<h5>3.0.0 Alpha 1 [2026-03-26]</h5>
+Dev: XOOPS 2.5.12, PHP 8.4, PHP 8.5.0
+<hr>
+- split the work into a new cssHolmes module identity with its own templates, preload, and admin workbench (mamba)
+- added profile-based overlay modes for html5, xtf-theme, xtf-widget, a11y, and layout diagnostics (mamba)
+- added a modern floating toolbar with inspect, measure, copy text/json, export selected inspection, undo, widget jump, and slot jump (mamba)
+- added token-aware XTF theme inspection and local token preview editing when a theme.json manifest is available (mamba)
+- added typography editing for font size, line height, letter spacing, weight, and alignment preview (mamba)
+- added XTF/XMF-oriented admin workbench flows for theme scan, widget HTML scan, import review, patch drafts, preview/apply, and rollback (mamba)
+- added server-side analyzers for theme manifest, design tokens, templates, accessibility, and widget output (mamba)
+- added a new front-end hub page plus a modern XTF/XMF testsuite alongside the legacy HTML5 testsuite (mamba)
+- added explicit generic XOOPS fallback messaging when no XTF theme.json manifest is available, while keeping generic inspection and diagnostics usable (mamba)
+
+
+<h5>2.0.0 Beta 1  [ NOT RELEASED]</h5>
+<hr>
+- cleaned up the module shell, namespaces, and autoloading for current XOOPS development (mamba)
+- updated the admin area and front-end test references for a more usable diagnostic workflow (mamba)
+- replaced the fragile one-class behavior with a safer opt-in overlay runtime for admin users (mamba)
+- added a live toolbar for generic page inspection, measurement, copy, export, and undo without requiring XTF (mamba)
+- added clearer admin usage documentation and a richer local help/tutorial/documentation set (mamba)
+- improved generic HTML5, accessibility, and layout diagnostics so cssHolmes remains useful on plain XOOPS installs (mamba)
+- added generic XOOPS mode support for installations without XTF, XMF 2.0, or widgets (mamba)
+
+<h5>1.2  [2012-08-30]</h5>
+<hr>
 Css file updated to 1.0.45 (kris_fr)
 
-2012/06/30: Version 1.1
-=================================
+
+<h5>1.1 [2012-06-30]</h5>
+<hr>
 Css file updated to 1.0.4 (kris_fr)
 
-2011/04/29: Version 1.0 RC
-=================================
+
+<h5>1.0 RC [2011-04-29]</h5>
+<hr>
 Initial work based on current css file holmes.css by Luke Williams - http://www.red-root.com/. (kris_fr)
 If you would like to help with documentation (or translation) for this module please contact us.
