@@ -75,8 +75,10 @@ and converted to version 1 during import, preserving previously exported drafts.
 
 ## Library and palettes
 
-The admin page groups configurations beneath every installed front-end theme,
-including themes with no saved sets. It supports theme/name filtering, name/date/
+The admin page groups configurations beneath discovered, supported front-end
+themes, including those with no saved sets. Discovery requires a theme directory
+containing `theme.tpl` or `theme.html`; manifest-only XTF themes and symlinked
+theme directories are not listed. It supports theme/name filtering, name/date/
 popularity sorting, likes, author and creation/modification dates. A like records
 one vote per registered designer and can be withdrawn; repeated requests do not
 add extra votes. Liking a set does not modify its design revision.
