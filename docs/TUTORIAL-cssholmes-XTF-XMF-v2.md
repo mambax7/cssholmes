@@ -73,10 +73,13 @@ theme.json
   declares assets ── CSS and JS files
 ```
 
-When cssHolmes inspects an element, it can tell you which slot it belongs to,
-which widget rendered it, and which manifest token values match its computed
-color. A match is a useful clue, not proof that the stylesheet references that
-token. Check the CSS declaration before changing a global token.
+When cssHolmes inspects an element, it finds the nearest recognized widget
+wrapper by class or data attribute and the nearest `[data-slot]` ancestor.
+These are clues from the rendered markup; the inspector does not consult a
+widget registry or verify which widget rendered the element. It also lists
+manifest token values matching the computed color. A value match does not prove
+that the stylesheet references that token. Check the CSS declaration before
+changing a global token.
 
 ---
 
