@@ -16,7 +16,7 @@ const root = path.resolve(__dirname, '..');
         const response = () => {
             currentToken = `token-${++tokenNumber}`;
             tokenValid = true;
-            return { ok: true, token: currentToken, canSave: true, state, library: { themes: ['demo'], sets: [], palettes: [] } };
+            return { ok: true, token: currentToken, canSave: true, canExport: true, state, library: { themes: ['demo'], sets: [], palettes: [] } };
         };
         await page.route('https://session.test/**', async route => {
             const request = route.request(), url = new URL(request.url());
@@ -36,7 +36,7 @@ const root = path.resolve(__dirname, '..');
             }
             if (url.pathname === '/designer.css') return route.fulfill({ contentType: 'text/css', body: fs.readFileSync(path.join(root, 'assets/css/designer.css'), 'utf8') });
             if (url.pathname === '/saved.css') return route.fulfill({ contentType: 'text/css', body: '' });
-            return route.fulfill({ contentType: 'text/html', body: `<!doctype html><html><body><h4 class="comTitle">Comment title</h4><script type="application/json" id="cssholmes-designer-config">${JSON.stringify({ theme: 'demo', endpoint: '/api', libraryEndpoint: '/sets', stylesheetUrl: '/designer.css', styleUrl: '/saved.css', canSave: true })}</script></body></html>` });
+            return route.fulfill({ contentType: 'text/html', body: `<!doctype html><html><body><h4 class="comTitle">Comment title</h4><script type="application/json" id="cssholmes-designer-config">${JSON.stringify({ theme: 'demo', endpoint: '/api', libraryEndpoint: '/sets', stylesheetUrl: '/designer.css', styleUrl: '/saved.css', canSave: true, canExport: true })}</script></body></html>` });
         });
         await page.goto('https://session.test/');
         await page.addScriptTag({ path: path.join(root, 'assets/js/designer.js') });

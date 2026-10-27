@@ -17,7 +17,7 @@ const root = path.resolve(__dirname, '..');
         const posts = [], publications = [];
         let initialSetId = '', canSave = true;
         const setRules = new Map(sets.map(set => [set.id, [rule('26px')]]));
-        const base = () => ({ ok: true, token: 'shared-token', canSave, state, library: { themes: ['test', 'other'], sets, palettes: [{ id: 'palette-calm', name: 'Calm', colors: ['#ffffff', '#111111'], contrast: [{ name: 'Text', ratio: 18.8, pass: true }] }] } });
+        const base = () => ({ ok: true, token: 'shared-token', canSave, canExport: canSave, state, library: { themes: ['test', 'other'], sets, palettes: [{ id: 'palette-calm', name: 'Calm', colors: ['#ffffff', '#111111'], contrast: [{ name: 'Text', ratio: 18.8, pass: true }] }] } });
         const handleRoute = async route => {
             const request = route.request(), url = new URL(request.url());
             if (url.pathname === '/api') {
@@ -55,7 +55,7 @@ const root = path.resolve(__dirname, '..');
             }
             if (url.pathname === '/designer.css') return route.fulfill({ contentType: 'text/css', body: fs.readFileSync(path.join(root, 'assets/css/designer.css'), 'utf8') });
             if (url.pathname === '/saved.css') return route.fulfill({ contentType: 'text/css', body: state.rules.length ? '.sample{font-size:22px!important}' : '' });
-            return route.fulfill({ contentType: 'text/html', body: `<!doctype html><html><head><style>.sample{font-size:18px}</style><link id="cssholmes-theme-style" rel="stylesheet" href="/saved.css"></head><body><p class="sample">Sample</p><script id="cssholmes-designer-config" type="application/json">${JSON.stringify({ theme: 'test', endpoint: '/api', libraryEndpoint: '/library', styleUrl: '/saved.css', stylesheetUrl: '/designer.css', canSave: true, initialSetId })}</script></body></html>` });
+            return route.fulfill({ contentType: 'text/html', body: `<!doctype html><html><head><style>.sample{font-size:18px}</style><link id="cssholmes-theme-style" rel="stylesheet" href="/saved.css"></head><body><p class="sample">Sample</p><script id="cssholmes-designer-config" type="application/json">${JSON.stringify({ theme: 'test', endpoint: '/api', libraryEndpoint: '/library', styleUrl: '/saved.css', stylesheetUrl: '/designer.css', canSave: true, canExport: true, initialSetId })}</script></body></html>` });
         };
         await page.route('https://sets.test/**', handleRoute);
         await page.goto('https://sets.test/');

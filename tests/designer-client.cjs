@@ -32,7 +32,7 @@ const root = path.resolve(__dirname, '..');
                         saved = { ...saved, rules: body.rules, revision: saved.revision + 1, canRestore: true };
                     }
                 }
-                return route.fulfill({ json: { ok: true, state: saved, token: 'csrf-test', canSave: true } });
+                return route.fulfill({ json: { ok: true, state: saved, token: 'csrf-test', canSave: true, canExport: true } });
             }
             if (url.pathname === '/designer.css') return route.fulfill({ contentType: 'text/css', body: fs.readFileSync(path.join(root, 'assets/css/designer.css'), 'utf8') });
             if (url.pathname === '/library') {
@@ -44,7 +44,7 @@ const root = path.resolve(__dirname, '..');
                 <div id="xs-gallery"><header class="xs-header"><h4><a href="/leave">Gallery controls</a></h4></header>
                 <div data-xs-specimen><div id="xs-comment" class="xoops-comment-template"><div class="xoops-comment-text"><h4><a href="/leave">First comment</a></h4><div class="message-text">Body</div></div></div></div>
                 <div data-xs-specimen><div class="xoops-comment-template"><div class="xoops-comment-text"><h4>Second comment</h4></div></div></div></div>
-                <script type="application/json" id="cssholmes-designer-config">${JSON.stringify({ theme: 'test', endpoint: '/api', libraryEndpoint: '/library', styleUrl: '/saved.css', stylesheetUrl: '/designer.css', token: 'csrf-test', canSave: true })}</script>
+                <script type="application/json" id="cssholmes-designer-config">${JSON.stringify({ theme: 'test', endpoint: '/api', libraryEndpoint: '/library', styleUrl: '/saved.css', stylesheetUrl: '/designer.css', token: 'csrf-test', canSave: true, canExport: true })}</script>
                 </body></html>` });
         });
         await page.goto('https://designer.test/');
@@ -266,17 +266,21 @@ const root = path.resolve(__dirname, '..');
         await previewPage.locator('#cssholmes-designer').getByLabel('Font size', { exact: true }).fill('24px');
         assert.equal(await previewPage.locator('.sample').evaluate(el => getComputedStyle(el).fontSize), '24px');
         assert.equal(await previewPage.locator('#cssholmes-designer').getByRole('button', { name: 'Save to theme', exact: true }).isDisabled(), true);
+        await previewPage.locator('#cssholmes-designer').locator('details.more').evaluate(element => element.open = true);
+        for (const name of ['Export CSS', 'Export JSON']) {
+            assert.equal(await previewPage.locator('#cssholmes-designer').getByRole('button', { name, exact: true }).isDisabled(), true, 'Preview access must not enable downloads');
+        }
         const firstSave = await browser.newPage();
         let firstRules = [];
         await firstSave.route('https://designer.test/**', async route => {
             const url = new URL(route.request().url());
             if (url.pathname === '/api') {
                 if (route.request().method() === 'POST') firstRules = route.request().postDataJSON().rules;
-                return route.fulfill({ json: { ok: true, state: { theme: 'test', revision: firstRules.length, rules: firstRules, canRestore: Boolean(firstRules.length) }, token: 'csrf-test', canSave: true } });
+                return route.fulfill({ json: { ok: true, state: { theme: 'test', revision: firstRules.length, rules: firstRules, canRestore: Boolean(firstRules.length) }, token: 'csrf-test', canSave: true, canExport: true } });
             }
             if (url.pathname === '/designer.css') return route.fulfill({ contentType: 'text/css', body: fs.readFileSync(path.join(root, 'assets/css/designer.css'), 'utf8') });
             if (url.pathname === '/saved.css') return route.fulfill({ contentType: 'text/css', body: firstRules.map(rule => `${rule.selector}{font-size:${rule.declarations['font-size']}!important}`).join('\n') });
-            return route.fulfill({ contentType: 'text/html', body: '<!doctype html><body><p class="sample">Sample</p><script type="application/json" id="cssholmes-designer-config">' + JSON.stringify({ theme: 'test', endpoint: '/api', styleUrl: '/saved.css', stylesheetUrl: '/designer.css', canSave: true }) + '</script></body>' });
+            return route.fulfill({ contentType: 'text/html', body: '<!doctype html><body><p class="sample">Sample</p><script type="application/json" id="cssholmes-designer-config">' + JSON.stringify({ theme: 'test', endpoint: '/api', styleUrl: '/saved.css', stylesheetUrl: '/designer.css', canSave: true, canExport: true }) + '</script></body>' });
         });
         await firstSave.goto('https://designer.test/');
         await firstSave.addScriptTag({ path: path.join(root, 'assets/js/designer.js') });

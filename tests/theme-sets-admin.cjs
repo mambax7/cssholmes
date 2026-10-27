@@ -31,7 +31,7 @@ const root = path.resolve(__dirname, '..');
                     if (stale) return route.fulfill({ status: 409, json: { ok: false, error: 'Conflict' } });
                 }
                 return route.fulfill({ json: {
-                    ok: true, token: 'fresh-token', canSave: true, isAdmin: true,
+                    ok: true, token: 'fresh-token', canSave: true, canExport: true, isAdmin: true,
                     state: { theme: body?.theme || url.searchParams.get('theme') || 'alpha', revision: 'live-1', rules: [] },
                     library: { themes: ['alpha', 'empty'], sets, palettes: [{ id: 'builtin-paper', name: 'Paper', colors: ['#ffffff', '#111111'], contrast: [{ name: 'Text / background', ratio: 18.88, pass: true }] }] },
                     preview: body?.op === 'previewImport' ? { document: body.document, rules: [], warnings: ['Review this warning'] } : undefined
