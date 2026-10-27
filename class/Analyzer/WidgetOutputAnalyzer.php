@@ -109,9 +109,7 @@ final class WidgetOutputAnalyzer implements AnalyzerInterface
         }
 
         foreach ($matches[1] as $attributes) {
-            $hasWidth = (bool)preg_match('/\bwidth\s*=/', $attributes);
-            $hasStyleWidth = (bool)preg_match('/style\s*=\s*"[^"]*width\s*:/', $attributes);
-            if ($hasWidth || $hasStyleWidth) {
+            if ($this->hasDimensions($attributes)) {
                 continue;
             }
 
@@ -155,9 +153,7 @@ final class WidgetOutputAnalyzer implements AnalyzerInterface
         }
 
         foreach ($matches[1] as $attributes) {
-            $hasWidth = (bool)preg_match('/\bwidth\s*=/', $attributes);
-            $hasStyleWidth = (bool)preg_match('/style\s*=\s*"[^"]*width\s*:/', $attributes);
-            if ($hasWidth || $hasStyleWidth) {
+            if ($this->hasDimensions($attributes)) {
                 continue;
             }
 
@@ -277,5 +273,17 @@ final class WidgetOutputAnalyzer implements AnalyzerInterface
             $widgetName,
             suggestion: 'Add critical layout styles inline for shortcode rendering fallback.'
         );
+    }
+
+    private function hasDimensions(string $attributes): bool
+    {
+        preg_match('/(?:^|\s)style\s*=\s*(["\'])(.*?)\1/is', $attributes, $style);
+        foreach (['width', 'height'] as $dimension) {
+            if (preg_match('/(?:^|\s)' . $dimension . '\s*=/i', $attributes) !== 1
+                && preg_match('/(?:^|;)\s*' . $dimension . '\s*:\s*[^;\s]/i', $style[2] ?? '') !== 1) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -82,7 +82,7 @@ try {
         }
     }
     $reply(200, [
-        'ok' => true, 'state' => $state, 'canSave' => $access['save'],
+        'ok' => true, 'state' => $state, 'canSave' => $access['save'], 'canExport' => $access['export'],
         'token' => $GLOBALS['xoopsSecurity']->createToken(1800, 'CSSHOLMES_DESIGNER'),
     ]);
 } catch (ConflictException $error) {
