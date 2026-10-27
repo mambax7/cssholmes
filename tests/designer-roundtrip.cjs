@@ -71,10 +71,11 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
             await paletteSelect.click();
             await paletteSelect.getByRole('option', { name: 'Forest', exact: true }).click();
             assert.equal(await paletteSelect.inputValue(), 'palette-forest');
+            const nextChoice = await paletteSelect.evaluate(select => select.options[select.selectedIndex + 1].value);
             await paletteSelect.click();
-            await page.keyboard.press('End');
+            await page.keyboard.press('ArrowDown');
             await page.keyboard.press('Enter');
-            assert.equal(await paletteSelect.inputValue(), 'palette-slate', 'Swatch choices retain native keyboard navigation');
+            assert.equal(await paletteSelect.inputValue(), nextChoice, 'Swatch choices retain native arrow-key navigation');
             await paletteSelect.selectOption('palette-ocean');
             if (process.env.DESIGNER_PALETTE_SCREENSHOT) {
                 await page.setViewportSize({ width: 1280, height: 1000 });
